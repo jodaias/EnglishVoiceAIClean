@@ -37,7 +37,7 @@ class _SplashPageState extends State<SplashPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.red[600],
+      backgroundColor: Colors.cyan[700],
       body: Center(
         child: FadeTransition(
           opacity: _animation,
@@ -46,16 +46,7 @@ class _SplashPageState extends State<SplashPage>
             children: [
               Image.asset(
                 'assets/images/englishaichat_logo.png',
-                width: 120,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'MyTubeList',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                width: 200,
               ),
               const SizedBox(height: 32),
               const CircularProgressIndicator(
