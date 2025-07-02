@@ -1,6 +1,6 @@
+import 'package:english_voice_ai_clean/features/splash/splash_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'features/voice_chat/voice_chat_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +15,7 @@ class VoiceEnglishAIApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'AI English Teacher',
       theme: ThemeData.dark(),
-      home: VoiceChatPage(),
+      home: SplashPage(),
     );
   }
 }

@@ -24,12 +24,12 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: false
-  image_path: "assets/images/englishvoiceai_logo.png"
+  image_path: "assets/images/englishaichat_logo.png"
 
 # executar: flutter pub run flutter_native_splash:create
 flutter_native_splash:
   color: "#FFFFFF"
-  image: assets/images/mytubelist_logo.png
+  image: assets/images/englishaichat_logo.png
   android: true
   ios: false
   web: false
@@ -42,4 +42,4 @@ flutter:
     - .env
     - assets/lottie/robot_talking.json
     - assets/lottie/robot_idle.json
-    - assets/images/englishvoiceai_logo.png
+    - assets/images/englishaichat_logo.png
