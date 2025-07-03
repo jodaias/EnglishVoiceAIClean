@@ -66,8 +66,6 @@ class VoiceChatController {
     final userInput = await speechService.listen(isSpeaking: isSpeaking);
     if (userInput == null || userInput.isEmpty) return null;
 
-    // conversation.add({'role': 'user', 'content': userInput});
-
     conversation.value = [
       ...conversation.value,
       {'role': 'user', 'content': userInput}
