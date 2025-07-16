@@ -85,7 +85,7 @@ class VoiceChatController {
       robotIdle();
       return userInput;
     } else {
-      await ttsService.setRate(0.6);
+      await ttsService.setRate(0.5);
     }
 
     final aiResponse = await aiService.getResponse(conversation.value);
