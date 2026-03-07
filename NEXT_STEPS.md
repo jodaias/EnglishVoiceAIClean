@@ -755,3 +755,29 @@ Blockers and decisions taken
 
 - Decision: keep provider-specific fallback defaults (`gpt-4.1` for OpenAI and `gemini-2.5-flash` for Gemini) to preserve backward-compatible behavior.
 - No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Auto Language PT-BR Recognition)
+
+Completed items
+
+- Improved `VoiceChatController` auto-listening strategy so `en_US` non-empty capture is no longer accepted blindly when language signal is weak.
+- Added language-hint scoring (`en` vs `pt`) to:
+  - decide when `auto` should still try `pt_BR` after `en_US`
+  - choose the best transcript between English and Portuguese candidates
+  - detect response language with better continuity in ambiguous turns (fallback to last detected language on ties)
+- Preserved explicit language mode behavior (`English (US)` and `Portugues (BR)`) unchanged.
+- Added/updated controller tests for:
+  - existing empty `en_US` fallback path
+  - weak-English non-empty result that should prefer Portuguese transcript
+  - strong-English path that should remain in English
+- Re-ran `voice_chat_controller_test.dart` with all tests passing (`22 passed, 0 failed`).
+
+New priorities discovered during testing
+
+- Add integration-level STT tests with realistic bilingual phrases to fine-tune hint scoring thresholds.
+- Consider exposing a tiny debug indicator (dev mode only) showing which transcript (`en_US` or `pt_BR`) was chosen in auto mode.
+
+Blockers and decisions taken
+
+- Decision: keep scoring heuristics lightweight and local to application layer (no plugin API changes), minimizing risk while improving bilingual auto behavior.
+- No blockers.

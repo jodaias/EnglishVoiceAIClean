@@ -408,13 +408,25 @@ $nextChallenge
       localeId: ConversationLanguage.englishUs.speechLocale,
     );
 
-    if ((enResult ?? '').trim().isNotEmpty) {
+    if ((enResult ?? '').trim().isEmpty) {
+      return speechService.listen(
+        isSpeaking: _isSpeaking,
+        localeId: ConversationLanguage.portugueseBr.speechLocale,
+      );
+    }
+
+    if (!_shouldTryPortugueseFallback(enResult!)) {
       return enResult;
     }
 
-    return speechService.listen(
+    final ptResult = await speechService.listen(
       isSpeaking: _isSpeaking,
       localeId: ConversationLanguage.portugueseBr.speechLocale,
+    );
+
+    return _pickBestAutoResult(
+      enCandidate: enResult,
+      ptCandidate: ptResult,
     );
   }
 
@@ -422,6 +434,44 @@ $nextChallenge
     final preferred = languageNotifier.value;
     if (preferred != ConversationLanguage.auto) return preferred;
 
+    final languageScore = _scoreLanguageHints(text);
+    if (languageScore.portuguese > languageScore.english) {
+      return ConversationLanguage.portugueseBr;
+    }
+    if (languageScore.english > languageScore.portuguese) {
+      return ConversationLanguage.englishUs;
+    }
+
+    return _lastDetectedLanguage;
+  }
+
+  bool _shouldTryPortugueseFallback(String enCandidate) {
+    final languageScore = _scoreLanguageHints(enCandidate);
+    return languageScore.english <= languageScore.portuguese;
+  }
+
+  String _pickBestAutoResult({
+    required String enCandidate,
+    required String? ptCandidate,
+  }) {
+    final normalizedPt = (ptCandidate ?? '').trim();
+    if (normalizedPt.isEmpty) {
+      return enCandidate;
+    }
+
+    final enScore = _scoreLanguageHints(enCandidate);
+    final ptScore = _scoreLanguageHints(normalizedPt);
+
+    final englishFit = enScore.english - enScore.portuguese;
+    final portugueseFit = ptScore.portuguese - ptScore.english;
+    if (portugueseFit >= englishFit) {
+      return normalizedPt;
+    }
+
+    return enCandidate;
+  }
+
+  ({int portuguese, int english}) _scoreLanguageHints(String text) {
     final normalized = text.toLowerCase();
     const portugueseHints = [
       'voce',
@@ -434,15 +484,57 @@ $nextChallenge
       'falar',
       'portugues',
       'tudo bem',
+      'nao',
+      'sim',
+      'pra',
+      'com voce',
+      'mais devagar',
+      'mais rapido',
+      'velocidade',
+      'repete',
+      'repetir',
     ];
 
+    const englishHints = [
+      'hello',
+      'thanks',
+      'please',
+      'i want',
+      'i am',
+      'you',
+      'how are',
+      'can you',
+      'english',
+      'good morning',
+      'good evening',
+      "i'm",
+      "you're",
+      'speed up',
+      'slow down',
+      'normal speed',
+      'repeat',
+    ];
+
+    var portugueseScore = 0;
     for (final hint in portugueseHints) {
       if (normalized.contains(hint)) {
-        return ConversationLanguage.portugueseBr;
+        portugueseScore += 1;
       }
     }
 
-    return ConversationLanguage.englishUs;
+    var englishScore = 0;
+    for (final hint in englishHints) {
+      if (normalized.contains(hint)) {
+        englishScore += 1;
+      }
+    }
+
+    const portugueseDiacritics = 'áàâãéêíóôõúç';
+    if (normalized.split('').any(portugueseDiacritics.contains)) {
+      portugueseScore += 2;
+    }
+
+    return (portuguese: portugueseScore, english: englishScore);
   }
 
   Future<bool> _handleCommand({

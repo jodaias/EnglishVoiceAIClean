@@ -46,6 +46,81 @@ void main() {
       controller.dispose();
     });
 
+    test(
+        'tries pt_BR in auto mode when en_US result is weak and prefers portuguese transcript',
+        () async {
+      final ai =
+          FakeAIService(responseText: 'Resposta em portugues. Tudo bem?');
+      final speech = FakeSpeechService(
+        responses: <String?>['random words', 'ola, tudo bem?', null],
+      );
+      final tts = FakeTTSService();
+
+      final controller = VoiceChatController(
+        aiService: ai,
+        speechService: speech,
+        ttsService: tts,
+        maxSilentTurnsBeforePause: 10,
+        loopDelay: const Duration(milliseconds: 10),
+        pausedPollDelay: const Duration(milliseconds: 10),
+      );
+
+      await controller.startConversation();
+      await _waitFor(() => ai.responseCalls.isNotEmpty);
+
+      expect(speech.requestedLocales.length, greaterThanOrEqualTo(2));
+      expect(speech.requestedLocales[0],
+          ConversationLanguage.englishUs.speechLocale);
+      expect(speech.requestedLocales[1],
+          ConversationLanguage.portugueseBr.speechLocale);
+      expect(
+          ai.responseCalls.single.language, ConversationLanguage.portugueseBr);
+      expect(
+          controller.conversation.value.any(
+            (msg) =>
+                (msg['role'] == 'user') && (msg['content'] == 'ola, tudo bem?'),
+          ),
+          isTrue);
+
+      controller.dispose();
+    });
+
+    test('keeps en_US transcript in auto mode when english result is strong',
+        () async {
+      final ai = FakeAIService(responseText: 'Great. What happened next?');
+      final speech = FakeSpeechService(
+        responses: <String?>['hello, can you help me practice?', null],
+      );
+      final tts = FakeTTSService();
+
+      final controller = VoiceChatController(
+        aiService: ai,
+        speechService: speech,
+        ttsService: tts,
+        maxSilentTurnsBeforePause: 10,
+        loopDelay: const Duration(milliseconds: 10),
+        pausedPollDelay: const Duration(milliseconds: 10),
+      );
+
+      await controller.startConversation();
+      await _waitFor(() => ai.responseCalls.isNotEmpty);
+
+      expect(speech.requestedLocales, isNotEmpty);
+      expect(speech.requestedLocales.first,
+          ConversationLanguage.englishUs.speechLocale);
+      expect(ai.responseCalls.single.language, ConversationLanguage.englishUs);
+      expect(
+        controller.conversation.value.any(
+          (msg) =>
+              (msg['role'] == 'user') &&
+              (msg['content'] == 'hello, can you help me practice?'),
+        ),
+        isTrue,
+      );
+
+      controller.dispose();
+    });
+
     test('pauses automatically after configured silent turns', () async {
       final ai = FakeAIService(
           responseText: 'Hello! What would you like to practice?');
