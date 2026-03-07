@@ -2,6 +2,23 @@
 
 This file is the current action plan for evolving the app as a high-quality English learning product.
 
+## Video Call Mode (new — 2026-03-07)
+
+### Done
+
+- Created `VideoCallPage` with immersive video-call-style layout (avatar full-screen, captions overlay, floating controls)
+- Added `/video-call` route and menu entry on dashboard alongside existing Voice Chat
+- Both modes (Voice Chat and Video Call) coexist — same STT→AI→TTS loop, different UI
+
+### Next iterations
+
+1. **Avatar upgrade** — replace Lottie robot with Rive humanoid avatar (lip-sync state machine, expressions)
+2. **Camera self-view** — add optional camera preview in corner using `camera` package
+3. **Animated background** — subtle particle/gradient animation behind avatar
+4. **Full conversation history** — expandable drawer to see all messages (not just last 2 captions)
+5. **Picture-in-picture** — mini floating window when navigating away (Android PiP API)
+6. **Screen wake lock** — keep screen on during active call
+
 ## Current Priority Roadmap
 
 1. Stabilize speaking session behavior

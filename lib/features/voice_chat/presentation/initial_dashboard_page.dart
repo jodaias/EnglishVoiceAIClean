@@ -59,19 +59,44 @@ class InitialDashboardPage extends StatelessWidget {
               const SizedBox(height: 14),
               const _StreakBanner(),
               const SizedBox(height: 14),
-              ElevatedButton.icon(
-                onPressed: () => _openVoiceChat(context),
-                icon: const Icon(Icons.mic),
-                label: Text(
-                  appText(
-                    context,
-                    en: 'Start Practice Session',
-                    pt: 'Iniciar Sessao de Pratica',
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _openVoiceChat(context),
+                      icon: const Icon(Icons.mic),
+                      label: Text(
+                        appText(
+                          context,
+                          en: 'Voice Chat',
+                          pt: 'Chat de Voz',
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                    ),
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => Navigator.of(context)
+                          .pushNamed(DashboardRoutes.videoCall),
+                      icon: const Icon(Icons.videocam),
+                      label: Text(
+                        appText(
+                          context,
+                          en: 'Video Call',
+                          pt: 'Videochamada',
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                        backgroundColor: const Color(0xFF1D5C6E),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               _SectionTitle(
@@ -89,6 +114,16 @@ class InitialDashboardPage extends StatelessWidget {
                         en: 'Talk in EN-US / PT-BR',
                         pt: 'Converse em EN-US / PT-BR'),
                     onTap: () => _openVoiceChat(context),
+                  ),
+                  _QuickMenuCard(
+                    icon: Icons.videocam_outlined,
+                    title:
+                        appText(context, en: 'Video Call', pt: 'Videochamada'),
+                    subtitle: appText(context,
+                        en: 'Immersive AI conversation',
+                        pt: 'Conversa imersiva com IA'),
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(DashboardRoutes.videoCall),
                   ),
                   _QuickMenuCard(
                     icon: Icons.insights_outlined,

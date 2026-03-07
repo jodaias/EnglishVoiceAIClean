@@ -10,6 +10,7 @@ import 'package:english_voice_ai_clean/features/voice_chat/presentation/practice
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/reading_listening_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/session_history_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/session_settings_page.dart';
+import 'package:english_voice_ai_clean/features/voice_chat/presentation/video_call_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -69,6 +70,7 @@ class _VoiceEnglishAIAppState extends State<VoiceEnglishAIApp> {
               DashboardRoutes.sessionHistory: (_) => const SessionHistoryPage(),
               DashboardRoutes.session: (_) => const SessionSettingsPage(),
               DashboardRoutes.language: (_) => const LanguageModePage(),
+              DashboardRoutes.videoCall: (_) => const VideoCallPage(),
             },
           ),
         );
