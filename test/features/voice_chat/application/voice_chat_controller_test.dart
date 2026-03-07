@@ -14,12 +14,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('VoiceChatController', () {
-    test('uses pt_BR fallback when auto mode gets empty en_US recognition',
+    test('uses en_US fallback when auto mode gets empty pt_BR recognition',
         () async {
       final ai =
-          FakeAIService(responseText: 'Resposta em portugues. Tudo bem?');
+          FakeAIService(responseText: 'Great. What do you want to practice?');
       final speech = FakeSpeechService(
-        responses: <String?>['', 'ola, tudo bem?', null],
+        responses: <String?>['', 'hello, how are you?', null],
       );
       final tts = FakeTTSService();
 
@@ -37,59 +37,20 @@ void main() {
 
       expect(speech.requestedLocales.length, greaterThanOrEqualTo(2));
       expect(speech.requestedLocales[0],
-          ConversationLanguage.englishUs.speechLocale);
-      expect(speech.requestedLocales[1],
           ConversationLanguage.portugueseBr.speechLocale);
-      expect(
-          ai.responseCalls.single.language, ConversationLanguage.portugueseBr);
+      expect(speech.requestedLocales[1],
+          ConversationLanguage.englishUs.speechLocale);
+      expect(ai.responseCalls.single.language, ConversationLanguage.englishUs);
 
       controller.dispose();
     });
 
-    test(
-        'tries pt_BR in auto mode when en_US result is weak and prefers portuguese transcript',
+    test('keeps pt_BR in auto mode when portuguese is captured first',
         () async {
       final ai =
           FakeAIService(responseText: 'Resposta em portugues. Tudo bem?');
       final speech = FakeSpeechService(
-        responses: <String?>['random words', 'ola, tudo bem?', null],
-      );
-      final tts = FakeTTSService();
-
-      final controller = VoiceChatController(
-        aiService: ai,
-        speechService: speech,
-        ttsService: tts,
-        maxSilentTurnsBeforePause: 10,
-        loopDelay: const Duration(milliseconds: 10),
-        pausedPollDelay: const Duration(milliseconds: 10),
-      );
-
-      await controller.startConversation();
-      await _waitFor(() => ai.responseCalls.isNotEmpty);
-
-      expect(speech.requestedLocales.length, greaterThanOrEqualTo(2));
-      expect(speech.requestedLocales[0],
-          ConversationLanguage.englishUs.speechLocale);
-      expect(speech.requestedLocales[1],
-          ConversationLanguage.portugueseBr.speechLocale);
-      expect(
-          ai.responseCalls.single.language, ConversationLanguage.portugueseBr);
-      expect(
-          controller.conversation.value.any(
-            (msg) =>
-                (msg['role'] == 'user') && (msg['content'] == 'ola, tudo bem?'),
-          ),
-          isTrue);
-
-      controller.dispose();
-    });
-
-    test('keeps en_US transcript in auto mode when english result is strong',
-        () async {
-      final ai = FakeAIService(responseText: 'Great. What happened next?');
-      final speech = FakeSpeechService(
-        responses: <String?>['hello, can you help me practice?', null],
+        responses: <String?>['ola, tudo bem?', null],
       );
       final tts = FakeTTSService();
 
@@ -107,16 +68,42 @@ void main() {
 
       expect(speech.requestedLocales, isNotEmpty);
       expect(speech.requestedLocales.first,
-          ConversationLanguage.englishUs.speechLocale);
-      expect(ai.responseCalls.single.language, ConversationLanguage.englishUs);
+          ConversationLanguage.portugueseBr.speechLocale);
       expect(
-        controller.conversation.value.any(
-          (msg) =>
-              (msg['role'] == 'user') &&
-              (msg['content'] == 'hello, can you help me practice?'),
-        ),
-        isTrue,
+          ai.responseCalls.single.language, ConversationLanguage.portugueseBr);
+      expect(
+          controller.conversation.value.any(
+            (msg) =>
+                (msg['role'] == 'user') && (msg['content'] == 'ola, tudo bem?'),
+          ),
+          isTrue);
+
+      controller.dispose();
+    });
+
+    test('starts auto mode listening with pt_BR locale', () async {
+      final ai =
+          FakeAIService(responseText: 'Resposta em portugues. Tudo bem?');
+      final speech = FakeSpeechService(
+        responses: <String?>['ola', null],
       );
+      final tts = FakeTTSService();
+
+      final controller = VoiceChatController(
+        aiService: ai,
+        speechService: speech,
+        ttsService: tts,
+        maxSilentTurnsBeforePause: 10,
+        loopDelay: const Duration(milliseconds: 10),
+        pausedPollDelay: const Duration(milliseconds: 10),
+      );
+
+      await controller.startConversation();
+      await _waitFor(() => ai.responseCalls.isNotEmpty);
+
+      expect(speech.requestedLocales, isNotEmpty);
+      expect(speech.requestedLocales.first,
+          ConversationLanguage.portugueseBr.speechLocale);
 
       controller.dispose();
     });
@@ -162,6 +149,7 @@ void main() {
         pausedPollDelay: const Duration(milliseconds: 10),
       );
 
+      controller.setPreferredLanguage(ConversationLanguage.englishUs);
       await controller.startConversation();
       await _waitFor(() => tts.speakCalls.length >= 2);
 
@@ -194,6 +182,7 @@ void main() {
         pausedPollDelay: const Duration(milliseconds: 10),
       );
 
+      controller.setPreferredLanguage(ConversationLanguage.englishUs);
       await controller.startConversation();
       await _waitFor(() => ai.responseCalls.isNotEmpty);
 
@@ -226,6 +215,7 @@ void main() {
         pausedPollDelay: const Duration(milliseconds: 10),
       );
 
+      controller.setPreferredLanguage(ConversationLanguage.englishUs);
       await controller.startConversation();
       await _waitFor(() => tts.rates.length >= 2);
 

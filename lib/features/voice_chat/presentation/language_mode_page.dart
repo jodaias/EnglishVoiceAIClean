@@ -95,8 +95,8 @@ class _LanguageModePageState extends State<LanguageModePage> {
                     title: appText(context, en: 'Auto', pt: 'Auto'),
                     subtitle: appText(
                       context,
-                      en: 'Start with English and fallback to Portuguese when needed.',
-                      pt: 'Comeca com ingles e usa fallback para portugues quando necessario.',
+                      en: 'Prioritize Portuguese listening and fallback to English when needed.',
+                      pt: 'Prioriza escuta em portugues e usa fallback para ingles quando necessario.',
                     ),
                     value: ConversationLanguage.auto,
                     isSelected: _selected == ConversationLanguage.auto,

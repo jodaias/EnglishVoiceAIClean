@@ -43,7 +43,10 @@ class VoiceChatController {
   int _silentTurns = 0;
   Timer? _sessionTicker;
   DateTime? _sessionStartedAt;
-  ConversationLanguage _lastDetectedLanguage = ConversationLanguage.englishUs;
+  ConversationLanguage _lastDetectedLanguage =
+      ConversationLanguage.portugueseBr;
+  ConversationLanguage _autoNextPrimaryLanguage =
+      ConversationLanguage.portugueseBr;
   final int maxSilentTurnsBeforePause;
   final Duration loopDelay;
   final Duration pausedPollDelay;
@@ -78,7 +81,8 @@ class VoiceChatController {
     elapsedSecondsNotifier.value = 0;
     sessionFeedbackNotifier.value = null;
     isGeneratingFeedbackNotifier.value = false;
-    _lastDetectedLanguage = ConversationLanguage.englishUs;
+    _lastDetectedLanguage = ConversationLanguage.portugueseBr;
+    _autoNextPrimaryLanguage = ConversationLanguage.portugueseBr;
     _resumeGraceUntil = null;
     isInResumeGraceNotifier.value = false;
     _sessionStartedAt = DateTime.now();
@@ -314,10 +318,10 @@ $nextChallenge
         continue;
       }
 
-      final userInput = await _captureUserInput();
+      final capturedInput = await _captureUserInput();
       if (!_isActive) return;
 
-      if (userInput == null || userInput.trim().isEmpty) {
+      if (capturedInput == null || capturedInput.text.trim().isEmpty) {
         if (_isInResumeGracePeriod()) {
           await Future.delayed(loopDelay);
           continue;
@@ -336,7 +340,8 @@ $nextChallenge
       isInResumeGraceNotifier.value = false;
       userTurnsNotifier.value = userTurnsNotifier.value + 1;
 
-      final detectedLanguage = _detectLanguage(userInput);
+      final userInput = capturedInput.text;
+      final detectedLanguage = capturedInput.language;
       _lastDetectedLanguage = detectedLanguage;
       _appendMessage(ConversationMessage(role: 'user', content: userInput));
 
@@ -388,7 +393,7 @@ $nextChallenge
     return true;
   }
 
-  Future<String?> _captureUserInput() async {
+  Future<_CapturedUserInput?> _captureUserInput() async {
     if (isPausedNotifier.value) {
       return null;
     }
@@ -397,144 +402,104 @@ $nextChallenge
     final preferred = languageNotifier.value;
 
     if (preferred != ConversationLanguage.auto) {
-      return speechService.listen(
+      final result = await speechService.listen(
         isSpeaking: _isSpeaking,
         localeId: preferred.speechLocale,
       );
-    }
-
-    final enResult = await speechService.listen(
-      isSpeaking: _isSpeaking,
-      localeId: ConversationLanguage.englishUs.speechLocale,
-    );
-
-    if ((enResult ?? '').trim().isEmpty) {
-      return speechService.listen(
-        isSpeaking: _isSpeaking,
-        localeId: ConversationLanguage.portugueseBr.speechLocale,
+      final normalized = (result ?? '').trim();
+      if (normalized.isEmpty) {
+        return null;
+      }
+      return _CapturedUserInput(
+        text: normalized,
+        language: preferred,
       );
     }
 
-    if (!_shouldTryPortugueseFallback(enResult!)) {
-      return enResult;
-    }
+    final primaryLanguage = _autoNextPrimaryLanguage;
+    final secondaryLanguage =
+        primaryLanguage == ConversationLanguage.portugueseBr
+            ? ConversationLanguage.englishUs
+            : ConversationLanguage.portugueseBr;
+    _autoNextPrimaryLanguage = secondaryLanguage;
 
-    final ptResult = await speechService.listen(
+    final primaryResult = await speechService.listen(
       isSpeaking: _isSpeaking,
-      localeId: ConversationLanguage.portugueseBr.speechLocale,
+      localeId: primaryLanguage.speechLocale,
     );
+    final normalizedPrimary = (primaryResult ?? '').trim();
+    if (normalizedPrimary.isNotEmpty) {
+      if (_isWeakCapture(normalizedPrimary)) {
+        final secondaryResult = await speechService.listen(
+          isSpeaking: _isSpeaking,
+          localeId: secondaryLanguage.speechLocale,
+        );
+        final normalizedSecondary = (secondaryResult ?? '').trim();
+        if (_isBetterFallbackCandidate(
+          primaryText: normalizedPrimary,
+          secondaryText: normalizedSecondary,
+        )) {
+          return _CapturedUserInput(
+            text: normalizedSecondary,
+            language: secondaryLanguage,
+          );
+        }
+      }
 
-    return _pickBestAutoResult(
-      enCandidate: enResult,
-      ptCandidate: ptResult,
+      return _CapturedUserInput(
+        text: normalizedPrimary,
+        language: primaryLanguage,
+      );
+    }
+
+    final secondaryResult = await speechService.listen(
+      isSpeaking: _isSpeaking,
+      localeId: secondaryLanguage.speechLocale,
+    );
+    final normalizedSecondary = (secondaryResult ?? '').trim();
+    if (normalizedSecondary.isEmpty) {
+      return null;
+    }
+
+    return _CapturedUserInput(
+      text: normalizedSecondary,
+      language: secondaryLanguage,
     );
   }
 
-  ConversationLanguage _detectLanguage(String text) {
-    final preferred = languageNotifier.value;
-    if (preferred != ConversationLanguage.auto) return preferred;
-
-    final languageScore = _scoreLanguageHints(text);
-    if (languageScore.portuguese > languageScore.english) {
-      return ConversationLanguage.portugueseBr;
-    }
-    if (languageScore.english > languageScore.portuguese) {
-      return ConversationLanguage.englishUs;
-    }
-
-    return _lastDetectedLanguage;
+  bool _isWeakCapture(String text) {
+    final tokens = text
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((token) => token.isNotEmpty)
+        .toList();
+    return tokens.length <= 2 || text.trim().length <= 12;
   }
 
-  bool _shouldTryPortugueseFallback(String enCandidate) {
-    final languageScore = _scoreLanguageHints(enCandidate);
-    return languageScore.english <= languageScore.portuguese;
-  }
-
-  String _pickBestAutoResult({
-    required String enCandidate,
-    required String? ptCandidate,
+  bool _isBetterFallbackCandidate({
+    required String primaryText,
+    required String secondaryText,
   }) {
-    final normalizedPt = (ptCandidate ?? '').trim();
-    if (normalizedPt.isEmpty) {
-      return enCandidate;
+    final normalizedSecondary = secondaryText.trim();
+    if (normalizedSecondary.isEmpty) {
+      return false;
     }
 
-    final enScore = _scoreLanguageHints(enCandidate);
-    final ptScore = _scoreLanguageHints(normalizedPt);
-
-    final englishFit = enScore.english - enScore.portuguese;
-    final portugueseFit = ptScore.portuguese - ptScore.english;
-    if (portugueseFit >= englishFit) {
-      return normalizedPt;
+    final primaryWords = _wordCount(primaryText);
+    final secondaryWords = _wordCount(normalizedSecondary);
+    if (secondaryWords > primaryWords) {
+      return true;
     }
 
-    return enCandidate;
+    return normalizedSecondary.length > primaryText.trim().length + 4;
   }
 
-  ({int portuguese, int english}) _scoreLanguageHints(String text) {
-    final normalized = text.toLowerCase();
-    const portugueseHints = [
-      'voce',
-      'olá',
-      'ola',
-      'obrigado',
-      'por favor',
-      'quero',
-      'estou',
-      'falar',
-      'portugues',
-      'tudo bem',
-      'nao',
-      'sim',
-      'pra',
-      'com voce',
-      'mais devagar',
-      'mais rapido',
-      'velocidade',
-      'repete',
-      'repetir',
-    ];
-
-    const englishHints = [
-      'hello',
-      'thanks',
-      'please',
-      'i want',
-      'i am',
-      'you',
-      'how are',
-      'can you',
-      'english',
-      'good morning',
-      'good evening',
-      "i'm",
-      "you're",
-      'speed up',
-      'slow down',
-      'normal speed',
-      'repeat',
-    ];
-
-    var portugueseScore = 0;
-    for (final hint in portugueseHints) {
-      if (normalized.contains(hint)) {
-        portugueseScore += 1;
-      }
-    }
-
-    var englishScore = 0;
-    for (final hint in englishHints) {
-      if (normalized.contains(hint)) {
-        englishScore += 1;
-      }
-    }
-
-    const portugueseDiacritics = 'áàâãéêíóôõúç';
-    if (normalized.split('').any(portugueseDiacritics.contains)) {
-      portugueseScore += 2;
-    }
-
-    return (portuguese: portugueseScore, english: englishScore);
+  int _wordCount(String text) {
+    return text
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((token) => token.isNotEmpty)
+        .length;
   }
 
   Future<bool> _handleCommand({
@@ -863,4 +828,14 @@ $nextChallenge
       // Keep conversation flow resilient if local persistence fails.
     }
   }
+}
+
+class _CapturedUserInput {
+  final String text;
+  final ConversationLanguage language;
+
+  _CapturedUserInput({
+    required this.text,
+    required this.language,
+  });
 }

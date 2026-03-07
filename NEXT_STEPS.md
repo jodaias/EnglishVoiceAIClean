@@ -781,3 +781,72 @@ Blockers and decisions taken
 
 - Decision: keep scoring heuristics lightweight and local to application layer (no plugin API changes), minimizing risk while improving bilingual auto behavior.
 - No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Auto Language PT-BR Tuning v2)
+
+Completed items
+
+- Tightened `auto` fallback trigger in `VoiceChatController`:
+  - English candidate is now accepted only when it has a stronger confidence signal.
+  - Ambiguous short/weak English recognition now triggers `pt_BR` retry more often.
+- Improved transcript selection tie-break logic in auto mode by preferring richer Portuguese candidate when both fits are similar.
+- Expanded language hints with additional conversational tokens (`oi`, `bom dia`, `boa tarde`, `boa noite`, `good afternoon`, etc.) for better real-world phrase coverage.
+- Preserved command stability by treating known short English commands (`speed up`, `slow down`, `normal speed`, `repeat`) as strong English signals to avoid unnecessary fallback.
+- Re-ran controller tests successfully after tuning (`22 passed, 0 failed`).
+
+New priorities discovered during testing
+
+- Add end-to-end device validation checklist for auto-language mode with fixed bilingual phrase set to monitor false-English and false-Portuguese rates.
+- Consider exposing a hidden diagnostics label in debug mode showing scoring outcome (`enScore`, `ptScore`) for faster tuning.
+
+Blockers and decisions taken
+
+- Decision: keep fallback tuning in application layer heuristics first, avoiding infrastructure/plugin changes in this cycle.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Auto Mode Deterministic PT Priority)
+
+Completed items
+
+- Replaced auto-mode hint-based language inference in `VoiceChatController` with deterministic STT locale capture flow.
+- Auto mode now prioritizes `pt_BR` capture first and falls back to `en_US` only when Portuguese capture is empty.
+- Conversation language in auto mode now uses the locale that actually captured speech, instead of post-transcription hint guessing.
+- Removed auto-mode text hint scoring methods (`_detectLanguage`, `_scoreLanguageHints`, and related fallback heuristics) to avoid false-English misclassification on Portuguese speech.
+- Updated language-mode UI copy to reflect real behavior (`Portuguese first`, then English fallback).
+- Updated controller tests to validate new behavior and kept English-command tests stable by explicitly forcing `English (US)` mode where expected.
+- Re-ran voice-chat controller test suite with full pass (`22 passed, 0 failed`).
+
+New priorities discovered during testing
+
+- Add an explicit product setting to choose auto priority order (`PT first` or `EN first`) for user-controlled behavior.
+- Add real-device smoke checklist for Portuguese colloquial commands (for example: `repete por favor`, `fala de novo`, `pode repetir`).
+
+Blockers and decisions taken
+
+- Decision: prioritize user reliability in Portuguese auto mode over previous English-first behavior to resolve repeated real-world recognition failures.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Auto Mixed-Language + TTS Voice Quality)
+
+Completed items
+
+- Refined `auto` listening behavior in `VoiceChatController` to better support mixed Portuguese/English turns:
+  - auto mode now alternates primary STT locale between `pt_BR` and `en_US` each turn (instead of getting stuck in one language path)
+  - when the primary capture looks weak (very short transcript), controller performs secondary-locale fallback and prefers the richer candidate
+  - kept explicit language modes (`English (US)` / `Portugues (BR)`) unchanged
+- Improved `TTSService` voice quality strategy:
+  - added dynamic voice catalog loading via `flutter_tts.getVoices`
+  - added best-voice selection per locale (`en-US`, `pt-BR`) with preference for higher-quality voice names (`neural`, `network`, `wavenet`, `natural`, etc.)
+  - kept safe fallback to engine default voice if no better voice is available
+- Validation:
+  - `voice_chat_controller_test.dart` + `speech_service_test.dart` run completed successfully (`25 passed, 0 failed`)
+
+New priorities discovered during testing
+
+- Add in-app voice selector in settings so users can choose preferred installed voice directly per locale.
+- Add optional debug status showing selected TTS voice name at runtime for device-level troubleshooting.
+
+Blockers and decisions taken
+
+- Decision: keep TTS voice improvement non-breaking by auto-selecting better voices when available and falling back silently when not.
+- No blockers.
