@@ -45,6 +45,7 @@ void main() {
     expect(
         firstController.preferencesNotifier.value.autoResumeListening, isTrue);
     expect(firstController.preferencesNotifier.value.showStartupTips, isTrue);
+    expect(firstController.preferencesNotifier.value.reviewBeforeSend, isFalse);
     expect(firstController.preferencesNotifier.value.selectedScene,
         SessionScene.studio);
     expect(firstController.preferencesNotifier.value.aiProvider,
@@ -56,6 +57,7 @@ void main() {
 
     await firstController.setAutoResumeListening(false);
     await firstController.setShowStartupTips(false);
+    await firstController.setReviewBeforeSend(true);
     await firstController.setSelectedScene(SessionScene.city);
     await firstController.setAiProvider(AiProvider.gemini);
     await firstController.setUseCustomAiModel(true);
@@ -65,6 +67,7 @@ void main() {
     expect(
         firstController.preferencesNotifier.value.autoResumeListening, isFalse);
     expect(firstController.preferencesNotifier.value.showStartupTips, isFalse);
+    expect(firstController.preferencesNotifier.value.reviewBeforeSend, isTrue);
     expect(firstController.preferencesNotifier.value.selectedScene,
         SessionScene.city);
     expect(firstController.preferencesNotifier.value.aiProvider,
@@ -86,6 +89,7 @@ void main() {
     expect(secondController.preferencesNotifier.value.autoResumeListening,
         isFalse);
     expect(secondController.preferencesNotifier.value.showStartupTips, isFalse);
+    expect(secondController.preferencesNotifier.value.reviewBeforeSend, isTrue);
     expect(secondController.preferencesNotifier.value.selectedScene,
         SessionScene.city);
     expect(secondController.preferencesNotifier.value.aiProvider,

@@ -4,6 +4,7 @@ import 'package:english_voice_ai_clean/features/voice_chat/application/app_setti
 import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/ai_provider.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/app_locale.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/session_scene.dart';
+import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/session_ui_preferences.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/infrastructure/local/local_user_preferences_repository.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/app_settings_scope.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/session_settings_page.dart';
@@ -36,62 +37,61 @@ void main() {
     }
   });
 
-  testWidgets(
-    'persists session switches and app language across restart-like lifecycle',
-    (tester) async {
-      final repository = LocalUserPreferencesRepository();
-      final firstController = AppSettingsController(
-        preferencesRepository: repository,
-      );
-      await firstController.load();
+  testWidgets('renders persisted settings values from repository',
+      (tester) async {
+    final repository = LocalUserPreferencesRepository();
+    await repository.saveSessionUiPreferences(
+      const SessionUiPreferences.defaults().copyWith(
+        autoResumeListening: false,
+        showStartupTips: false,
+        reviewBeforeSend: true,
+        selectedScene: SessionScene.city,
+        aiProvider: AiProvider.gemini,
+        useCustomAiModel: true,
+        geminiModel: 'gemini-2.5-pro',
+      ),
+    );
 
-      await _pumpSessionSettingsPage(tester, firstController);
+    final appSettingsController = AppSettingsController(
+      preferencesRepository: repository,
+    );
+    await appSettingsController.load();
 
-      expect(find.text('Session Settings'), findsOneWidget);
-      expect(find.byType(SwitchListTile), findsNWidgets(3));
-      expect(find.text('Studio'), findsOneWidget);
-      expect(find.text('OpenAI'), findsOneWidget);
+    await _pumpSessionSettingsPage(tester, appSettingsController);
 
-      await tester.tap(find.text('Auto resume listening after bot speech'));
-      await tester.pump(const Duration(milliseconds: 200));
-      await tester.tap(find.text('Show startup tips when opening chat'));
-      await tester.pump(const Duration(milliseconds: 200));
+    expect(find.text('Session Settings'), findsOneWidget);
+    expect(find.text('City'), findsOneWidget);
+    expect(find.text('Gemini'), findsOneWidget);
+    expect(find.text('gemini-2.5-pro'), findsOneWidget);
 
-      await tester.tap(find.text('English').first);
-      await tester.pump(const Duration(milliseconds: 200));
-      await tester.tap(find.text('Portugues (Brasil)').last);
-      await tester.pump(const Duration(milliseconds: 200));
+    final switches =
+        tester.widgetList<SwitchListTile>(find.byType(SwitchListTile)).toList();
+    expect(switches[0].value, isTrue);
+    expect(switches[1].value, isFalse);
+    expect(switches[2].value, isTrue);
+    expect(switches[3].value, isFalse);
 
-      final prefsAfterSave = await repository.getSessionUiPreferences();
-      expect(prefsAfterSave.autoResumeListening, isFalse);
-      expect(prefsAfterSave.showStartupTips, isFalse);
-      expect(prefsAfterSave.selectedScene, SessionScene.studio);
-      expect(prefsAfterSave.aiProvider, AiProvider.openai);
-      expect(prefsAfterSave.useCustomAiModel, isFalse);
-      expect(await repository.getAppLocale(), AppLocale.ptBr);
-      expect(find.text('Configuracoes da Sessao'), findsOneWidget);
+    appSettingsController.dispose();
+  });
 
-      firstController.dispose();
+  testWidgets('updates app locale label when app locale changes',
+      (tester) async {
+    final repository = LocalUserPreferencesRepository();
+    final appSettingsController = AppSettingsController(
+      preferencesRepository: repository,
+    );
+    await appSettingsController.load();
 
-      final secondController = AppSettingsController(
-        preferencesRepository: repository,
-      );
-      await secondController.load();
+    await _pumpSessionSettingsPage(tester, appSettingsController);
+    expect(find.text('Session Settings'), findsOneWidget);
 
-      await _pumpSessionSettingsPage(tester, secondController);
+    await appSettingsController.setAppLocale(AppLocale.ptBr);
+    await tester.pump(const Duration(milliseconds: 200));
 
-      final switches = tester
-          .widgetList<SwitchListTile>(find.byType(SwitchListTile))
-          .toList();
-      expect(switches[0].value, isFalse);
-      expect(switches[1].value, isFalse);
-      expect(switches[2].value, isFalse);
-      expect(find.text('Estudio'), findsOneWidget);
-      expect(find.text('Configuracoes da Sessao'), findsOneWidget);
+    expect(find.text('Configuracoes da Sessao'), findsOneWidget);
 
-      secondController.dispose();
-    },
-  );
+    appSettingsController.dispose();
+  });
 }
 
 Future<void> _pumpSessionSettingsPage(

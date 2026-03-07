@@ -42,6 +42,14 @@ class SessionSettingsController {
     await preferencesRepository.saveSessionUiPreferences(updated);
   }
 
+  Future<void> setReviewBeforeSend(bool value) async {
+    final updated = preferencesNotifier.value.copyWith(
+      reviewBeforeSend: value,
+    );
+    preferencesNotifier.value = updated;
+    await preferencesRepository.saveSessionUiPreferences(updated);
+  }
+
   Future<void> setSelectedScene(SessionScene value) async {
     final updated = preferencesNotifier.value.copyWith(
       selectedScene: value,

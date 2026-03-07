@@ -4,6 +4,7 @@ import 'session_scene.dart';
 class SessionUiPreferences {
   final bool autoResumeListening;
   final bool showStartupTips;
+  final bool reviewBeforeSend;
   final SessionScene selectedScene;
   final AiProvider aiProvider;
   final bool useCustomAiModel;
@@ -13,6 +14,7 @@ class SessionUiPreferences {
   const SessionUiPreferences({
     required this.autoResumeListening,
     required this.showStartupTips,
+    required this.reviewBeforeSend,
     required this.selectedScene,
     required this.aiProvider,
     required this.useCustomAiModel,
@@ -23,6 +25,7 @@ class SessionUiPreferences {
   const SessionUiPreferences.defaults()
       : autoResumeListening = true,
         showStartupTips = true,
+        reviewBeforeSend = false,
         selectedScene = SessionScene.studio,
         aiProvider = AiProvider.openai,
         useCustomAiModel = false,
@@ -32,6 +35,7 @@ class SessionUiPreferences {
   SessionUiPreferences copyWith({
     bool? autoResumeListening,
     bool? showStartupTips,
+    bool? reviewBeforeSend,
     SessionScene? selectedScene,
     AiProvider? aiProvider,
     bool? useCustomAiModel,
@@ -41,6 +45,7 @@ class SessionUiPreferences {
     return SessionUiPreferences(
       autoResumeListening: autoResumeListening ?? this.autoResumeListening,
       showStartupTips: showStartupTips ?? this.showStartupTips,
+      reviewBeforeSend: reviewBeforeSend ?? this.reviewBeforeSend,
       selectedScene: selectedScene ?? this.selectedScene,
       aiProvider: aiProvider ?? this.aiProvider,
       useCustomAiModel: useCustomAiModel ?? this.useCustomAiModel,

@@ -14,12 +14,41 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('VoiceChatController', () {
-    test('uses en_US fallback when auto mode gets empty pt_BR recognition',
+    test('uses en_US for AI when english is captured first in auto mode',
         () async {
       final ai =
           FakeAIService(responseText: 'Great. What do you want to practice?');
       final speech = FakeSpeechService(
-        responses: <String?>['', 'hello, how are you?', null],
+        responses: <String?>['hello, how are you?', null],
+      );
+      final tts = FakeTTSService();
+
+      final controller = VoiceChatController(
+        aiService: ai,
+        speechService: speech,
+        ttsService: tts,
+        maxSilentTurnsBeforePause: 10,
+        loopDelay: const Duration(milliseconds: 10),
+        pausedPollDelay: const Duration(milliseconds: 10),
+      );
+
+      await controller.startConversation();
+      await _waitFor(() => ai.responseCalls.isNotEmpty);
+
+      expect(speech.requestedLocales, isNotEmpty);
+      expect(speech.requestedLocales[0],
+          ConversationLanguage.englishUs.speechLocale);
+      expect(ai.responseCalls.single.language, ConversationLanguage.englishUs);
+
+      controller.dispose();
+    });
+
+    test('uses pt_BR fallback when auto mode gets empty en_US recognition',
+        () async {
+      final ai =
+          FakeAIService(responseText: 'Resposta em portugues. Tudo bem?');
+      final speech = FakeSpeechService(
+        responses: <String?>['', 'ola, tudo bem?', null],
       );
       final tts = FakeTTSService();
 
@@ -37,37 +66,8 @@ void main() {
 
       expect(speech.requestedLocales.length, greaterThanOrEqualTo(2));
       expect(speech.requestedLocales[0],
-          ConversationLanguage.portugueseBr.speechLocale);
-      expect(speech.requestedLocales[1],
           ConversationLanguage.englishUs.speechLocale);
-      expect(ai.responseCalls.single.language, ConversationLanguage.englishUs);
-
-      controller.dispose();
-    });
-
-    test('keeps pt_BR in auto mode when portuguese is captured first',
-        () async {
-      final ai =
-          FakeAIService(responseText: 'Resposta em portugues. Tudo bem?');
-      final speech = FakeSpeechService(
-        responses: <String?>['ola, tudo bem?', null],
-      );
-      final tts = FakeTTSService();
-
-      final controller = VoiceChatController(
-        aiService: ai,
-        speechService: speech,
-        ttsService: tts,
-        maxSilentTurnsBeforePause: 10,
-        loopDelay: const Duration(milliseconds: 10),
-        pausedPollDelay: const Duration(milliseconds: 10),
-      );
-
-      await controller.startConversation();
-      await _waitFor(() => ai.responseCalls.isNotEmpty);
-
-      expect(speech.requestedLocales, isNotEmpty);
-      expect(speech.requestedLocales.first,
+      expect(speech.requestedLocales[1],
           ConversationLanguage.portugueseBr.speechLocale);
       expect(
           ai.responseCalls.single.language, ConversationLanguage.portugueseBr);
@@ -81,11 +81,11 @@ void main() {
       controller.dispose();
     });
 
-    test('starts auto mode listening with pt_BR locale', () async {
+    test('starts auto mode listening with en_US locale', () async {
       final ai =
-          FakeAIService(responseText: 'Resposta em portugues. Tudo bem?');
+          FakeAIService(responseText: 'Great. What do you want to practice?');
       final speech = FakeSpeechService(
-        responses: <String?>['ola', null],
+        responses: <String?>['hello', null],
       );
       final tts = FakeTTSService();
 
@@ -103,12 +103,13 @@ void main() {
 
       expect(speech.requestedLocales, isNotEmpty);
       expect(speech.requestedLocales.first,
-          ConversationLanguage.portugueseBr.speechLocale);
+          ConversationLanguage.englishUs.speechLocale);
 
       controller.dispose();
     });
 
-    test('waits for transcript confirmation when input review is enabled',
+    test(
+        'sends immediately and shows review panel when input review is enabled',
         () async {
       final ai = FakeAIService(responseText: 'Thanks for confirming.');
       final speech = FakeSpeechService(
@@ -128,21 +129,119 @@ void main() {
       controller.setPreferredLanguage(ConversationLanguage.englishUs);
       controller.setRequireInputReview(true);
       await controller.startConversation();
+
+      // Auto-sends immediately, then shows review panel.
+      await _waitFor(() => ai.responseCalls.isNotEmpty);
       await _waitFor(() => controller.isReviewingUserInputNotifier.value);
 
       expect(controller.pendingUserInputNotifier.value, 'helo there');
-      expect(ai.responseCalls, isEmpty);
+      expect(ai.responseCalls.single.language, ConversationLanguage.englishUs);
 
+      // Edit and resend replaces the old exchange.
       controller.updatePendingUserInput('hello there');
       final submitted = await controller.confirmPendingUserInput();
       expect(submitted, isTrue);
 
-      await _waitFor(() => ai.responseCalls.isNotEmpty);
-      expect(ai.responseCalls.single.language, ConversationLanguage.englishUs);
+      await _waitFor(() => ai.responseCalls.length >= 2);
       expect(
         controller.conversation.value.any(
           (msg) =>
               msg['role'] == 'user' && (msg['content'] ?? '') == 'hello there',
+        ),
+        isTrue,
+      );
+      // Original typo message should be replaced.
+      expect(
+        controller.conversation.value.any(
+          (msg) =>
+              msg['role'] == 'user' && (msg['content'] ?? '') == 'helo there',
+        ),
+        isFalse,
+      );
+
+      controller.dispose();
+    });
+
+    test('review mode in auto picks clearer capture across both locales',
+        () async {
+      final ai = FakeAIService(responseText: 'Great, thanks.');
+      final speech = FakeSpeechService(
+        responses: <String?>[
+          'hello, I would like to practice speaking today',
+          'oi',
+          null,
+        ],
+      );
+      final tts = FakeTTSService();
+
+      final controller = VoiceChatController(
+        aiService: ai,
+        speechService: speech,
+        ttsService: tts,
+        maxSilentTurnsBeforePause: 10,
+        loopDelay: const Duration(milliseconds: 10),
+        pausedPollDelay: const Duration(milliseconds: 10),
+      );
+
+      controller.setPreferredLanguage(ConversationLanguage.auto);
+      controller.setRequireInputReview(true);
+      await controller.startConversation();
+
+      // Auto-sends the best capture immediately.
+      await _waitFor(() => ai.responseCalls.isNotEmpty);
+      expect(ai.responseCalls.single.language, ConversationLanguage.englishUs);
+
+      controller.dispose();
+    });
+
+    test('edit-resend removes old exchange and sends new text', () async {
+      final ai = FakeAIService(responseText: 'AI response.');
+      final speech = FakeSpeechService(
+        responses: <String?>['hello there', null],
+      );
+      final tts = FakeTTSService();
+
+      final controller = VoiceChatController(
+        aiService: ai,
+        speechService: speech,
+        ttsService: tts,
+        maxSilentTurnsBeforePause: 10,
+        loopDelay: const Duration(milliseconds: 10),
+        pausedPollDelay: const Duration(milliseconds: 10),
+      );
+
+      controller.setPreferredLanguage(ConversationLanguage.englishUs);
+      controller.setRequireInputReview(true);
+      await controller.startConversation();
+      await _waitFor(() => controller.isReviewingUserInputNotifier.value);
+
+      // Verify original exchange is in conversation.
+      expect(
+        controller.conversation.value
+            .where(
+              (msg) => msg['role'] == 'user' && msg['content'] == 'hello there',
+            )
+            .length,
+        1,
+      );
+
+      // Edit and resend.
+      controller.updatePendingUserInput('hello there, corrected');
+      await controller.confirmPendingUserInput();
+      await _waitFor(() => ai.responseCalls.length >= 2);
+
+      // Old user message removed, new one present.
+      expect(
+        controller.conversation.value.any(
+          (msg) => msg['role'] == 'user' && msg['content'] == 'hello there',
+        ),
+        isFalse,
+      );
+      expect(
+        controller.conversation.value.any(
+          (msg) =>
+              msg['role'] == 'user' &&
+              msg['content'] == 'hello there, corrected',
         ),
         isTrue,
       );

@@ -45,14 +45,13 @@ class VoiceChatController {
 
   bool _isActive = false;
   bool _isSpeaking = false;
-  Completer<_PendingUserInputDecision>? _pendingUserInputDecisionCompleter;
+  ConversationLanguage _pendingEditLanguage = ConversationLanguage.englishUs;
   int _silentTurns = 0;
   Timer? _sessionTicker;
   DateTime? _sessionStartedAt;
-  ConversationLanguage _lastDetectedLanguage =
-      ConversationLanguage.portugueseBr;
+  ConversationLanguage _lastDetectedLanguage = ConversationLanguage.englishUs;
   ConversationLanguage _autoNextPrimaryLanguage =
-      ConversationLanguage.portugueseBr;
+      ConversationLanguage.englishUs;
   final int maxSilentTurnsBeforePause;
   final Duration loopDelay;
   final Duration pausedPollDelay;
@@ -91,8 +90,8 @@ class VoiceChatController {
     elapsedSecondsNotifier.value = 0;
     sessionFeedbackNotifier.value = null;
     isGeneratingFeedbackNotifier.value = false;
-    _lastDetectedLanguage = ConversationLanguage.portugueseBr;
-    _autoNextPrimaryLanguage = ConversationLanguage.portugueseBr;
+    _lastDetectedLanguage = ConversationLanguage.englishUs;
+    _autoNextPrimaryLanguage = ConversationLanguage.englishUs;
     _resumeGraceUntil = null;
     isInResumeGraceNotifier.value = false;
     _sessionStartedAt = DateTime.now();
@@ -134,19 +133,54 @@ class VoiceChatController {
   }
 
   Future<bool> confirmPendingUserInput() async {
-    final normalized = pendingUserInputNotifier.value.trim();
-    if (normalized.isEmpty) {
-      return false;
+    final text = pendingUserInputNotifier.value.trim();
+    if (text.isEmpty) return false;
+
+    final language = _pendingEditLanguage;
+
+    // Pause loop to avoid conflicts during edit-resend.
+    isPausedNotifier.value = true;
+    _dismissReviewPanel();
+
+    // Remove the last user + AI exchange from conversation.
+    _removeLastExchange();
+
+    // Process edited text through AI.
+    _appendMessage(ConversationMessage(role: 'user', content: text));
+    _lastDetectedLanguage = language;
+
+    try {
+      final aiResponse = await _aiService.getResponse(
+        conversation: conversation.value,
+        language: language,
+        practiceFocus: practiceFocusNotifier.value,
+        sessionTurns: userTurnsNotifier.value,
+      );
+      _lastAIResponse = aiResponse;
+      _appendMessage(ConversationMessage(role: 'ai', content: aiResponse));
+      await _speakAI(aiResponse, language: language);
+    } catch (error) {
+      final fallback = _buildAiReplyFallback(
+        language: language,
+        error: error,
+      );
+      _appendMessage(ConversationMessage(role: 'ai', content: fallback));
+      await _speakAI(fallback, language: language);
     }
 
-    _completePendingUserInputDecision(
-      _PendingUserInputDecision.submit(normalized),
-    );
+    if (requiresInputReviewNotifier.value) {
+      _showReviewPanel(text, language);
+    }
+
+    if (_autoResumeListening) {
+      isPausedNotifier.value = false;
+    }
+
     return true;
   }
 
-  void retryPendingUserInputCapture() {
-    _completePendingUserInputDecision(const _PendingUserInputDecision.retry());
+  void dismissReviewPanel() {
+    _dismissReviewPanel();
   }
 
   Future<void> setSpeechSpeedMultiplier(
@@ -171,7 +205,7 @@ class VoiceChatController {
   void pauseConversation({bool fromInactivity = false}) {
     if (!_isActive) return;
 
-    _completePendingUserInputDecision(const _PendingUserInputDecision.retry());
+    _dismissReviewPanel();
 
     isPausedNotifier.value = true;
     _setAvatarIdle();
@@ -206,7 +240,7 @@ class VoiceChatController {
 
   void dispose() {
     _isActive = false;
-    _completePendingUserInputDecision(const _PendingUserInputDecision.retry());
+    _dismissReviewPanel();
     isPausedNotifier.value = true;
     isGeneratingFeedbackNotifier.value = false;
     isInResumeGraceNotifier.value = false;
@@ -363,6 +397,7 @@ $nextChallenge
 
       final capturedInput = await _captureUserInput();
       if (!_isActive) return;
+      if (isPausedNotifier.value) continue;
 
       if (capturedInput == null || capturedInput.text.trim().isEmpty) {
         if (_isInResumeGracePeriod()) {
@@ -378,20 +413,16 @@ $nextChallenge
         continue;
       }
 
-      final resolvedInput = await _resolveCapturedUserInput(capturedInput);
-      if (!_isActive) return;
-      if (resolvedInput == null) {
-        await Future.delayed(loopDelay);
-        continue;
-      }
+      // New user input — dismiss any edit panel from the previous turn.
+      _dismissReviewPanel();
 
       _silentTurns = 0;
       _resumeGraceUntil = null;
       isInResumeGraceNotifier.value = false;
       userTurnsNotifier.value = userTurnsNotifier.value + 1;
 
-      final userInput = resolvedInput.text;
-      final detectedLanguage = resolvedInput.language;
+      final userInput = capturedInput.text;
+      final detectedLanguage = capturedInput.language;
       _lastDetectedLanguage = detectedLanguage;
       _appendMessage(ConversationMessage(role: 'user', content: userInput));
 
@@ -426,54 +457,42 @@ $nextChallenge
         await _speakAI(fallback, language: detectedLanguage);
       }
 
+      // Show review panel so user can edit-resend if needed.
+      if (requiresInputReviewNotifier.value) {
+        _showReviewPanel(userInput, detectedLanguage);
+      }
+
       await Future.delayed(loopDelay);
     }
   }
 
-  Future<_CapturedUserInput?> _resolveCapturedUserInput(
-    _CapturedUserInput capturedInput,
-  ) async {
-    if (!requiresInputReviewNotifier.value) {
-      return capturedInput;
-    }
-
-    pendingUserInputNotifier.value = capturedInput.text;
+  void _showReviewPanel(String text, ConversationLanguage language) {
+    pendingUserInputNotifier.value = text;
+    _pendingEditLanguage = language;
     isReviewingUserInputNotifier.value = true;
 
     final preferred = languageNotifier.value;
     statusNotifier.value = preferred == ConversationLanguage.portugueseBr
-        ? 'Revise a mensagem e toque em Enviar ou Falar de novo.'
-        : 'Review the message and tap Send or Speak again.';
-
-    final completer = Completer<_PendingUserInputDecision>();
-    _pendingUserInputDecisionCompleter = completer;
-
-    final decision = await completer.future;
-    final language = capturedInput.language;
-    if (decision.retryCapture) {
-      _setAvatarIdle();
-      return null;
-    }
-
-    final text = decision.text?.trim() ?? '';
-    if (text.isEmpty) {
-      _setAvatarIdle();
-      return null;
-    }
-
-    _setAvatarIdle();
-    return _CapturedUserInput(text: text, language: language);
+        ? 'Edite e reenvie se necessario.'
+        : 'Edit and resend if needed.';
   }
 
-  void _completePendingUserInputDecision(_PendingUserInputDecision decision) {
-    final completer = _pendingUserInputDecisionCompleter;
-    if (completer != null && !completer.isCompleted) {
-      completer.complete(decision);
+  void _dismissReviewPanel() {
+    if (isReviewingUserInputNotifier.value) {
+      isReviewingUserInputNotifier.value = false;
+      pendingUserInputNotifier.value = '';
     }
+  }
 
-    _pendingUserInputDecisionCompleter = null;
-    pendingUserInputNotifier.value = '';
-    isReviewingUserInputNotifier.value = false;
+  void _removeLastExchange() {
+    final current = List<Map<String, String>>.from(conversation.value);
+    if (current.isNotEmpty && current.last['role'] == 'ai') {
+      current.removeLast();
+    }
+    if (current.isNotEmpty && current.last['role'] == 'user') {
+      current.removeLast();
+    }
+    conversation.value = current;
   }
 
   bool _isInResumeGracePeriod() {
@@ -524,6 +543,21 @@ $nextChallenge
       localeId: primaryLanguage.speechLocale,
     );
     final normalizedPrimary = (primaryResult ?? '').trim();
+
+    if (requiresInputReviewNotifier.value) {
+      final secondaryResult = await speechService.listen(
+        isSpeaking: _isSpeaking,
+        localeId: secondaryLanguage.speechLocale,
+      );
+      final normalizedSecondary = (secondaryResult ?? '').trim();
+      return _pickBestAutoCapture(
+        primaryText: normalizedPrimary,
+        primaryLanguage: primaryLanguage,
+        secondaryText: normalizedSecondary,
+        secondaryLanguage: secondaryLanguage,
+      );
+    }
+
     if (normalizedPrimary.isNotEmpty) {
       if (_isWeakCapture(normalizedPrimary)) {
         final secondaryResult = await speechService.listen(
@@ -537,14 +571,17 @@ $nextChallenge
         )) {
           return _CapturedUserInput(
             text: normalizedSecondary,
-            language: secondaryLanguage,
+            language: _inferLanguageFromText(
+              normalizedSecondary,
+              secondaryLanguage,
+            ),
           );
         }
       }
 
       return _CapturedUserInput(
         text: normalizedPrimary,
-        language: primaryLanguage,
+        language: _inferLanguageFromText(normalizedPrimary, primaryLanguage),
       );
     }
 
@@ -559,8 +596,68 @@ $nextChallenge
 
     return _CapturedUserInput(
       text: normalizedSecondary,
-      language: secondaryLanguage,
+      language: _inferLanguageFromText(
+        normalizedSecondary,
+        secondaryLanguage,
+      ),
     );
+  }
+
+  _CapturedUserInput? _pickBestAutoCapture({
+    required String primaryText,
+    required ConversationLanguage primaryLanguage,
+    required String secondaryText,
+    required ConversationLanguage secondaryLanguage,
+  }) {
+    final normalizedPrimary = primaryText.trim();
+    final normalizedSecondary = secondaryText.trim();
+
+    if (normalizedPrimary.isEmpty && normalizedSecondary.isEmpty) {
+      return null;
+    }
+    if (normalizedPrimary.isEmpty) {
+      return _CapturedUserInput(
+        text: normalizedSecondary,
+        language: _inferLanguageFromText(
+          normalizedSecondary,
+          secondaryLanguage,
+        ),
+      );
+    }
+    if (normalizedSecondary.isEmpty) {
+      return _CapturedUserInput(
+        text: normalizedPrimary,
+        language: _inferLanguageFromText(normalizedPrimary, primaryLanguage),
+      );
+    }
+
+    final primaryScore = _captureQualityScore(normalizedPrimary);
+    final secondaryScore = _captureQualityScore(normalizedSecondary);
+
+    if (secondaryScore > primaryScore) {
+      return _CapturedUserInput(
+        text: normalizedSecondary,
+        language: _inferLanguageFromText(
+          normalizedSecondary,
+          secondaryLanguage,
+        ),
+      );
+    }
+
+    return _CapturedUserInput(
+      text: normalizedPrimary,
+      language: _inferLanguageFromText(normalizedPrimary, primaryLanguage),
+    );
+  }
+
+  int _captureQualityScore(String text) {
+    final normalized = text.trim();
+    if (normalized.isEmpty) return -1;
+
+    final words = _wordCount(normalized);
+    final lengthScore = normalized.length.clamp(0, 120);
+    final punctuationBonus = RegExp(r'[\.,\?!]').hasMatch(normalized) ? 4 : 0;
+    return (words * 12) + lengthScore + punctuationBonus;
   }
 
   bool _isWeakCapture(String text) {
@@ -596,6 +693,141 @@ $nextChallenge
         .split(RegExp(r'\s+'))
         .where((token) => token.isNotEmpty)
         .length;
+  }
+
+  /// Lightweight text-based language inference for auto mode.
+  ///
+  /// Returns the language that best matches the text content, overriding the
+  /// STT-locale guess when the evidence is strong enough.
+  ConversationLanguage _inferLanguageFromText(
+    String text,
+    ConversationLanguage sttGuess,
+  ) {
+    final lower = text.toLowerCase();
+    final words =
+        lower.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+    if (words.isEmpty) return sttGuess;
+
+    const englishMarkers = {
+      'i',
+      'the',
+      'is',
+      'are',
+      'was',
+      'were',
+      'you',
+      'my',
+      'your',
+      'we',
+      'they',
+      'he',
+      'she',
+      'it',
+      'do',
+      'does',
+      'did',
+      'have',
+      'has',
+      'had',
+      'will',
+      'would',
+      'can',
+      'could',
+      'should',
+      'not',
+      'this',
+      'that',
+      'what',
+      'how',
+      'why',
+      'where',
+      'when',
+      'with',
+      'for',
+      'and',
+      'but',
+      'just',
+      'about',
+      'like',
+      'want',
+      'think',
+      'know',
+      'hello',
+      'hi',
+      'please',
+      'thank',
+      'thanks',
+      'yes',
+      'no',
+      'okay',
+    };
+    const portugueseMarkers = {
+      'eu',
+      'voce',
+      'ele',
+      'ela',
+      'nos',
+      'eles',
+      'elas',
+      'meu',
+      'minha',
+      'seu',
+      'sua',
+      'nao',
+      'sim',
+      'como',
+      'que',
+      'por',
+      'para',
+      'com',
+      'uma',
+      'esse',
+      'essa',
+      'isso',
+      'este',
+      'esta',
+      'isto',
+      'aqui',
+      'ali',
+      'entao',
+      'muito',
+      'mais',
+      'tambem',
+      'ainda',
+      'ja',
+      'agora',
+      'quero',
+      'posso',
+      'pode',
+      'falar',
+      'fazer',
+      'dizer',
+      'obrigado',
+      'obrigada',
+      'oi',
+      'ola',
+      'bom',
+      'boa',
+      'dia',
+      'tudo',
+      'bem',
+    };
+
+    int enHits = 0;
+    int ptHits = 0;
+    for (final w in words) {
+      // Strip basic punctuation for matching
+      final clean = w.replaceAll(RegExp(r'[^a-z]'), '');
+      if (englishMarkers.contains(clean)) enHits++;
+      if (portugueseMarkers.contains(clean)) ptHits++;
+    }
+
+    // Only override STT guess when the difference is clear
+    if (enHits > ptHits && enHits >= 2) return ConversationLanguage.englishUs;
+    if (ptHits > enHits && ptHits >= 2)
+      return ConversationLanguage.portugueseBr;
+
+    return sttGuess;
   }
 
   Future<bool> _handleCommand({
@@ -934,15 +1166,4 @@ class _CapturedUserInput {
     required this.text,
     required this.language,
   });
-}
-
-class _PendingUserInputDecision {
-  final bool retryCapture;
-  final String? text;
-
-  const _PendingUserInputDecision.retry()
-      : retryCapture = true,
-        text = null;
-
-  const _PendingUserInputDecision.submit(this.text) : retryCapture = false;
 }

@@ -15,6 +15,7 @@ class LocalUserPreferencesRepository {
   static const String _autoResumeListeningKey =
       'voice_chat_auto_resume_listening_v1';
   static const String _showStartupTipsKey = 'voice_chat_show_startup_tips_v1';
+  static const String _reviewBeforeSendKey = 'voice_chat_review_before_send_v1';
   static const String _selectedSceneKey = 'voice_chat_selected_scene_v1';
   static const String _aiProviderKey = 'voice_chat_ai_provider_v1';
   static const String _useCustomAiModelKey =
@@ -73,6 +74,7 @@ class LocalUserPreferencesRepository {
 
     final autoResumeRaw = box.get(_autoResumeListeningKey);
     final showTipsRaw = box.get(_showStartupTipsKey);
+    final reviewBeforeSendRaw = box.get(_reviewBeforeSendKey);
     final selectedSceneRaw = box.get(_selectedSceneKey)?.toString() ?? '';
     final providerRaw = box.get(_aiProviderKey)?.toString();
     final useCustomModelRaw = box.get(_useCustomAiModelKey);
@@ -92,6 +94,8 @@ class LocalUserPreferencesRepository {
     return SessionUiPreferences(
       autoResumeListening: autoResumeRaw is bool ? autoResumeRaw : true,
       showStartupTips: showTipsRaw is bool ? showTipsRaw : true,
+      reviewBeforeSend:
+          reviewBeforeSendRaw is bool ? reviewBeforeSendRaw : false,
       selectedScene: SessionSceneX.fromStorage(selectedSceneRaw),
       aiProvider: aiProvider,
       useCustomAiModel: useCustomModelRaw is bool ? useCustomModelRaw : false,
@@ -106,6 +110,7 @@ class LocalUserPreferencesRepository {
     final box = await _openBox();
     await box.put(_autoResumeListeningKey, value.autoResumeListening);
     await box.put(_showStartupTipsKey, value.showStartupTips);
+    await box.put(_reviewBeforeSendKey, value.reviewBeforeSend);
     await box.put(_selectedSceneKey, value.selectedScene.name);
     await box.put(_aiProviderKey, value.aiProvider.envValue);
     await box.put(_useCustomAiModelKey, value.useCustomAiModel);

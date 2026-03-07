@@ -35,6 +35,7 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
   late final VoiceChatSessionConfig sessionConfig;
   final TextEditingController _pendingInputTextController =
       TextEditingController();
+  final FocusNode _pendingInputFocusNode = FocusNode();
   final LocalUserPreferencesRepository _preferencesRepository =
       LocalUserPreferencesRepository();
   final ValueNotifier<SessionScene> _selectedSceneNotifier =
@@ -98,6 +99,7 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
 
   @override
   void dispose() {
+    _pendingInputFocusNode.dispose();
     _pendingInputTextController.dispose();
     _selectedSceneNotifier.dispose();
     controller.dispose();
@@ -113,7 +115,7 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
 
     controller.updateAiService(_buildAiServiceFromPreferences(sessionPrefs));
     _applySessionPreferences(sessionPrefs);
-    controller.setRequireInputReview(true);
+    controller.setRequireInputReview(sessionPrefs.reviewBeforeSend);
     controller.setPreferredLanguage(preferredLanguage);
     await controller.configureInitialSpeechSpeedMultiplier(
       sessionConfig.defaultSpeechSpeedMultiplier,
@@ -153,6 +155,7 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
   @override
   Widget build(BuildContext context) {
     final viewportHeight = MediaQuery.sizeOf(context).height;
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
     final isCompactHeight = viewportHeight < 840;
     final showStatsPanel = !isCompactHeight;
     final avatarHeight = isCompactHeight ? 180.0 : 220.0;
@@ -228,373 +231,366 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
             children: [
               _buildSceneBackground(selectedScene),
               ResponsiveContentShell.premium(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                      child: ValueListenableBuilder<String>(
-                        valueListenable: controller.practiceFocusNotifier,
-                        builder: (context, selectedFocus, _) {
-                          return DropdownButtonFormField<String>(
-                            key: ValueKey<String>(selectedFocus),
-                            initialValue: selectedFocus,
-                            decoration: InputDecoration(
-                              labelText: appText(context,
-                                  en: 'Practice focus', pt: 'Foco da pratica'),
-                              border: const OutlineInputBorder(),
-                              isDense: true,
-                            ),
-                            items: _focusOptions
-                                .map(
-                                  (focus) => DropdownMenuItem(
-                                      value: focus, child: Text(focus)),
-                                )
-                                .toList(),
-                            onChanged: (value) {
-                              if (value == null) return;
-                              controller.setPracticeFocus(value);
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                    ValueListenableBuilder<String>(
-                      valueListenable: controller.lottieAssetNotifier,
-                      builder: (context, lottieAsset, _) => SizedBox(
-                        height: avatarHeight,
-                        child: Lottie.asset(lottieAsset),
-                      ),
-                    ),
-                    if (showStatsPanel)
+                child: AnimatedPadding(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOut,
+                  padding: EdgeInsets.only(bottom: keyboardInset),
+                  child: Column(
+                    children: [
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: ValueListenableBuilder<int>(
-                                valueListenable: controller.userTurnsNotifier,
-                                builder: (context, turns, _) => _StatCard(
-                                    label: appText(context,
-                                        en: 'Your turns', pt: 'Seus turnos'),
-                                    value: '$turns'),
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                        child: ValueListenableBuilder<String>(
+                          valueListenable: controller.practiceFocusNotifier,
+                          builder: (context, selectedFocus, _) {
+                            return DropdownButtonFormField<String>(
+                              key: ValueKey<String>(selectedFocus),
+                              initialValue: selectedFocus,
+                              decoration: InputDecoration(
+                                labelText: appText(context,
+                                    en: 'Practice focus',
+                                    pt: 'Foco da pratica'),
+                                border: const OutlineInputBorder(),
+                                isDense: true,
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: ValueListenableBuilder<int>(
-                                valueListenable:
-                                    controller.elapsedSecondsNotifier,
-                                builder: (context, seconds, _) => _StatCard(
-                                  label: appText(context,
-                                      en: 'Session time',
-                                      pt: 'Tempo da sessao'),
-                                  value: _formatDuration(seconds),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    Expanded(
-                      child: Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.24),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child:
-                            ValueListenableBuilder<List<Map<String, String>>>(
-                          valueListenable: controller.conversation,
-                          builder: (context, conversation, _) {
-                            return ListView.builder(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              itemCount: conversation.length,
-                              itemBuilder: (_, i) {
-                                final msg = conversation[i];
-                                final isUser = msg['role'] == 'user';
-                                return Container(
-                                  alignment: isUser
-                                      ? Alignment.centerRight
-                                      : Alignment.centerLeft,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: isUser
-                                          ? Colors.blueAccent
-                                          : Colors.grey[850],
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(
-                                      msg['content'] ?? '',
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                  ),
-                                );
+                              items: _focusOptions
+                                  .map(
+                                    (focus) => DropdownMenuItem(
+                                        value: focus, child: Text(focus)),
+                                  )
+                                  .toList(),
+                              onChanged: (value) {
+                                if (value == null) return;
+                                controller.setPracticeFocus(value);
                               },
                             );
                           },
                         ),
                       ),
-                    ),
-                    ValueListenableBuilder<String>(
-                      valueListenable: controller.statusNotifier,
-                      builder: (context, status, _) => Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white10,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            status,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
+                      ValueListenableBuilder<String>(
+                        valueListenable: controller.lottieAssetNotifier,
+                        builder: (context, lottieAsset, _) => SizedBox(
+                          height: avatarHeight,
+                          child: Lottie.asset(lottieAsset),
                         ),
                       ),
-                    ),
-                    ValueListenableBuilder<bool>(
-                      valueListenable: controller.isInResumeGraceNotifier,
-                      builder: (context, inGrace, _) {
-                        if (!inGrace) {
-                          return const SizedBox.shrink();
-                        }
-
-                        return Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              appText(
-                                context,
-                                en: 'Listening resumed. Silent timeout is briefly relaxed.',
-                                pt: 'Escuta retomada. O tempo de silencio foi relaxado por um instante.',
-                              ),
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.white70),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    ValueListenableBuilder<String?>(
-                      valueListenable: controller.sessionFeedbackNotifier,
-                      builder: (context, feedback, _) {
-                        if (feedback == null || feedback.trim().isEmpty) {
-                          return const SizedBox.shrink();
-                        }
-
-                        return Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withValues(alpha: 0.15),
-                            border: Border.all(
-                              color: Colors.green.withValues(alpha: 0.4),
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(feedback,
-                              style: const TextStyle(fontSize: 14)),
-                        );
-                      },
-                    ),
-                    ValueListenableBuilder<bool>(
-                      valueListenable: controller.isReviewingUserInputNotifier,
-                      builder: (context, isReviewing, _) {
-                        if (!isReviewing) {
-                          return const SizedBox.shrink();
-                        }
-
-                        return ValueListenableBuilder<String>(
-                          valueListenable: controller.pendingUserInputNotifier,
-                          builder: (context, pendingInput, _) {
-                            if (_pendingInputTextController.text !=
-                                pendingInput) {
-                              _pendingInputTextController.value =
-                                  TextEditingValue(
-                                text: pendingInput,
-                                selection: TextSelection.collapsed(
-                                  offset: pendingInput.length,
-                                ),
-                              );
-                            }
-
-                            return Container(
-                              width: double.infinity,
-                              margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.15),
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    appText(
-                                      context,
-                                      en: 'Recognized message',
-                                      pt: 'Mensagem reconhecida',
-                                    ),
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.white70,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  TextField(
-                                    controller: _pendingInputTextController,
-                                    minLines: 1,
-                                    maxLines: 3,
-                                    onChanged:
-                                        controller.updatePendingUserInput,
-                                    decoration: InputDecoration(
-                                      border: const OutlineInputBorder(),
-                                      hintText: appText(
-                                        context,
-                                        en: 'Edit before sending',
-                                        pt: 'Edite antes de enviar',
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: OutlinedButton.icon(
-                                          onPressed: controller
-                                              .retryPendingUserInputCapture,
-                                          icon: const Icon(Icons.mic_none),
-                                          label: Text(
-                                            appText(
-                                              context,
-                                              en: 'Speak again',
-                                              pt: 'Falar de novo',
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: ElevatedButton.icon(
-                                          onPressed: () async {
-                                            final submitted = await controller
-                                                .confirmPendingUserInput();
-                                            if (submitted || !context.mounted) {
-                                              return;
-                                            }
-
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  appText(
-                                                    context,
-                                                    en: 'Type a message before sending.',
-                                                    pt: 'Digite uma mensagem antes de enviar.',
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                          icon: const Icon(Icons.send),
-                                          label: Text(
-                                            appText(
-                                              context,
-                                              en: 'Send',
-                                              pt: 'Enviar',
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                    ValueListenableBuilder<bool>(
-                      valueListenable: controller.isPausedNotifier,
-                      builder: (context, isPaused, _) {
-                        return Padding(
-                          padding: EdgeInsets.fromLTRB(
-                              16, 0, 16, isCompactHeight ? 10 : 18),
+                      if (showStatsPanel)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                           child: Row(
                             children: [
                               Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: isPaused
-                                      ? controller.resumeConversation
-                                      : () => controller.pauseConversation(),
-                                  icon:
-                                      Icon(isPaused ? Icons.mic : Icons.pause),
-                                  label: Text(
-                                    isPaused
-                                        ? appText(context,
-                                            en: 'Resume conversation',
-                                            pt: 'Retomar conversa')
-                                        : appText(context,
-                                            en: 'Pause', pt: 'Pausar'),
-                                  ),
+                                child: ValueListenableBuilder<int>(
+                                  valueListenable: controller.userTurnsNotifier,
+                                  builder: (context, turns, _) => _StatCard(
+                                      label: appText(context,
+                                          en: 'Your turns', pt: 'Seus turnos'),
+                                      value: '$turns'),
                                 ),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
-                                child: ValueListenableBuilder<bool>(
+                                child: ValueListenableBuilder<int>(
                                   valueListenable:
-                                      controller.isGeneratingFeedbackNotifier,
-                                  builder: (context, generating, _) {
-                                    return ElevatedButton.icon(
-                                      onPressed: generating
-                                          ? null
-                                          : () async {
-                                              await controller
-                                                  .endSessionWithFeedback();
-                                              await practiceHubController
-                                                  .refreshAfterSession();
-                                            },
-                                      icon: Icon(
-                                        generating
-                                            ? Icons.hourglass_top
-                                            : Icons.assessment_outlined,
-                                      ),
-                                      label: Text(
-                                        generating
-                                            ? appText(context,
-                                                en: 'Generating...',
-                                                pt: 'Gerando...')
-                                            : appText(context,
-                                                en: 'Session feedback',
-                                                pt: 'Feedback da sessao'),
-                                      ),
-                                    );
-                                  },
+                                      controller.elapsedSecondsNotifier,
+                                  builder: (context, seconds, _) => _StatCard(
+                                    label: appText(context,
+                                        en: 'Session time',
+                                        pt: 'Tempo da sessao'),
+                                    value: _formatDuration(seconds),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        );
-                      },
-                    ),
-                  ],
+                        ),
+                      Expanded(
+                        child: Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.24),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child:
+                              ValueListenableBuilder<List<Map<String, String>>>(
+                            valueListenable: controller.conversation,
+                            builder: (context, conversation, _) {
+                              return ListView.builder(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                                itemCount: conversation.length,
+                                itemBuilder: (_, i) {
+                                  final msg = conversation[i];
+                                  final isUser = msg['role'] == 'user';
+                                  return Container(
+                                    alignment: isUser
+                                        ? Alignment.centerRight
+                                        : Alignment.centerLeft,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: isUser
+                                            ? Colors.blueAccent
+                                            : Colors.grey[850],
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        msg['content'] ?? '',
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      ValueListenableBuilder<String>(
+                        valueListenable: controller.statusNotifier,
+                        builder: (context, status, _) => Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.white10,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              status,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      ValueListenableBuilder<bool>(
+                        valueListenable: controller.isInResumeGraceNotifier,
+                        builder: (context, inGrace, _) {
+                          if (!inGrace) {
+                            return const SizedBox.shrink();
+                          }
+
+                          return Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                appText(
+                                  context,
+                                  en: 'Listening resumed. Silent timeout is briefly relaxed.',
+                                  pt: 'Escuta retomada. O tempo de silencio foi relaxado por um instante.',
+                                ),
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.white70),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      ValueListenableBuilder<String?>(
+                        valueListenable: controller.sessionFeedbackNotifier,
+                        builder: (context, feedback, _) {
+                          if (feedback == null || feedback.trim().isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+
+                          return Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withValues(alpha: 0.15),
+                              border: Border.all(
+                                color: Colors.green.withValues(alpha: 0.4),
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(feedback,
+                                style: const TextStyle(fontSize: 14)),
+                          );
+                        },
+                      ),
+                      ValueListenableBuilder<bool>(
+                        valueListenable:
+                            controller.isReviewingUserInputNotifier,
+                        builder: (context, isReviewing, _) {
+                          if (!isReviewing) {
+                            return const SizedBox.shrink();
+                          }
+
+                          return ValueListenableBuilder<String>(
+                            valueListenable:
+                                controller.pendingUserInputNotifier,
+                            builder: (context, pendingInput, _) {
+                              if (_pendingInputTextController.text !=
+                                  pendingInput) {
+                                _pendingInputTextController.value =
+                                    TextEditingValue(
+                                  text: pendingInput,
+                                  selection: TextSelection.collapsed(
+                                    offset: pendingInput.length,
+                                  ),
+                                );
+                              }
+
+                              return Container(
+                                width: double.infinity,
+                                margin:
+                                    const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.15),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      appText(
+                                        context,
+                                        en: 'Edit and resend',
+                                        pt: 'Editar e reenviar',
+                                      ),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    TextField(
+                                      controller: _pendingInputTextController,
+                                      focusNode: _pendingInputFocusNode,
+                                      minLines: 1,
+                                      maxLines: 3,
+                                      onChanged:
+                                          controller.updatePendingUserInput,
+                                      decoration: InputDecoration(
+                                        border: const OutlineInputBorder(),
+                                        hintText: appText(
+                                          context,
+                                          en: 'Edit the message and resend',
+                                          pt: 'Edite a mensagem e reenvie',
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: OutlinedButton.icon(
+                                            onPressed:
+                                                controller.dismissReviewPanel,
+                                            icon: const Icon(Icons.close),
+                                            label: Text(
+                                              appText(
+                                                context,
+                                                en: 'Dismiss',
+                                                pt: 'Dispensar',
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: ElevatedButton.icon(
+                                            onPressed: () => controller
+                                                .confirmPendingUserInput(),
+                                            icon: const Icon(Icons.send),
+                                            label: Text(
+                                              appText(
+                                                context,
+                                                en: 'Resend',
+                                                pt: 'Reenviar',
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                      ValueListenableBuilder<bool>(
+                        valueListenable: controller.isPausedNotifier,
+                        builder: (context, isPaused, _) {
+                          return Padding(
+                            padding: EdgeInsets.fromLTRB(
+                                16, 0, 16, isCompactHeight ? 10 : 18),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: isPaused
+                                        ? controller.resumeConversation
+                                        : () => controller.pauseConversation(),
+                                    icon: Icon(
+                                        isPaused ? Icons.mic : Icons.pause),
+                                    label: Text(
+                                      isPaused
+                                          ? appText(context,
+                                              en: 'Resume conversation',
+                                              pt: 'Retomar conversa')
+                                          : appText(context,
+                                              en: 'Pause', pt: 'Pausar'),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: ValueListenableBuilder<bool>(
+                                    valueListenable:
+                                        controller.isGeneratingFeedbackNotifier,
+                                    builder: (context, generating, _) {
+                                      return ElevatedButton.icon(
+                                        onPressed: generating
+                                            ? null
+                                            : () async {
+                                                await controller
+                                                    .endSessionWithFeedback();
+                                                await practiceHubController
+                                                    .refreshAfterSession();
+                                              },
+                                        icon: Icon(
+                                          generating
+                                              ? Icons.hourglass_top
+                                              : Icons.assessment_outlined,
+                                        ),
+                                        label: Text(
+                                          generating
+                                              ? appText(context,
+                                                  en: 'Generating...',
+                                                  pt: 'Gerando...')
+                                              : appText(context,
+                                                  en: 'Session feedback',
+                                                  pt: 'Feedback da sessao'),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

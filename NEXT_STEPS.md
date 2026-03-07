@@ -258,6 +258,26 @@ New priorities discovered during testing
 - Add a tiny shared formatter/helper for speed labels to avoid duplicated formatting logic between controller and page.
 - Add an integration-style widget test validating that selecting `0.25x` chip triggers the expected `setSpeechSpeedMultiplier` flow.
 
+## Implementation Cycle Update (2026-03-07 - Scene Assets on Mobile)
+
+Completed items
+
+- Fixed `SessionScene.assetPath` values to use Flutter asset keys with `assets/` prefix:
+  - `assets/images/scenes/studio_scene.png`
+  - `assets/images/scenes/city_scene.png`
+  - `assets/images/scenes/library_scene.png`
+- Restored scene background rendering on Android builds where image loading was previously falling back to gradient.
+
+New priorities discovered during testing
+
+- Add a small widget test for `voice_chat_page.dart` background rendering per `SessionScene` to catch asset-key regressions.
+- Add an optional pre-cache step (`precacheImage`) when opening chat to avoid first-frame background pop-in on lower-end devices.
+
+Blockers and decisions taken
+
+- Decision: keep explicit per-file asset registration in `pubspec.yaml` for now (instead of directory wildcard) to preserve tighter asset control.
+- No blockers.
+
 ## Implementation Cycle Update (2026-03-07 - Editable STT Before Send)
 
 Completed items
@@ -297,6 +317,65 @@ New priorities discovered during testing
 Blockers and decisions taken
 
 - Decision: keep `.env` for mobile/desktop compatibility and use `env/web.env` only for web target to minimize migration risk.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Optional Edit Flow + Keyboard Safe)
+
+Completed items
+
+- Updated transcript review flow so editing is optional during voice capture review.
+- Added auto-send behavior (2s) when review mode is enabled but user does not interact with the recognized text.
+- Auto-send is canceled as soon as the user starts typing, preserving full manual control for corrections.
+- Updated review status and helper text to clarify that editing is optional.
+- Improved keyboard handling in voice chat using animated bottom inset padding so the edit field is not covered while typing.
+
+New priorities discovered during testing
+
+- Add a visible countdown indicator for auto-send to make timing explicit.
+- Add a widget test validating keyboard inset behavior during edit mode.
+
+Blockers and decisions taken
+
+- Decision: keep review mode user-configurable via session settings; when enabled, default action is non-blocking auto-send unless the user chooses to edit.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Better Transcript Selection In Review)
+
+Completed items
+
+- Improved `auto` language capture behavior when `reviewBeforeSend` is enabled.
+- Instead of accepting the first non-empty capture, the controller now captures both locale candidates (`en_US` and `pt_BR`) and selects the clearest transcript.
+- Added a lightweight text-quality scoring heuristic (word count, text length, punctuation signal) to pick the better candidate before showing it in review.
+- Added automated test coverage validating that review mode chooses the better candidate even when the first capture is weaker.
+
+New priorities discovered during testing
+
+- Evaluate adding language-confidence scoring from STT plugin if exposed in future package versions.
+- Add optional debug logging in dev mode for selected candidate and score to speed up real-device tuning.
+
+Blockers and decisions taken
+
+- Decision: keep this stronger candidate-selection path only when review mode is enabled, preserving current latency profile for fully automatic mode.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Pencil Edit + Strict Review Send)
+
+Completed items
+
+- Added explicit pencil action in chat review UI so users intentionally enter edit mode before sending.
+- Changed review flow behavior: when `reviewBeforeSend` is enabled, recognized message is no longer auto-sent.
+- Enforced controller rule: confirmation only succeeds after user starts editing in review mode.
+- Kept `Speak again` path unchanged for recapture without sending wrong transcript.
+- Added regression test ensuring review mode does not send before edit and that confirm fails until edit starts.
+
+New priorities discovered during testing
+
+- Add widget test for the pencil button to verify read-only to editable transition in UI.
+- Consider optional "Confirm without edit" secondary action in future if users request a faster strict-review flow.
+
+Blockers and decisions taken
+
+- Decision: strict review mode now prioritizes user control over speed by requiring explicit edit intent before send.
 - No blockers.
 
 ## Implementation Cycle Update (2026-03-07 - Conversation Area Expansion)
@@ -339,6 +418,31 @@ Blockers and decisions taken
 Completed items
 
 - Removed high-vertical-cost panels from the top of `voice_chat_page.dart` (practice tip and daily challenge banner) to increase conversation space.
+
+## Implementation Cycle Update (2026-03-07 - Session Scene Backgrounds)
+
+Completed items
+
+- Added persisted session scene support with `SessionScene` enum (`studio`, `city`, `library`) in domain layer.
+- Added scene image assets and registration:
+  - `assets/images/scenes/studio_scene.png`
+  - `assets/images/scenes/city_scene.png`
+  - `assets/images/scenes/library_scene.png`
+- Extended session preferences persistence to store selected scene in local Hive repository.
+- Added scene selector to `SessionSettingsPage` so users can choose visual context for the session.
+- Applied selected scene as full-screen background in `VoiceChatPage` with dark overlay for text readability.
+- Kept fallback gradient for resilience when image loading fails.
+
+New priorities discovered during testing
+
+- Stabilize `session_settings_page_test.dart`, which is timing out in widget test runtime despite controller persistence tests passing.
+- Add a focused widget test for scene selection interaction (dropdown change + persisted restore) once the page test harness is stable.
+- Optionally pre-cache selected scene image before opening chat to avoid first-frame pop-in on lower-end devices.
+
+Blockers and decisions taken
+
+- Decision: keep scene assets local and bundled (no network dependency) for offline reliability.
+- Blocker: current widget test suite for session settings page is unstable (timeout); app-layer and controller-layer changes are validated.
 - Moved speech-speed controls to a dedicated `AppBar` action (`speed` icon) that opens a bottom sheet picker.
 - Kept avatar visible and reduced top clutter so message history occupies more usable height.
 
@@ -392,6 +496,52 @@ Blockers and decisions taken
 Blockers and decisions taken
 
 - Decision: keep clamp as `clamp(0.2, 1.0)` to preserve a usable slowest floor while allowing higher base-rate tuning.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Auto Mode Language Detection Fix)
+
+Completed items
+
+- Fixed root cause of error/fallback messages being returned in Portuguese when the user speaks English in `auto` mode.
+- Root cause: in `auto` mode, language was inferred solely from which STT locale was tried first (alternating en/pt each turn), not from the actual text content. If Portuguese STT happened to be primary and returned a non-empty transcription of English speech, the entire turn was tagged as Portuguese.
+- Added `_inferLanguageFromText()` method in `VoiceChatController` that performs lightweight keyword-based language detection on the captured text.
+- Applied text-based language inference to all `_CapturedUserInput` return points in `auto` mode: primary capture, weak-capture fallback, secondary fallback, and `_pickBestAutoCapture`.
+- The method uses common English and Portuguese marker words and only overrides the STT locale guess when the evidence is strong (at least 2 marker hits with clear majority).
+- Non-auto modes (explicit `en-US` or `pt-BR`) are unaffected — they continue to use the user-selected language directly.
+
+New priorities discovered during testing
+
+- Add unit tests for `_inferLanguageFromText` covering mixed-language and edge-case inputs.
+- Evaluate adding language-confidence from STT plugin if exposed in future package versions.
+- Consider logging detected vs inferred language in debug mode to monitor real-device accuracy.
+
+Blockers and decisions taken
+
+- Decision: use a simple keyword-based heuristic rather than a full NLP library to keep the app lightweight and offline-capable.
+- Decision: require at least 2 marker hits to override STT guess, avoiding false corrections on very short utterances.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Auto-Send + Edit-Resend Flow)
+
+Completed items
+
+- Redesigned review flow: STT-captured message is now sent immediately to the AI (no blocking gate).
+- After the AI responds, a review panel appears showing the sent message as editable text.
+- If the user edits and taps "Resend", the previous user+AI exchange is removed from conversation and the edited text is sent as a new request to the AI.
+- A "Dismiss" button hides the review panel without changes if the user is satisfied.
+- The review panel auto-dismisses when the next STT capture produces new input.
+- Removed old completer-based blocking review mechanism, `isEditingPendingUserInputNotifier`, `beginPendingUserInputEditing()`, and `_PendingUserInputDecision` class.
+- Updated all 3 review-related tests to match new auto-send + edit-resend behavior (25/25 passing).
+- Simplified page UI: removed read-only TextField gate, pencil icon, and "must edit before send" hint.
+
+New priorities discovered during testing
+
+- Add widget test for edit-resend panel (dismiss + resend interaction).
+- Validate that edit-resend during active STT capture doesn't cause double-turn regression on real devices.
+
+Blockers and decisions taken
+
+- Decision: the loop pauses temporarily during edit-resend to prevent race conditions with concurrent STT captures, then resumes automatically.
 - No blockers.
 
 ## Implementation Cycle Update (2026-03-07 - Remove 0.25x)
@@ -736,6 +886,30 @@ New priorities discovered during testing
 Blockers and decisions taken
 
 - Decision: keep internal TTS mapping proportional to base rate while exposing user-facing controls only as multipliers.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - AI Provider/Model Settings)
+
+Completed items
+
+- Added AI configuration controls in `Session Settings` with local persistence:
+  - provider select (`Gemini` or `OpenAI`)
+  - model mode toggle (preset list or manual typing)
+  - provider-specific model value (`geminiModel` and `openAiModel`)
+- Extended `SessionUiPreferences` and Hive persistence keys to save/load AI provider and model choices.
+- Updated runtime wiring so `VoiceChatPage` applies persisted AI settings before starting a session.
+- Extended AI service constructors to accept model overrides while preserving `.env` defaults when settings are not customized.
+- Added/updated automated tests for settings persistence and settings page rendering with AI preferences.
+
+New priorities discovered during testing
+
+- Add a visible status chip in `VoiceChatPage` showing active provider/model during the session for easier QA validation.
+- Add a small validation hint for typed models (for example, known-prefix suggestion) to reduce invalid model typos.
+
+Blockers and decisions taken
+
+- Decision: keep API key sources in `.env` and only expose provider/model selection in UI for now.
+- Decision: preserve provider-specific last model values so switching providers does not lose previous selection.
 - No blockers.
 
 ## Implementation Cycle Update (2026-03-07 - AI Fallback Diagnostics on Device)

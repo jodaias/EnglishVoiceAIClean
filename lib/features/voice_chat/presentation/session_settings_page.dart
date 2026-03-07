@@ -274,6 +274,24 @@ class _SessionSettingsPageState extends State<SessionSettingsPage> {
                           sessionSettingsController.setAutoResumeListening,
                     ),
                     SwitchListTile.adaptive(
+                      value: preferences.reviewBeforeSend,
+                      title: Text(
+                        appText(
+                          context,
+                          en: 'Review recognized message before send',
+                          pt: 'Revisar mensagem reconhecida antes de enviar',
+                        ),
+                      ),
+                      subtitle: Text(
+                        appText(
+                          context,
+                          en: 'When enabled, you can edit STT text before it goes to AI.',
+                          pt: 'Quando ativado, voce pode editar o texto do STT antes de ir para a IA.',
+                        ),
+                      ),
+                      onChanged: sessionSettingsController.setReviewBeforeSend,
+                    ),
+                    SwitchListTile.adaptive(
                       value: preferences.showStartupTips,
                       title: Text(
                         appText(
