@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:english_voice_ai_clean/features/voice_chat/application/session_settings_controller.dart';
+import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/ai_provider.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/session_scene.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/infrastructure/local/local_user_preferences_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -46,16 +47,33 @@ void main() {
     expect(firstController.preferencesNotifier.value.showStartupTips, isTrue);
     expect(firstController.preferencesNotifier.value.selectedScene,
         SessionScene.studio);
+    expect(firstController.preferencesNotifier.value.aiProvider,
+        AiProvider.openai);
+    expect(firstController.preferencesNotifier.value.useCustomAiModel, isFalse);
+    expect(firstController.preferencesNotifier.value.openAiModel, 'gpt-4.1');
+    expect(firstController.preferencesNotifier.value.geminiModel,
+        'gemini-2.5-flash');
 
     await firstController.setAutoResumeListening(false);
     await firstController.setShowStartupTips(false);
     await firstController.setSelectedScene(SessionScene.city);
+    await firstController.setAiProvider(AiProvider.gemini);
+    await firstController.setUseCustomAiModel(true);
+    await firstController.setGeminiModel('gemini-2.5-pro');
+    await firstController.setOpenAiModel('gpt-4o-mini');
 
     expect(
         firstController.preferencesNotifier.value.autoResumeListening, isFalse);
     expect(firstController.preferencesNotifier.value.showStartupTips, isFalse);
     expect(firstController.preferencesNotifier.value.selectedScene,
         SessionScene.city);
+    expect(firstController.preferencesNotifier.value.aiProvider,
+        AiProvider.gemini);
+    expect(firstController.preferencesNotifier.value.useCustomAiModel, isTrue);
+    expect(firstController.preferencesNotifier.value.geminiModel,
+        'gemini-2.5-pro');
+    expect(
+        firstController.preferencesNotifier.value.openAiModel, 'gpt-4o-mini');
 
     firstController.dispose();
 
@@ -70,6 +88,13 @@ void main() {
     expect(secondController.preferencesNotifier.value.showStartupTips, isFalse);
     expect(secondController.preferencesNotifier.value.selectedScene,
         SessionScene.city);
+    expect(secondController.preferencesNotifier.value.aiProvider,
+        AiProvider.gemini);
+    expect(secondController.preferencesNotifier.value.useCustomAiModel, isTrue);
+    expect(secondController.preferencesNotifier.value.geminiModel,
+        'gemini-2.5-pro');
+    expect(
+        secondController.preferencesNotifier.value.openAiModel, 'gpt-4o-mini');
 
     secondController.dispose();
   });

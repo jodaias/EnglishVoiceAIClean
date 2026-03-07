@@ -108,6 +108,48 @@ void main() {
       controller.dispose();
     });
 
+    test('waits for transcript confirmation when input review is enabled',
+        () async {
+      final ai = FakeAIService(responseText: 'Thanks for confirming.');
+      final speech = FakeSpeechService(
+        responses: <String?>['helo there', null],
+      );
+      final tts = FakeTTSService();
+
+      final controller = VoiceChatController(
+        aiService: ai,
+        speechService: speech,
+        ttsService: tts,
+        maxSilentTurnsBeforePause: 10,
+        loopDelay: const Duration(milliseconds: 10),
+        pausedPollDelay: const Duration(milliseconds: 10),
+      );
+
+      controller.setPreferredLanguage(ConversationLanguage.englishUs);
+      controller.setRequireInputReview(true);
+      await controller.startConversation();
+      await _waitFor(() => controller.isReviewingUserInputNotifier.value);
+
+      expect(controller.pendingUserInputNotifier.value, 'helo there');
+      expect(ai.responseCalls, isEmpty);
+
+      controller.updatePendingUserInput('hello there');
+      final submitted = await controller.confirmPendingUserInput();
+      expect(submitted, isTrue);
+
+      await _waitFor(() => ai.responseCalls.isNotEmpty);
+      expect(ai.responseCalls.single.language, ConversationLanguage.englishUs);
+      expect(
+        controller.conversation.value.any(
+          (msg) =>
+              msg['role'] == 'user' && (msg['content'] ?? '') == 'hello there',
+        ),
+        isTrue,
+      );
+
+      controller.dispose();
+    });
+
     test('pauses automatically after configured silent turns', () async {
       final ai = FakeAIService(
           responseText: 'Hello! What would you like to practice?');

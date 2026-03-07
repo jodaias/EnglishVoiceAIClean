@@ -42,6 +42,7 @@ flutter:
 
   assets:
     - .env
+    - env/web.env
     - assets/lottie/robot_talking.json
     - assets/lottie/robot_idle.json
     - assets/images/englishaichat_logo.png

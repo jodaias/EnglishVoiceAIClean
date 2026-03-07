@@ -258,6 +258,47 @@ New priorities discovered during testing
 - Add a tiny shared formatter/helper for speed labels to avoid duplicated formatting logic between controller and page.
 - Add an integration-style widget test validating that selecting `0.25x` chip triggers the expected `setSpeechSpeedMultiplier` flow.
 
+## Implementation Cycle Update (2026-03-07 - Editable STT Before Send)
+
+Completed items
+
+- Added transcript review flow in `VoiceChatController` with explicit states/notifiers for pending recognized text.
+- Added user actions to confirm edited text (`Send`) or discard and capture again (`Speak again`) before AI request.
+- Updated `VoiceChatPage` with an inline editable panel that appears after STT capture and before message submission.
+- Kept default controller behavior unchanged for existing tests/flows and enabled review mode explicitly in the voice-chat page.
+- Added unit test coverage ensuring AI response generation waits for user confirmation when input review is enabled.
+
+New priorities discovered during testing
+
+- Add a persisted toggle in session settings to enable/disable transcript review mode per user preference.
+- Add widget tests for the review panel actions (`Send` and `Speak again`) to protect UI behavior.
+
+Blockers and decisions taken
+
+- Decision: review mode is enabled at runtime in the chat page while controller default remains disabled to preserve backward compatibility in current tests.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Web dotenv Asset 404 Fix)
+
+Completed items
+
+- Fixed web dotenv loading to avoid requesting `/assets/.env`, which can return 404 for dot-prefixed asset names on web servers.
+- Updated startup env loading in `main.dart`:
+  - Web uses `env/web.env`
+  - Non-web keeps `.env`
+- Registered `env/web.env` in `pubspec.yaml` assets.
+- Added `env/web.env` template file with non-secret placeholders for web builds.
+
+New priorities discovered during testing
+
+- Consider centralizing environment loading in a dedicated bootstrap helper to keep startup logic easier to extend.
+- Review user-facing fallback text that currently mentions only `.env` so web guidance can mention `env/web.env` when applicable.
+
+Blockers and decisions taken
+
+- Decision: keep `.env` for mobile/desktop compatibility and use `env/web.env` only for web target to minimize migration risk.
+- No blockers.
+
 ## Implementation Cycle Update (2026-03-07 - Conversation Area Expansion)
 
 Completed items

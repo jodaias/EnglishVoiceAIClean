@@ -33,6 +33,8 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
   late final VoiceChatController controller;
   late final PracticeHubController practiceHubController;
   late final VoiceChatSessionConfig sessionConfig;
+  final TextEditingController _pendingInputTextController =
+      TextEditingController();
   final LocalUserPreferencesRepository _preferencesRepository =
       LocalUserPreferencesRepository();
   final ValueNotifier<SessionScene> _selectedSceneNotifier =
@@ -52,6 +54,15 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
         return GeminiService();
       case AiProvider.openai:
         return OpenAIService();
+    }
+  }
+
+  AIService _buildAiServiceFromPreferences(SessionUiPreferences preferences) {
+    switch (preferences.aiProvider) {
+      case AiProvider.gemini:
+        return GeminiService(modelOverride: preferences.geminiModel);
+      case AiProvider.openai:
+        return OpenAIService(modelOverride: preferences.openAiModel);
     }
   }
 
@@ -87,6 +98,7 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
 
   @override
   void dispose() {
+    _pendingInputTextController.dispose();
     _selectedSceneNotifier.dispose();
     controller.dispose();
     practiceHubController.dispose();
@@ -99,7 +111,9 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
     final sessionPrefs = await _preferencesRepository.getSessionUiPreferences();
     if (!mounted) return;
 
+    controller.updateAiService(_buildAiServiceFromPreferences(sessionPrefs));
     _applySessionPreferences(sessionPrefs);
+    controller.setRequireInputReview(true);
     controller.setPreferredLanguage(preferredLanguage);
     await controller.configureInitialSpeechSpeedMultiplier(
       sessionConfig.defaultSpeechSpeedMultiplier,
@@ -272,7 +286,8 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
                                     controller.elapsedSecondsNotifier,
                                 builder: (context, seconds, _) => _StatCard(
                                   label: appText(context,
-                                      en: 'Session time', pt: 'Tempo da sessao'),
+                                      en: 'Session time',
+                                      pt: 'Tempo da sessao'),
                                   value: _formatDuration(seconds),
                                 ),
                               ),
@@ -288,7 +303,8 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
                           color: Colors.black.withValues(alpha: 0.24),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: ValueListenableBuilder<List<Map<String, String>>>(
+                        child:
+                            ValueListenableBuilder<List<Map<String, String>>>(
                           valueListenable: controller.conversation,
                           builder: (context, conversation, _) {
                             return ListView.builder(
@@ -391,6 +407,127 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
                           ),
                           child: Text(feedback,
                               style: const TextStyle(fontSize: 14)),
+                        );
+                      },
+                    ),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: controller.isReviewingUserInputNotifier,
+                      builder: (context, isReviewing, _) {
+                        if (!isReviewing) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return ValueListenableBuilder<String>(
+                          valueListenable: controller.pendingUserInputNotifier,
+                          builder: (context, pendingInput, _) {
+                            if (_pendingInputTextController.text !=
+                                pendingInput) {
+                              _pendingInputTextController.value =
+                                  TextEditingValue(
+                                text: pendingInput,
+                                selection: TextSelection.collapsed(
+                                  offset: pendingInput.length,
+                                ),
+                              );
+                            }
+
+                            return Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    appText(
+                                      context,
+                                      en: 'Recognized message',
+                                      pt: 'Mensagem reconhecida',
+                                    ),
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  TextField(
+                                    controller: _pendingInputTextController,
+                                    minLines: 1,
+                                    maxLines: 3,
+                                    onChanged:
+                                        controller.updatePendingUserInput,
+                                    decoration: InputDecoration(
+                                      border: const OutlineInputBorder(),
+                                      hintText: appText(
+                                        context,
+                                        en: 'Edit before sending',
+                                        pt: 'Edite antes de enviar',
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton.icon(
+                                          onPressed: controller
+                                              .retryPendingUserInputCapture,
+                                          icon: const Icon(Icons.mic_none),
+                                          label: Text(
+                                            appText(
+                                              context,
+                                              en: 'Speak again',
+                                              pt: 'Falar de novo',
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          onPressed: () async {
+                                            final submitted = await controller
+                                                .confirmPendingUserInput();
+                                            if (submitted || !context.mounted) {
+                                              return;
+                                            }
+
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  appText(
+                                                    context,
+                                                    en: 'Type a message before sending.',
+                                                    pt: 'Digite uma mensagem antes de enviar.',
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          icon: const Icon(Icons.send),
+                                          label: Text(
+                                            appText(
+                                              context,
+                                              en: 'Send',
+                                              pt: 'Enviar',
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         );
                       },
                     ),

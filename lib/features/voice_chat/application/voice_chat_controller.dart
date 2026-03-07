@@ -12,7 +12,7 @@ import '../infrastructure/speech/speech_service.dart';
 import '../infrastructure/tts/tts_service.dart';
 
 class VoiceChatController {
-  final AIService aiService;
+  AIService _aiService;
   final SpeechService speechService;
   final TTSService ttsService;
 
@@ -37,9 +37,15 @@ class VoiceChatController {
   final ValueNotifier<bool> isInResumeGraceNotifier = ValueNotifier(false);
   final ValueNotifier<double> speechSpeedMultiplierNotifier =
       ValueNotifier<double>(1.0);
+  final ValueNotifier<bool> requiresInputReviewNotifier =
+      ValueNotifier<bool>(false);
+  final ValueNotifier<bool> isReviewingUserInputNotifier =
+      ValueNotifier<bool>(false);
+  final ValueNotifier<String> pendingUserInputNotifier = ValueNotifier('');
 
   bool _isActive = false;
   bool _isSpeaking = false;
+  Completer<_PendingUserInputDecision>? _pendingUserInputDecisionCompleter;
   int _silentTurns = 0;
   Timer? _sessionTicker;
   DateTime? _sessionStartedAt;
@@ -61,7 +67,7 @@ class VoiceChatController {
       'Hello! I can talk in English and Portuguese. How can I help you today?';
 
   VoiceChatController({
-    required this.aiService,
+    required AIService aiService,
     required this.speechService,
     required this.ttsService,
     this.maxSilentTurnsBeforePause = 2,
@@ -69,7 +75,11 @@ class VoiceChatController {
     this.pausedPollDelay = const Duration(milliseconds: 250),
     this.resumeGracePeriod = const Duration(seconds: 2),
     this.sessionHistoryRepository,
-  });
+  }) : _aiService = aiService;
+
+  void updateAiService(AIService aiService) {
+    _aiService = aiService;
+  }
 
   Future<void> startConversation() async {
     if (_isActive) return;
@@ -112,6 +122,33 @@ class VoiceChatController {
     _autoResumeListening = value;
   }
 
+  void setRequireInputReview(bool value) {
+    requiresInputReviewNotifier.value = value;
+  }
+
+  void updatePendingUserInput(String value) {
+    if (!isReviewingUserInputNotifier.value) {
+      return;
+    }
+    pendingUserInputNotifier.value = value;
+  }
+
+  Future<bool> confirmPendingUserInput() async {
+    final normalized = pendingUserInputNotifier.value.trim();
+    if (normalized.isEmpty) {
+      return false;
+    }
+
+    _completePendingUserInputDecision(
+      _PendingUserInputDecision.submit(normalized),
+    );
+    return true;
+  }
+
+  void retryPendingUserInputCapture() {
+    _completePendingUserInputDecision(const _PendingUserInputDecision.retry());
+  }
+
   Future<void> setSpeechSpeedMultiplier(
     double multiplier, {
     required ConversationLanguage language,
@@ -133,6 +170,8 @@ class VoiceChatController {
 
   void pauseConversation({bool fromInactivity = false}) {
     if (!_isActive) return;
+
+    _completePendingUserInputDecision(const _PendingUserInputDecision.retry());
 
     isPausedNotifier.value = true;
     _setAvatarIdle();
@@ -167,10 +206,14 @@ class VoiceChatController {
 
   void dispose() {
     _isActive = false;
+    _completePendingUserInputDecision(const _PendingUserInputDecision.retry());
     isPausedNotifier.value = true;
     isGeneratingFeedbackNotifier.value = false;
     isInResumeGraceNotifier.value = false;
     speechSpeedMultiplierNotifier.dispose();
+    requiresInputReviewNotifier.dispose();
+    isReviewingUserInputNotifier.dispose();
+    pendingUserInputNotifier.dispose();
     _stopSessionTicker();
     unawaited(ttsService.stop());
   }
@@ -186,7 +229,7 @@ class VoiceChatController {
             : 'Generating session feedback...';
 
     try {
-      final rawFeedback = await aiService.getSessionFeedback(
+      final rawFeedback = await _aiService.getSessionFeedback(
         conversation: conversation.value,
         language: _lastDetectedLanguage,
         practiceFocus: practiceFocusNotifier.value,
@@ -335,13 +378,20 @@ $nextChallenge
         continue;
       }
 
+      final resolvedInput = await _resolveCapturedUserInput(capturedInput);
+      if (!_isActive) return;
+      if (resolvedInput == null) {
+        await Future.delayed(loopDelay);
+        continue;
+      }
+
       _silentTurns = 0;
       _resumeGraceUntil = null;
       isInResumeGraceNotifier.value = false;
       userTurnsNotifier.value = userTurnsNotifier.value + 1;
 
-      final userInput = capturedInput.text;
-      final detectedLanguage = capturedInput.language;
+      final userInput = resolvedInput.text;
+      final detectedLanguage = resolvedInput.language;
       _lastDetectedLanguage = detectedLanguage;
       _appendMessage(ConversationMessage(role: 'user', content: userInput));
 
@@ -356,7 +406,7 @@ $nextChallenge
       }
 
       try {
-        final aiResponse = await aiService.getResponse(
+        final aiResponse = await _aiService.getResponse(
           conversation: conversation.value,
           language: detectedLanguage,
           practiceFocus: practiceFocusNotifier.value,
@@ -378,6 +428,52 @@ $nextChallenge
 
       await Future.delayed(loopDelay);
     }
+  }
+
+  Future<_CapturedUserInput?> _resolveCapturedUserInput(
+    _CapturedUserInput capturedInput,
+  ) async {
+    if (!requiresInputReviewNotifier.value) {
+      return capturedInput;
+    }
+
+    pendingUserInputNotifier.value = capturedInput.text;
+    isReviewingUserInputNotifier.value = true;
+
+    final preferred = languageNotifier.value;
+    statusNotifier.value = preferred == ConversationLanguage.portugueseBr
+        ? 'Revise a mensagem e toque em Enviar ou Falar de novo.'
+        : 'Review the message and tap Send or Speak again.';
+
+    final completer = Completer<_PendingUserInputDecision>();
+    _pendingUserInputDecisionCompleter = completer;
+
+    final decision = await completer.future;
+    final language = capturedInput.language;
+    if (decision.retryCapture) {
+      _setAvatarIdle();
+      return null;
+    }
+
+    final text = decision.text?.trim() ?? '';
+    if (text.isEmpty) {
+      _setAvatarIdle();
+      return null;
+    }
+
+    _setAvatarIdle();
+    return _CapturedUserInput(text: text, language: language);
+  }
+
+  void _completePendingUserInputDecision(_PendingUserInputDecision decision) {
+    final completer = _pendingUserInputDecisionCompleter;
+    if (completer != null && !completer.isCompleted) {
+      completer.complete(decision);
+    }
+
+    _pendingUserInputDecisionCompleter = null;
+    pendingUserInputNotifier.value = '';
+    isReviewingUserInputNotifier.value = false;
   }
 
   bool _isInResumeGracePeriod() {
@@ -838,4 +934,15 @@ class _CapturedUserInput {
     required this.text,
     required this.language,
   });
+}
+
+class _PendingUserInputDecision {
+  final bool retryCapture;
+  final String? text;
+
+  const _PendingUserInputDecision.retry()
+      : retryCapture = true,
+        text = null;
+
+  const _PendingUserInputDecision.submit(this.text) : retryCapture = false;
 }

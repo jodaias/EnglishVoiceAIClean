@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:english_voice_ai_clean/features/voice_chat/application/app_settings_controller.dart';
+import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/ai_provider.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/app_locale.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/session_scene.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/infrastructure/local/local_user_preferences_repository.dart';
@@ -47,23 +48,26 @@ void main() {
       await _pumpSessionSettingsPage(tester, firstController);
 
       expect(find.text('Session Settings'), findsOneWidget);
-      expect(find.byType(SwitchListTile), findsNWidgets(2));
+      expect(find.byType(SwitchListTile), findsNWidgets(3));
       expect(find.text('Studio'), findsOneWidget);
+      expect(find.text('OpenAI'), findsOneWidget);
 
       await tester.tap(find.text('Auto resume listening after bot speech'));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 200));
       await tester.tap(find.text('Show startup tips when opening chat'));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 200));
 
       await tester.tap(find.text('English').first);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 200));
       await tester.tap(find.text('Portugues (Brasil)').last);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 200));
 
       final prefsAfterSave = await repository.getSessionUiPreferences();
       expect(prefsAfterSave.autoResumeListening, isFalse);
       expect(prefsAfterSave.showStartupTips, isFalse);
       expect(prefsAfterSave.selectedScene, SessionScene.studio);
+      expect(prefsAfterSave.aiProvider, AiProvider.openai);
+      expect(prefsAfterSave.useCustomAiModel, isFalse);
       expect(await repository.getAppLocale(), AppLocale.ptBr);
       expect(find.text('Configuracoes da Sessao'), findsOneWidget);
 
@@ -81,6 +85,7 @@ void main() {
           .toList();
       expect(switches[0].value, isFalse);
       expect(switches[1].value, isFalse);
+      expect(switches[2].value, isFalse);
       expect(find.text('Estudio'), findsOneWidget);
       expect(find.text('Configuracoes da Sessao'), findsOneWidget);
 
@@ -108,5 +113,6 @@ Future<void> _pumpSessionSettingsPage(
     ),
   );
 
-  await tester.pumpAndSettle();
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 300));
 }

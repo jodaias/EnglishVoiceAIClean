@@ -55,10 +55,19 @@ class AIServiceException implements Exception {
 }
 
 class GeminiService implements AIService {
-  final String geminiApiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
-  final String geminiModel = _resolveGeminiModel();
+  final String geminiApiKey;
+  final String geminiModel;
 
-  static String _resolveGeminiModel() {
+  GeminiService({String? apiKeyOverride, String? modelOverride})
+      : geminiApiKey = (apiKeyOverride ?? dotenv.env['GEMINI_API_KEY'] ?? ''),
+        geminiModel = _resolveGeminiModel(modelOverride);
+
+  static String _resolveGeminiModel(String? modelOverride) {
+    final overrideModel = (modelOverride ?? '').trim();
+    if (overrideModel.isNotEmpty) {
+      return overrideModel;
+    }
+
     final configuredModel = (dotenv.env['GEMINI_MODEL'] ?? '').trim();
     return configuredModel.isEmpty ? 'gemini-2.5-flash' : configuredModel;
   }
@@ -293,10 +302,19 @@ $transcript
 }
 
 class OpenAIService implements AIService {
-  final String openAiApiKey = dotenv.env['OPENAI_API_KEY'] ?? '';
-  final String model = _resolveOpenAiModel();
+  final String openAiApiKey;
+  final String model;
 
-  static String _resolveOpenAiModel() {
+  OpenAIService({String? apiKeyOverride, String? modelOverride})
+      : openAiApiKey = (apiKeyOverride ?? dotenv.env['OPENAI_API_KEY'] ?? ''),
+        model = _resolveOpenAiModel(modelOverride);
+
+  static String _resolveOpenAiModel(String? modelOverride) {
+    final overrideModel = (modelOverride ?? '').trim();
+    if (overrideModel.isNotEmpty) {
+      return overrideModel;
+    }
+
     final configuredModel = (dotenv.env['OPENAI_MODEL'] ?? '').trim();
     return configuredModel.isEmpty ? 'gpt-4.1' : configuredModel;
   }
