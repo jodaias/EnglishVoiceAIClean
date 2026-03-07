@@ -9,10 +9,12 @@ import 'app_text.dart';
 
 class PracticeHubSheet extends StatelessWidget {
   final PracticeHubController controller;
+  final VoidCallback? onOpenReadingListening;
 
   const PracticeHubSheet({
     super.key,
     required this.controller,
+    this.onOpenReadingListening,
   });
 
   @override
@@ -54,6 +56,8 @@ class PracticeHubSheet extends StatelessWidget {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      _buildReadingListeningCard(context),
+                      const SizedBox(height: 12),
                       _buildDailyChallengeCard(context),
                       const SizedBox(height: 12),
                       _buildProgressCard(context),
@@ -66,6 +70,42 @@ class PracticeHubSheet extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildReadingListeningCard(BuildContext context) {
+    return _PanelCard(
+      title: appText(
+        context,
+        en: 'Reading + Listening Lab',
+        pt: 'Laboratorio de Leitura + Audicao',
+      ),
+      icon: Icons.headphones,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            appText(
+              context,
+              en: 'Train comprehension with short guided audios and instant answer checks.',
+              pt: 'Treine compreensao com audios curtos guiados e verificacao imediata de resposta.',
+            ),
+            style: const TextStyle(color: Colors.white70),
+          ),
+          const SizedBox(height: 8),
+          FilledButton.icon(
+            onPressed: onOpenReadingListening,
+            icon: const Icon(Icons.play_circle_outline),
+            label: Text(
+              appText(
+                context,
+                en: 'Start reading + listening',
+                pt: 'Iniciar leitura + audicao',
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -325,6 +365,37 @@ class PracticeHubSheet extends StatelessWidget {
             },
           ),
           const SizedBox(height: 8),
+          ValueListenableBuilder<SessionDateRange>(
+            valueListenable: controller.sessionDateRangeNotifier,
+            builder: (context, selectedRange, _) {
+              return Wrap(
+                spacing: 8,
+                children: [
+                  _dateRangeChip(
+                    context: context,
+                    selected: selectedRange,
+                    value: SessionDateRange.allTime,
+                    label: appText(context, en: 'All time', pt: 'Todo periodo'),
+                  ),
+                  _dateRangeChip(
+                    context: context,
+                    selected: selectedRange,
+                    value: SessionDateRange.last7Days,
+                    label: appText(context,
+                        en: 'Last 7 days', pt: 'Ultimos 7 dias'),
+                  ),
+                  _dateRangeChip(
+                    context: context,
+                    selected: selectedRange,
+                    value: SessionDateRange.last30Days,
+                    label: appText(context,
+                        en: 'Last 30 days', pt: 'Ultimos 30 dias'),
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 8),
           ValueListenableBuilder<List<PracticeSessionRecord>>(
             valueListenable: controller.filteredSessionsNotifier,
             builder: (context, sessions, _) {
@@ -388,6 +459,19 @@ class PracticeHubSheet extends StatelessWidget {
     final hour = value.hour.toString().padLeft(2, '0');
     final minute = value.minute.toString().padLeft(2, '0');
     return '$day/$month ${value.year} $hour:$minute';
+  }
+
+  Widget _dateRangeChip({
+    required BuildContext context,
+    required SessionDateRange selected,
+    required SessionDateRange value,
+    required String label,
+  }) {
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected == value,
+      onSelected: (_) => controller.setSessionDateRange(value),
+    );
   }
 }
 

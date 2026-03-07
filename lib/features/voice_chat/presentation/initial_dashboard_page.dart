@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../application/session_history_service.dart';
+import '../infrastructure/local/local_session_history_repository.dart';
 import 'app_text.dart';
 import 'dashboard_routes.dart';
 import 'responsive_content_shell.dart';
@@ -54,6 +56,8 @@ class InitialDashboardPage extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: 14),
+              const _StreakBanner(),
               const SizedBox(height: 14),
               ElevatedButton.icon(
                 onPressed: () => _openVoiceChat(context),
@@ -115,6 +119,26 @@ class InitialDashboardPage extends StatelessWidget {
                         pt: 'Viagem, entrevista, rotina...'),
                     onTap: () => Navigator.of(context)
                         .pushNamed(DashboardRoutes.session),
+                  ),
+                  _QuickMenuCard(
+                    icon: Icons.headphones_outlined,
+                    title: appText(context,
+                        en: 'Reading + Listening', pt: 'Leitura + Audicao'),
+                    subtitle: appText(context,
+                        en: 'Guided audio and comprehension',
+                        pt: 'Audio guiado e compreensao'),
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(DashboardRoutes.readingListening),
+                  ),
+                  _QuickMenuCard(
+                    icon: Icons.history_outlined,
+                    title: appText(context,
+                        en: 'Session History', pt: 'Historico de Sessoes'),
+                    subtitle: appText(context,
+                        en: 'Search and filter past sessions',
+                        pt: 'Buscar e filtrar sessoes anteriores'),
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(DashboardRoutes.sessionHistory),
                   ),
                 ],
               ),
@@ -246,5 +270,141 @@ class _QuickMenuCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _StreakBanner extends StatefulWidget {
+  const _StreakBanner();
+
+  @override
+  State<_StreakBanner> createState() => _StreakBannerState();
+}
+
+class _StreakBannerState extends State<_StreakBanner> {
+  int? _streakDays;
+  int? _activeDays;
+  List<bool> _weekActivity = List.filled(7, false);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStreak();
+  }
+
+  Future<void> _loadStreak() async {
+    final repo = LocalSessionHistoryRepository();
+    final sessions = await repo.getSessions();
+    final service = SessionHistoryService();
+    final now = DateTime.now();
+    final snapshot = service.buildWeeklySnapshot(
+      sessions: sessions,
+      now: now,
+    );
+
+    final today = DateTime(now.year, now.month, now.day);
+    final activeDates = sessions
+        .map((s) => DateTime(s.endedAt.year, s.endedAt.month, s.endedAt.day))
+        .toSet();
+    final week = <bool>[];
+    for (var i = 6; i >= 0; i--) {
+      week.add(activeDates.contains(today.subtract(Duration(days: i))));
+    }
+
+    if (mounted) {
+      setState(() {
+        _streakDays = snapshot.currentStreakDays;
+        _activeDays = snapshot.activeDays;
+        _weekActivity = week;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_streakDays == null) {
+      return const SizedBox.shrink();
+    }
+
+    final streakColor =
+        _streakDays! >= 3 ? Colors.orange.shade300 : Colors.white70;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white10,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.local_fire_department, color: streakColor, size: 22),
+              const SizedBox(width: 6),
+              Text(
+                appText(
+                  context,
+                  en: '$_streakDays-day streak',
+                  pt: 'Sequencia de $_streakDays dias',
+                ),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: streakColor,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                appText(
+                  context,
+                  en: '$_activeDays/7 active',
+                  pt: '$_activeDays/7 ativos',
+                ),
+                style: const TextStyle(fontSize: 13, color: Colors.white70),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(7, (i) {
+              final dayLabel = _weekdayLabel(context, i);
+              final active = _weekActivity[i];
+              return Column(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: active ? Colors.green.shade400 : Colors.white12,
+                    ),
+                    child: active
+                        ? const Icon(Icons.check, size: 16, color: Colors.white)
+                        : null,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    dayLabel,
+                    style: const TextStyle(fontSize: 10, color: Colors.white54),
+                  ),
+                ],
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _weekdayLabel(BuildContext context, int index) {
+    final now = DateTime.now();
+    final day = now.subtract(Duration(days: 6 - index));
+    const enDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const ptDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
+    final isPortuguese = Localizations.localeOf(context).languageCode == 'pt';
+    final labels = isPortuguese ? ptDays : enDays;
+    return labels[(day.weekday - 1) % 7];
   }
 }

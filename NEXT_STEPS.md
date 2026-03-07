@@ -518,6 +518,63 @@ New priorities discovered during testing
 Blockers and decisions taken
 
 - Decision: use a simple keyword-based heuristic rather than a full NLP library to keep the app lightweight and offline-capable.
+
+## Implementation Cycle Update (2026-03-07 - Reading + Listening Learning Mode)
+
+Completed items
+
+- Added a new dedicated learning flow for guided reading and listening with short exercises and comprehension checks.
+- Implemented domain model for reading/listening exercises in `lib/features/voice_chat/domain/entities/reading_listening_exercise.dart`.
+- Implemented application layer components:
+  - `ReadingListeningCatalog` with bilingual (`en-US`/`pt-BR`) exercise content.
+  - `ReadingListeningController` for progression, answer validation, score summary, and persistence.
+  - `LearningAudioService` interface for audio playback abstraction.
+- Implemented infrastructure adapter `LearningAudioTtsService` to keep TTS integration isolated from UI/controller.
+- Added new screen `ReadingListeningPage` with:
+  - language selector (`English (US)` and `Portugues (BR)`),
+  - audio playback controls,
+  - multiple-choice comprehension flow,
+  - end-of-session save action.
+- Integrated navigation route `DashboardRoutes.readingListening` and entry points from:
+  - dashboard quick menu,
+  - practice overview,
+  - practice hub modal opened from voice chat.
+- Saved completed learning sessions into existing local history repository so they appear in progress/history metrics.
+- Added unit tests in `reading_listening_controller_test.dart` validating progression, locale-aware audio playback, and single-save persistence behavior.
+
+New priorities discovered during testing
+
+- Add widget tests for `ReadingListeningPage` interaction states (option selection, disabled buttons, completion summary rendering).
+- Add content expansion path (more exercises and level tags such as beginner/intermediate) while preserving bilingual parity.
+- Consider optional STT shadow mode for read-aloud pronunciation checks in a future cycle.
+
+Blockers and decisions taken
+
+- Decision: first release of this feature focuses on listening comprehension + guided read-aloud without pronunciation scoring to keep latency low and implementation stable.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Reading/Listening Difficulty Levels)
+
+Completed items
+
+- Added difficulty metadata in reading/listening domain model with support for:
+  - `beginner`
+  - `intermediate`
+- Added difficulty filter options in the new learning page (`All`, `Beginner`, `Intermediate`) with `en-US` and `pt-BR` labels.
+- Updated `ReadingListeningController` to filter visible exercises by selected difficulty and drive progression over the filtered set.
+- Implemented filter-change behavior that restarts the level session safely (index, answers, score, and completion state reset) to keep scoring consistent.
+- Tagged catalog exercises by level in `ReadingListeningCatalog`.
+- Extended controller tests to cover difficulty filtering and session reset behavior.
+
+New priorities discovered during testing
+
+- Add widget tests for difficulty-chip interactions and empty-state rendering when a level has no available content.
+- Add optional adaptive recommendation (for example, suggest moving to intermediate after high beginner accuracy across sessions).
+
+Blockers and decisions taken
+
+- Decision: changing difficulty resets the current learning run to avoid mixed-level score distortion.
+- No blockers.
 - Decision: require at least 2 marker hits to override STT guess, avoiding false corrections on very short utterances.
 - No blockers.
 
@@ -698,6 +755,119 @@ Completed items
 New priorities discovered during testing
 
 - Add golden/widget tests for breakpoint behavior to avoid future regressions in desktop layout spacing.
+
+## Implementation Cycle Update (2026-03-07 - STT Read-Aloud Pronunciation Mode)
+
+Completed items
+
+- Added STT shadow read-aloud mode to reading/listening learning flow.
+- New domain entity `PronunciationResult` and `PronunciationWordMatch` for word-level pronunciation feedback.
+- New application-layer `PronunciationComparer` with Levenshtein-based fuzzy word matching for tolerating minor pronunciation differences.
+- New `PronunciationCaptureService` interface and `SttPronunciationCaptureService` infrastructure adapter wrapping `SpeechService`.
+- Updated `ReadingListeningController` with `startReadAloud()`, `clearPronunciationResult()`, and `canReadAloud` property.
+- Updated `ReadingListeningPage` with "Read aloud" button next to "Listen" and visual pronunciation result panel showing per-word match status (green/red) and accuracy percentage.
+- Added 6 unit tests for `PronunciationComparer` covering perfect match, partial match, empty input, punctuation handling, Levenshtein tolerance, and word match status.
+- Added 2 unit tests for controller read-aloud behavior (successful capture + "no speech detected" error state).
+
+New priorities discovered during testing
+
+- Add widget test for read-aloud button and pronunciation result panel.
+- Consider adding speech confidence scoring from STT plugin if exposed in future versions.
+
+Blockers and decisions taken
+
+- Decision: pronunciation capture is optional in the controller (nullable dependency) to preserve backward compatibility with tests and scenarios where STT is unavailable.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Session History Filter + Dedicated Page)
+
+Completed items
+
+- Added `SessionDateRange` enum (allTime, last7Days, last30Days) to `PracticeHubController`.
+- Implemented date range filtering in `_refreshFilteredSessions()` alongside existing text search and focus filter.
+- Added date range chips (All time / Last 7 days / Last 30 days) in `PracticeHubSheet` history card.
+- Created dedicated `SessionHistoryPage` with full-page session browsing: search bar, date range chips, focus dropdown, and scrollable session list with detailed tiles (focus, date, duration, language, turns, feedback).
+- Registered `/session-history` route in `DashboardRoutes` and `main.dart`.
+- Added Session History entry to dashboard quick menu.
+
+New priorities discovered during testing
+
+- Add pagination or lazy loading for users with 50+ sessions.
+- Add session detail tap to expand feedback text in full.
+
+Blockers and decisions taken
+
+- Decision: reuse `PracticeHubController` in the dedicated page to keep filter logic centralized.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Adaptive Difficulty, Content Expansion, and UX Polish)
+
+Completed items
+
+- Adaptive difficulty recommendation:
+  - After saving a beginner learning session, the controller checks session history for past beginner runs.
+  - If 2+ beginner sessions have ≥80% accuracy, `suggestIntermediateNotifier` activates.
+  - Accuracy is parsed from the existing feedback string pattern (`(N%)`).
+  - A prominent banner appears in the session summary card with a one-tap "Switch to Intermediate" action.
+  - Fully bilingual recommendation text (`en-US` / `pt-BR`).
+
+- Exercise catalogue expansion (+7 exercises):
+  - Hotel check-in (beginner)
+  - Grocery shopping (beginner)
+  - Job interview (intermediate)
+  - Weather chat (beginner)
+  - Restaurant complaint (beginner)
+  - Giving directions (beginner)
+  - Rescheduling by phone (intermediate)
+  - All exercises maintain full bilingual parity (titles, texts, questions, options).
+  - Catalogue now has 12 total exercises (7 beginner, 5 intermediate).
+
+- Auto-scroll to last message in chat:
+  - Added `ScrollController` to the conversation `ListView` in `VoiceChatPage`.
+  - After each conversation update, the list smoothly scrolls to the latest message.
+  - Controller is properly disposed on page teardown.
+
+- Pre-cache scene images:
+  - Added `precacheImage` calls in `didChangeDependencies` for all `SessionScene` asset paths.
+  - Eliminates first-frame background pop-in on slower devices.
+
+- Validation:
+  - All existing tests pass (31/31: reading_listening_controller 6/6, voice_chat_controller 25/25).
+  - No compile errors across all changed files.
+
+New priorities discovered during testing
+
+- Add unit tests for adaptive difficulty recommendation logic (threshold boundary, parse accuracy edge cases).
+- Add widget tests for the recommendation banner interaction (switch to intermediate action).
+- Consider persisting the "already suggested" state to avoid showing the recommendation repeatedly after the user dismisses it.
+- Add more intermediate-level exercises to balance the catalogue as users progress.
+
+Blockers and decisions taken
+
+- Decision: parse accuracy from feedback strings to keep the recommendation logic self-contained without adding new persistence fields to `PracticeSessionRecord`.
+- Decision: recommendation resets when the user switches to intermediate, since the notifier is tied to the beginner filter state.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Streak/Consistency Banner on Dashboard)
+
+Completed items
+
+- Added `_StreakBanner` stateful widget to `InitialDashboardPage` that self-loads streak data from `SessionHistoryService`.
+- Displays current streak count with fire icon (orange when 3+ days, white when less).
+- Shows active days ratio (N/7) for the last week.
+- Renders 7-day activity dots (green circles with check for active days, grey for inactive) with weekday labels.
+- Weekday labels are bilingual (Mon-Sun / Seg-Dom) based on app locale.
+- Banner appears prominently between the welcome card and the start session button.
+
+New priorities discovered during testing
+
+- Add animation or celebration effect when streak reaches milestone (3, 7, 14 days).
+- Consider caching streak data to avoid repository read on every dashboard open.
+
+Blockers and decisions taken
+
+- Decision: streak banner loads its own data independently to keep `InitialDashboardPage` as a `StatelessWidget`.
+- No blockers.
 - Consider applying the same responsive shell to any future full-screen pages to keep visual consistency.
 
 Blockers and decisions taken

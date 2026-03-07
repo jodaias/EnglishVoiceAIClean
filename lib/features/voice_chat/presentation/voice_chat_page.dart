@@ -17,6 +17,7 @@ import '../infrastructure/local/local_user_preferences_repository.dart';
 import '../infrastructure/speech/speech_service.dart';
 import '../infrastructure/tts/tts_service.dart';
 import 'app_text.dart';
+import 'dashboard_routes.dart';
 import 'practice_hub_sheet.dart';
 import 'responsive_content_shell.dart';
 
@@ -40,6 +41,7 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
       LocalUserPreferencesRepository();
   final ValueNotifier<SessionScene> _selectedSceneNotifier =
       ValueNotifier<SessionScene>(SessionScene.studio);
+  final ScrollController _chatScrollController = ScrollController();
   static const List<String> _focusOptions = [
     'General conversation',
     'Travel English',
@@ -98,7 +100,31 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _precacheSceneImages();
+  }
+
+  void _precacheSceneImages() {
+    for (final scene in SessionScene.values) {
+      precacheImage(AssetImage(scene.assetPath), context);
+    }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_chatScrollController.hasClients) return;
+      _chatScrollController.animateTo(
+        _chatScrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  @override
   void dispose() {
+    _chatScrollController.dispose();
     _pendingInputFocusNode.dispose();
     _pendingInputTextController.dispose();
     _selectedSceneNotifier.dispose();
@@ -181,9 +207,17 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
                 context: context,
                 isScrollControlled: true,
                 backgroundColor: const Color(0xFF1B1E23),
-                builder: (_) => FractionallySizedBox(
+                builder: (sheetContext) => FractionallySizedBox(
                   heightFactor: 0.9,
-                  child: PracticeHubSheet(controller: practiceHubController),
+                  child: PracticeHubSheet(
+                    controller: practiceHubController,
+                    onOpenReadingListening: () {
+                      Navigator.of(sheetContext).pop();
+                      Navigator.of(
+                        context,
+                      ).pushNamed(DashboardRoutes.readingListening);
+                    },
+                  ),
                 ),
               );
             },
@@ -315,7 +349,9 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
                               ValueListenableBuilder<List<Map<String, String>>>(
                             valueListenable: controller.conversation,
                             builder: (context, conversation, _) {
+                              _scrollToBottom();
                               return ListView.builder(
+                                controller: _chatScrollController,
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 8),
                                 itemCount: conversation.length,

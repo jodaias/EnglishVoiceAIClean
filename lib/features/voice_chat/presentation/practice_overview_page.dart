@@ -48,7 +48,12 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
         ),
       ),
       body: ResponsiveContentShell.premium(
-        child: PracticeHubSheet(controller: controller),
+        child: PracticeHubSheet(
+          controller: controller,
+          onOpenReadingListening: () {
+            Navigator.of(context).pushNamed(DashboardRoutes.readingListening);
+          },
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1,

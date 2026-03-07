@@ -7,6 +7,8 @@ import 'package:english_voice_ai_clean/features/voice_chat/presentation/dashboar
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/initial_dashboard_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/language_mode_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/practice_overview_page.dart';
+import 'package:english_voice_ai_clean/features/voice_chat/presentation/reading_listening_page.dart';
+import 'package:english_voice_ai_clean/features/voice_chat/presentation/session_history_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/session_settings_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -62,6 +64,9 @@ class _VoiceEnglishAIAppState extends State<VoiceEnglishAIApp> {
             routes: {
               DashboardRoutes.dashboard: (_) => const InitialDashboardPage(),
               DashboardRoutes.practice: (_) => const PracticeOverviewPage(),
+              DashboardRoutes.readingListening: (_) =>
+                  const ReadingListeningPage(),
+              DashboardRoutes.sessionHistory: (_) => const SessionHistoryPage(),
               DashboardRoutes.session: (_) => const SessionSettingsPage(),
               DashboardRoutes.language: (_) => const LanguageModePage(),
             },

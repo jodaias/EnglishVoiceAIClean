@@ -7,6 +7,8 @@ import '../domain/entities/daily_challenge.dart';
 import '../domain/entities/daily_challenge_history.dart';
 import '../domain/entities/practice_session_record.dart';
 
+enum SessionDateRange { allTime, last7Days, last30Days }
+
 class PracticeHubController {
   final SessionHistoryRepository repository;
   final SessionHistoryService historyService;
@@ -29,6 +31,8 @@ class PracticeHubController {
   final ValueNotifier<List<PracticeSessionRecord>> filteredSessionsNotifier =
       ValueNotifier<List<PracticeSessionRecord>>(<PracticeSessionRecord>[]);
   final ValueNotifier<bool> isLoadingNotifier = ValueNotifier<bool>(false);
+  final ValueNotifier<SessionDateRange> sessionDateRangeNotifier =
+      ValueNotifier<SessionDateRange>(SessionDateRange.allTime);
 
   PracticeHubController({
     required this.repository,
@@ -80,6 +84,11 @@ class PracticeHubController {
     _refreshFilteredSessions();
   }
 
+  void setSessionDateRange(SessionDateRange value) {
+    sessionDateRangeNotifier.value = value;
+    _refreshFilteredSessions();
+  }
+
   List<String> availableFocusFilters() {
     final set = sessionsNotifier.value
         .map((session) => session.practiceFocus)
@@ -94,8 +103,20 @@ class PracticeHubController {
     final source = sessionsNotifier.value;
     final query = sessionSearchQueryNotifier.value.trim().toLowerCase();
     final selectedFocus = sessionFocusFilterNotifier.value;
+    final dateRange = sessionDateRangeNotifier.value;
+    final now = DateTime.now();
 
     final filtered = source.where((session) {
+      if (dateRange == SessionDateRange.last7Days) {
+        final cutoff = DateTime(now.year, now.month, now.day)
+            .subtract(const Duration(days: 7));
+        if (session.endedAt.isBefore(cutoff)) return false;
+      } else if (dateRange == SessionDateRange.last30Days) {
+        final cutoff = DateTime(now.year, now.month, now.day)
+            .subtract(const Duration(days: 30));
+        if (session.endedAt.isBefore(cutoff)) return false;
+      }
+
       final focusMatches = selectedFocus == null
           ? true
           : session.practiceFocus.toLowerCase() == selectedFocus.toLowerCase();
@@ -128,5 +149,6 @@ class PracticeHubController {
     sessionFocusFilterNotifier.dispose();
     filteredSessionsNotifier.dispose();
     isLoadingNotifier.dispose();
+    sessionDateRangeNotifier.dispose();
   }
 }
