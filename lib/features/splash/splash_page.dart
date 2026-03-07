@@ -1,4 +1,4 @@
-import 'package:english_voice_ai_clean/features/voice_chat/voice_chat_page.dart';
+import 'package:english_voice_ai_clean/features/voice_chat/presentation/dashboard_routes.dart';
 import 'package:flutter/material.dart';
 
 class SplashPage extends StatefulWidget {
@@ -16,15 +16,17 @@ class _SplashPageState extends State<SplashPage>
   @override
   void initState() {
     super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
 
     _controller.forward();
 
     Future.delayed(const Duration(seconds: 3), () {
-      Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder: (_) => VoiceChatPage()));
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed(DashboardRoutes.dashboard);
     });
   }
 
@@ -44,14 +46,11 @@ class _SplashPageState extends State<SplashPage>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset(
-                'assets/images/englishaichat_logo.png',
-                width: 200,
-              ),
+              Image.asset('assets/images/englishaichat_logo.png', width: 200),
               const SizedBox(height: 32),
               const CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              )
+              ),
             ],
           ),
         ),
