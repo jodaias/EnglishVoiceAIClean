@@ -91,7 +91,7 @@ void main() {
       await _waitFor(() => tts.speakCalls.length >= 2);
 
       expect(ai.responseCalls, isEmpty);
-      expect(tts.rates, contains(0.35));
+      expect(tts.rates, contains(0.25));
       expect(
         controller.conversation.value.any(
           (msg) => (msg['content'] ?? '').contains('speak slower'),
@@ -123,8 +123,8 @@ void main() {
       await _waitFor(() => ai.responseCalls.isNotEmpty);
 
       expect(tts.rates, isNotEmpty);
-      expect(tts.rates.first, 1.0);
-      expect(tts.rates.where((value) => value == 0.7), isEmpty);
+      expect(tts.rates.first, 0.75);
+      expect(tts.rates.where((value) => value == 0.5), isEmpty);
       expect(
         controller.conversation.value.any(
           (msg) => (msg['content'] ?? '').contains('speak faster'),
@@ -154,8 +154,8 @@ void main() {
       await controller.startConversation();
       await _waitFor(() => tts.rates.length >= 2);
 
-      expect(tts.rates[0], 0.35);
-      expect(tts.rates[1], 0.7);
+      expect(tts.rates[0], 0.25);
+      expect(tts.rates[1], 0.5);
       expect(
         controller.conversation.value.any(
           (msg) => (msg['content'] ?? '').contains('reset to normal'),
@@ -186,7 +186,7 @@ void main() {
       await controller.startConversation();
       await _waitFor(() => tts.rates.isNotEmpty);
 
-      expect(tts.rates.first, 1.0);
+      expect(tts.rates.first, 0.75);
       expect(
         controller.conversation.value.any(
           (msg) => (msg['content'] ?? '').contains('falar mais rapido'),
@@ -217,7 +217,7 @@ void main() {
       await controller.startConversation();
       await _waitFor(() => tts.rates.isNotEmpty);
 
-      expect(tts.rates.first, 0.35);
+      expect(tts.rates.first, 0.25);
       expect(
         controller.conversation.value.any(
           (msg) => (msg['content'] ?? '').contains('falar mais devagar'),
@@ -277,7 +277,7 @@ void main() {
       await controller.startConversation();
       await _waitFor(() => tts.rates.isNotEmpty);
 
-      expect(tts.rates.first, 0.35);
+      expect(tts.rates.first, 0.25);
       expect(
         controller.conversation.value.any(
           (msg) => (msg['content'] ?? '').contains('0.5x'),

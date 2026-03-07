@@ -56,6 +56,12 @@ class AIServiceException implements Exception {
 
 class GeminiService implements AIService {
   final String geminiApiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+  final String geminiModel = _resolveGeminiModel();
+
+  static String _resolveGeminiModel() {
+    final configuredModel = (dotenv.env['GEMINI_MODEL'] ?? '').trim();
+    return configuredModel.isEmpty ? 'gemini-2.5-flash' : configuredModel;
+  }
 
   @override
   Future<String> getResponse({
@@ -141,7 +147,7 @@ $transcript
 
   Future<String> _requestGeminiText(String prompt) async {
     final url = Uri.parse(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$geminiApiKey',
+      'https://generativelanguage.googleapis.com/v1beta/models/$geminiModel:generateContent?key=$geminiApiKey',
     );
 
     final body = jsonEncode({
@@ -288,7 +294,12 @@ $transcript
 
 class OpenAIService implements AIService {
   final String openAiApiKey = dotenv.env['OPENAI_API_KEY'] ?? '';
-  final String model = dotenv.env['OPENAI_MODEL'] ?? 'gpt-4o-mini';
+  final String model = _resolveOpenAiModel();
+
+  static String _resolveOpenAiModel() {
+    final configuredModel = (dotenv.env['OPENAI_MODEL'] ?? '').trim();
+    return configuredModel.isEmpty ? 'gpt-4.1' : configuredModel;
+  }
 
   @override
   Future<String> getResponse({

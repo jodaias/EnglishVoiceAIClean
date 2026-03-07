@@ -8,8 +8,6 @@ import '../application/session_history_service.dart';
 import '../application/voice_chat_session_config.dart';
 import '../application/voice_chat_controller.dart';
 import '../domain/entities/ai_provider.dart';
-import '../domain/entities/daily_challenge.dart';
-import '../domain/entities/daily_challenge_history.dart';
 import '../domain/entities/conversation_language.dart';
 import '../domain/entities/session_scene.dart';
 import '../domain/entities/session_ui_preferences.dart';
@@ -140,6 +138,11 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    final viewportHeight = MediaQuery.sizeOf(context).height;
+    final isCompactHeight = viewportHeight < 840;
+    final showStatsPanel = !isCompactHeight;
+    final avatarHeight = isCompactHeight ? 180.0 : 220.0;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -167,6 +170,15 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
                 ),
               );
             },
+          ),
+          IconButton(
+            tooltip: appText(
+              context,
+              en: 'Speech speed',
+              pt: 'Velocidade da fala',
+            ),
+            icon: const Icon(Icons.speed_outlined),
+            onPressed: _openSpeechSpeedSheet,
           ),
           ValueListenableBuilder<ConversationLanguage>(
             valueListenable: controller.languageNotifier,
@@ -232,94 +244,91 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
                         },
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                      child: Text(
-                        appText(
-                          context,
-                          en: 'Practice tip: speak short sentences. The assistant will guide, correct, and keep the conversation going.',
-                          pt: 'Dica de pratica: fale frases curtas. O assistente vai guiar, corrigir e manter a conversa ativa.',
-                        ),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 14, color: Colors.white70),
-                      ),
-                    ),
-                    _buildSpeechSpeedControls(),
-                    _buildDailyChallengeBanner(),
                     ValueListenableBuilder<String>(
                       valueListenable: controller.lottieAssetNotifier,
                       builder: (context, lottieAsset, _) => SizedBox(
-                          height: 220, child: Lottie.asset(lottieAsset)),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: ValueListenableBuilder<int>(
-                              valueListenable: controller.userTurnsNotifier,
-                              builder: (context, turns, _) => _StatCard(
-                                  label: appText(context,
-                                      en: 'Your turns', pt: 'Seus turnos'),
-                                  value: '$turns'),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: ValueListenableBuilder<int>(
-                              valueListenable:
-                                  controller.elapsedSecondsNotifier,
-                              builder: (context, seconds, _) => _StatCard(
-                                label: appText(context,
-                                    en: 'Session time', pt: 'Tempo da sessao'),
-                                value: _formatDuration(seconds),
-                              ),
-                            ),
-                          ),
-                        ],
+                        height: avatarHeight,
+                        child: Lottie.asset(lottieAsset),
                       ),
                     ),
+                    if (showStatsPanel)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: ValueListenableBuilder<int>(
+                                valueListenable: controller.userTurnsNotifier,
+                                builder: (context, turns, _) => _StatCard(
+                                    label: appText(context,
+                                        en: 'Your turns', pt: 'Seus turnos'),
+                                    value: '$turns'),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: ValueListenableBuilder<int>(
+                                valueListenable:
+                                    controller.elapsedSecondsNotifier,
+                                builder: (context, seconds, _) => _StatCard(
+                                  label: appText(context,
+                                      en: 'Session time', pt: 'Tempo da sessao'),
+                                  value: _formatDuration(seconds),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     Expanded(
-                      child: ValueListenableBuilder<List<Map<String, String>>>(
-                        valueListenable: controller.conversation,
-                        builder: (context, conversation, _) {
-                          return ListView.builder(
-                            itemCount: conversation.length,
-                            itemBuilder: (_, i) {
-                              final msg = conversation[i];
-                              final isUser = msg['role'] == 'user';
-                              return Container(
-                                alignment: isUser
-                                    ? Alignment.centerRight
-                                    : Alignment.centerLeft,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: isUser
-                                        ? Colors.blueAccent
-                                        : Colors.grey[800],
-                                    borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.24),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: ValueListenableBuilder<List<Map<String, String>>>(
+                          valueListenable: controller.conversation,
+                          builder: (context, conversation, _) {
+                            return ListView.builder(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              itemCount: conversation.length,
+                              itemBuilder: (_, i) {
+                                final msg = conversation[i];
+                                final isUser = msg['role'] == 'user';
+                                return Container(
+                                  alignment: isUser
+                                      ? Alignment.centerRight
+                                      : Alignment.centerLeft,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
                                   ),
-                                  padding: const EdgeInsets.all(12),
-                                  child: Text(
-                                    msg['content'] ?? '',
-                                    style: const TextStyle(fontSize: 16),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: isUser
+                                          ? Colors.blueAccent
+                                          : Colors.grey[850],
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.all(12),
+                                    child: Text(
+                                      msg['content'] ?? '',
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                          );
-                        },
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ),
                     ValueListenableBuilder<String>(
                       valueListenable: controller.statusNotifier,
                       builder: (context, status, _) => Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(
@@ -389,7 +398,8 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
                       valueListenable: controller.isPausedNotifier,
                       builder: (context, isPaused, _) {
                         return Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
+                          padding: EdgeInsets.fromLTRB(
+                              16, 0, 16, isCompactHeight ? 10 : 18),
                           child: Row(
                             children: [
                               Expanded(
@@ -502,147 +512,64 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
     return '$minutes:$remainingSeconds';
   }
 
-  Widget _buildSpeechSpeedControls() {
-    const options = <double>[0.5, 1.0, 1.5, 2.0];
-
-    return ValueListenableBuilder<double>(
-      valueListenable: controller.speechSpeedMultiplierNotifier,
-      builder: (context, selected, _) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                appText(
-                  context,
-                  en: 'Speech speed',
-                  pt: 'Velocidade da fala',
-                ),
-                style: const TextStyle(fontSize: 12, color: Colors.white70),
-              ),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 8,
-                children: options.map((option) {
-                  final hasTwoDecimals = (option * 100).round() % 10 != 0;
-                  final precision = hasTwoDecimals ? 2 : 1;
-                  final label = '${option.toStringAsFixed(precision)}x';
-                  return ChoiceChip(
-                    label: Text(label),
-                    selected: selected == option,
-                    onSelected: (_) async {
-                      await controller.setSpeechSpeedMultiplier(
-                        option,
-                        language: controller.languageNotifier.value ==
-                                ConversationLanguage.auto
-                            ? ConversationLanguage.englishUs
-                            : controller.languageNotifier.value,
-                        origin: 'manual',
-                      );
-                    },
-                  );
-                }).toList(growable: false),
-              ),
-            ],
+  void _openSpeechSpeedSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1B1E23),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 22),
+            child: _buildSpeechSpeedPicker(),
           ),
         );
       },
     );
   }
 
-  Widget _buildDailyChallengeBanner() {
-    return ValueListenableBuilder<DailyChallenge?>(
-      valueListenable: practiceHubController.dailyChallengeNotifier,
-      builder: (context, challenge, _) {
-        if (challenge == null) {
-          return const SizedBox.shrink();
-        }
+  Widget _buildSpeechSpeedPicker() {
+    const options = <double>[0.5, 1.0, 1.5, 2.0];
 
-        return ValueListenableBuilder<DailyChallengeHistory>(
-          valueListenable: practiceHubController.dailyChallengeHistoryNotifier,
-          builder: (context, history, _) {
-            final recentCompleted = history.completedInLastDays(
-              now: DateTime.now(),
-              days: 7,
-            );
-
-            return Container(
-              width: double.infinity,
-              margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: challenge.isCompleted
-                    ? Colors.green.withValues(alpha: 0.2)
-                    : Colors.amber.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: challenge.isCompleted
-                      ? Colors.green.withValues(alpha: 0.5)
-                      : Colors.amber.withValues(alpha: 0.5),
-                ),
+    return ValueListenableBuilder<double>(
+      valueListenable: controller.speechSpeedMultiplierNotifier,
+      builder: (context, selected, _) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              appText(
+                context,
+                en: 'Speech speed',
+                pt: 'Velocidade da fala',
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        challenge.isCompleted
-                            ? Icons.verified_outlined
-                            : Icons.flag_outlined,
-                        color: challenge.isCompleted
-                            ? Colors.green[200]
-                            : Colors.amber,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          challenge.isCompleted
-                              ? appText(
-                                  context,
-                                  en: 'Daily challenge completed: ${challenge.topic}',
-                                  pt: 'Desafio diario concluido: ${challenge.topic}',
-                                )
-                              : appText(
-                                  context,
-                                  en: 'Today\'s challenge: ${challenge.targetMinutes} min on ${challenge.topic}',
-                                  pt: 'Desafio de hoje: ${challenge.targetMinutes} min em ${challenge.topic}',
-                                ),
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    appText(
-                      context,
-                      en: 'Completed on $recentCompleted of the last 7 days.',
-                      pt: 'Concluido em $recentCompleted dos ultimos 7 dias.',
-                    ),
-                    style: const TextStyle(fontSize: 12, color: Colors.white70),
-                  ),
-                  if (!challenge.isCompleted)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        onPressed: () async {
-                          await practiceHubController
-                              .markDailyChallengeCompleted();
-                        },
-                        icon: const Icon(Icons.check_circle_outline, size: 18),
-                        label: Text(appText(
-                          context,
-                          en: 'Mark challenge as done',
-                          pt: 'Marcar desafio como concluido',
-                        )),
-                      ),
-                    ),
-                ],
-              ),
-            );
-          },
+              style: const TextStyle(fontSize: 14, color: Colors.white70),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: options.map((option) {
+                final hasTwoDecimals = (option * 100).round() % 10 != 0;
+                final precision = hasTwoDecimals ? 2 : 1;
+                final label = '${option.toStringAsFixed(precision)}x';
+                return ChoiceChip(
+                  label: Text(label),
+                  selected: selected == option,
+                  onSelected: (_) async {
+                    await controller.setSpeechSpeedMultiplier(
+                      option,
+                      language: controller.languageNotifier.value ==
+                              ConversationLanguage.auto
+                          ? ConversationLanguage.englishUs
+                          : controller.languageNotifier.value,
+                      origin: 'manual',
+                    );
+                  },
+                );
+              }).toList(growable: false),
+            ),
+          ],
         );
       },
     );

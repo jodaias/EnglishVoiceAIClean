@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'session_history_repository.dart';
@@ -51,7 +52,8 @@ class VoiceChatController {
   DateTime? _resumeGraceUntil;
   bool _autoResumeListening = true;
   static const List<double> _speedMultipliers = <double>[0.5, 1.0, 1.5, 2.0];
-  static const double _baseTtsRate = 0.7;
+  static const double _baseTtsRateWeb = 0.7;
+  static const double _baseTtsRateMobile = 0.5;
   String _lastAIResponse =
       'Hello! I can talk in English and Portuguese. How can I help you today?';
 
@@ -601,7 +603,8 @@ $nextChallenge
   }
 
   double _ttsRateForMultiplier(double multiplier) {
-    return (_baseTtsRate * multiplier).clamp(0.2, 1.0);
+    const baseRate = kIsWeb ? _baseTtsRateWeb : _baseTtsRateMobile;
+    return (baseRate * multiplier).clamp(0.2, 1.0);
   }
 
   String _buildRateMessage({

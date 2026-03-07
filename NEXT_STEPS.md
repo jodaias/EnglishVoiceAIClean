@@ -258,6 +258,96 @@ New priorities discovered during testing
 - Add a tiny shared formatter/helper for speed labels to avoid duplicated formatting logic between controller and page.
 - Add an integration-style widget test validating that selecting `0.25x` chip triggers the expected `setSpeechSpeedMultiplier` flow.
 
+## Implementation Cycle Update (2026-03-07 - Conversation Area Expansion)
+
+Completed items
+
+- Improved `voice_chat_page.dart` vertical layout to prioritize message history area on smaller screens.
+- Added compact-height behavior that lets users collapse secondary session panels (tips, speed controls, challenge card, and stat cards) via a toggle action.
+- Reduced avatar height when compact panels are hidden and wrapped the conversation list in a dedicated container, increasing perceived and usable chat space.
+- Kept bilingual labels (`en-US` and `pt-BR`) for the new compact panel toggle.
+
+New priorities discovered during testing
+
+- Add a widget test for compact-height mode to guarantee that collapsing panels increases visible conversation area without regressions.
+- Auto-scroll to latest message after each new turn to further improve chat readability in long sessions.
+
+Blockers and decisions taken
+
+- Decision: keep all secondary learning/session tools available, but make them collapsible only when vertical space is constrained.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Compact Mode Visibility Fix)
+
+Completed items
+
+- Adjusted compact mode in `voice_chat_page.dart` so avatar and speech-speed controls are always visible.
+- Kept only auxiliary panels (tips/challenge/stats) behind the compact toggle to preserve chat space without hiding core interaction controls.
+
+New priorities discovered during testing
+
+- Add a quick UI hint in compact mode clarifying exactly which panels are collapsed.
+
+Blockers and decisions taken
+
+- Decision: core session controls (avatar and speed) must never be hidden by default in compact behavior.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Top Area Simplification)
+
+Completed items
+
+- Removed high-vertical-cost panels from the top of `voice_chat_page.dart` (practice tip and daily challenge banner) to increase conversation space.
+- Moved speech-speed controls to a dedicated `AppBar` action (`speed` icon) that opens a bottom sheet picker.
+- Kept avatar visible and reduced top clutter so message history occupies more usable height.
+
+New priorities discovered during testing
+
+- Consider a small one-time tooltip on the speed icon to help first-time users discover where speech speed is configured.
+
+Blockers and decisions taken
+
+- Decision: daily challenge remains available in Practice Hub instead of occupying vertical space in the live conversation surface.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Mobile Speech Rate Calibration)
+
+Completed items
+
+- Adjusted TTS rate mapping in `VoiceChatController` to use platform-aware base values:
+  - Web keeps current base (`0.7`).
+  - Mobile uses a lower base (`0.5`) to make `1.0x` sound natural.
+- Kept multiplier options unchanged (`0.5x`, `1.0x`, `1.5x`, `2.0x`) while recalibrating the final engine rate.
+- Updated and validated controller tests for the new calibrated numeric rates.
+
+New priorities discovered during testing
+
+- Add a tiny developer debug line (optional) showing effective engine rate (for example: `1.0x -> 0.5`) to accelerate device tuning.
+
+Blockers and decisions taken
+
+- Decision: treat web and mobile TTS speed curves differently because they do not map linearly to perceived speech speed.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - APK Build Fix Kotlin/JVM Target)
+
+Completed items
+
+- Fixed Android build failure caused by JVM target mismatch in plugin module compilation (`flutter_tts`: Java 17 vs Kotlin 1.8).
+- Added global Kotlin compile task alignment in `android/build.gradle` to enforce `jvmTarget = 17` across subprojects/plugins.
+- Re-ran release build and successfully generated split APKs.
+
+Artifacts generated
+
+- `build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk`
+- `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk`
+- `build/app/outputs/flutter-apk/app-x86_64-release.apk`
+
+Blockers and decisions taken
+
+- Decision: keep Java/Kotlin target centralized at Gradle root to avoid plugin-specific drift in future builds.
+- No blockers.
+
 Blockers and decisions taken
 
 - Decision: keep clamp as `clamp(0.2, 1.0)` to preserve a usable slowest floor while allowing higher base-rate tuning.
@@ -631,3 +721,37 @@ Blockers and decisions taken
 
 - Decision: keep fallback messages concise and actionable without exposing raw API payloads or secrets.
 - Blocker: could not run live Gemini probe in this environment due terminal session instability; real-device validation will confirm after rebuild.
+
+## Implementation Cycle Update (2026-03-07 - Gemini Model from Env)
+
+Completed items
+
+- Removed hardcoded Gemini model from `GeminiService` request URL.
+- Added `geminiModel` resolution from environment variable `GEMINI_MODEL`.
+- Added safe fallback to `gemini-2.5-flash` when `GEMINI_MODEL` is missing or empty.
+
+New priorities discovered during testing
+
+- Validate startup behavior with an intentionally invalid `GEMINI_MODEL` value to confirm API error mapping remains clear for troubleshooting.
+
+Blockers and decisions taken
+
+- Decision: keep `GEMINI_MODEL` centralized in `.env` for easier model switching without code changes.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - OpenAI Model from Env Resolver)
+
+Completed items
+
+- Applied the same model-resolution pattern in `OpenAIService` used by `GeminiService`.
+- Replaced direct `OPENAI_MODEL` property read with `_resolveOpenAiModel()`.
+- Added safe fallback to `gpt-4.1` when `OPENAI_MODEL` is missing or empty.
+
+New priorities discovered during testing
+
+- Consider unifying provider model resolution in a shared helper to avoid duplicated env parsing logic.
+
+Blockers and decisions taken
+
+- Decision: keep provider-specific fallback defaults (`gpt-4.1` for OpenAI and `gemini-2.5-flash` for Gemini) to preserve backward-compatible behavior.
+- No blockers.
