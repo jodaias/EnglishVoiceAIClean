@@ -452,6 +452,36 @@ void main() {
       controller.dispose();
     });
 
+    test('uses actionable AI fallback when network error happens', () async {
+      final ai = FakeAIService(
+        responseText: 'Unused',
+        responseError: const AIServiceException(
+          code: AIServiceErrorCode.network,
+          message: 'network down',
+        ),
+      );
+      final speech = FakeSpeechService(
+        responses: <String?>['hello there', null],
+      );
+      final tts = FakeTTSService();
+
+      final controller = VoiceChatController(
+        aiService: ai,
+        speechService: speech,
+        ttsService: tts,
+        maxSilentTurnsBeforePause: 10,
+        loopDelay: const Duration(milliseconds: 10),
+        pausedPollDelay: const Duration(milliseconds: 10),
+      );
+
+      await controller.startConversation();
+      await _waitFor(() => tts.speakCalls.length >= 2);
+
+      expect(tts.speakCalls[1].text, contains('internet'));
+
+      controller.dispose();
+    });
+
     test('keeps response language aligned to user-selected Portuguese mode',
         () async {
       final ai = FakeAIService(responseText: 'Resposta alinhada.');
@@ -569,12 +599,14 @@ class FakeAIService implements AIService {
   final String responseText;
   final String feedbackText;
   final bool throwOnFeedback;
+  final Object? responseError;
   final List<AIResponseCall> responseCalls = <AIResponseCall>[];
 
   FakeAIService({
     required this.responseText,
     this.feedbackText = 'Session feedback',
     this.throwOnFeedback = false,
+    this.responseError,
   });
 
   @override
@@ -592,6 +624,11 @@ class FakeAIService implements AIService {
         sessionTurns: sessionTurns,
       ),
     );
+
+    if (responseError != null) {
+      throw responseError!;
+    }
+
     return responseText;
   }
 

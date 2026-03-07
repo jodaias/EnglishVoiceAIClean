@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../domain/entities/session_scene.dart';
 import '../domain/entities/session_ui_preferences.dart';
 import '../infrastructure/local/local_user_preferences_repository.dart';
 
@@ -35,6 +36,14 @@ class SessionSettingsController {
   Future<void> setShowStartupTips(bool value) async {
     final updated = preferencesNotifier.value.copyWith(
       showStartupTips: value,
+    );
+    preferencesNotifier.value = updated;
+    await preferencesRepository.saveSessionUiPreferences(updated);
+  }
+
+  Future<void> setSelectedScene(SessionScene value) async {
+    final updated = preferencesNotifier.value.copyWith(
+      selectedScene: value,
     );
     preferencesNotifier.value = updated;
     await preferencesRepository.saveSessionUiPreferences(updated);

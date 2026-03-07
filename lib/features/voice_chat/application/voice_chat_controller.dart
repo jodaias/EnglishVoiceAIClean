@@ -359,10 +359,11 @@ $nextChallenge
         _lastAIResponse = aiResponse;
         _appendMessage(ConversationMessage(role: 'ai', content: aiResponse));
         await _speakAI(aiResponse, language: detectedLanguage);
-      } catch (_) {
-        final fallback = detectedLanguage == ConversationLanguage.portugueseBr
-            ? 'Desculpe, tive um problema para responder agora. Pode tentar de novo?'
-            : 'Sorry, I had an issue replying right now. Could you try again?';
+      } catch (error) {
+        final fallback = _buildAiReplyFallback(
+          language: detectedLanguage,
+          error: error,
+        );
 
         _appendMessage(ConversationMessage(role: 'ai', content: fallback));
         await _speakAI(fallback, language: detectedLanguage);
@@ -631,6 +632,60 @@ $nextChallenge
       return 'Speech speed reset to normal at $speedLabel.';
     }
     return 'Sure, I will speak slower. Speed set to $speedLabel.';
+  }
+
+  String _buildAiReplyFallback({
+    required ConversationLanguage language,
+    required Object error,
+  }) {
+    if (error is AIServiceException) {
+      return _buildAiServiceFallbackByCode(
+        language: language,
+        code: error.code,
+      );
+    }
+
+    if (language == ConversationLanguage.portugueseBr) {
+      return 'Desculpe, tive um problema para responder agora. Pode tentar de novo?';
+    }
+    return 'Sorry, I had an issue replying right now. Could you try again?';
+  }
+
+  String _buildAiServiceFallbackByCode({
+    required ConversationLanguage language,
+    required AIServiceErrorCode code,
+  }) {
+    final isPortuguese = language == ConversationLanguage.portugueseBr;
+
+    switch (code) {
+      case AIServiceErrorCode.missingApiKey:
+        return isPortuguese
+            ? 'Nao consegui responder porque a chave da IA nao foi configurada no app. Verifique o arquivo .env e gere um novo APK.'
+            : 'I could not reply because the AI key is missing in the app configuration. Please verify .env and build a new APK.';
+      case AIServiceErrorCode.unauthorized:
+      case AIServiceErrorCode.forbidden:
+        return isPortuguese
+            ? 'A chave da IA foi rejeitada neste dispositivo. Verifique restricoes da chave para o app em release e tente novamente.'
+            : 'The AI key was rejected on this device. Please review key restrictions for the release app and try again.';
+      case AIServiceErrorCode.rateLimited:
+      case AIServiceErrorCode.quotaExceeded:
+        return isPortuguese
+            ? 'A API de IA atingiu o limite de uso agora. Aguarde um pouco e tente novamente.'
+            : 'The AI API usage limit was reached just now. Please wait a moment and try again.';
+      case AIServiceErrorCode.network:
+        return isPortuguese
+            ? 'Nao consegui acessar a internet para responder. Confira sua conexao e tente novamente.'
+            : 'I could not reach the internet to reply. Please check your connection and try again.';
+      case AIServiceErrorCode.serviceUnavailable:
+        return isPortuguese
+            ? 'O servico de IA esta temporariamente indisponivel. Tente novamente em instantes.'
+            : 'The AI service is temporarily unavailable. Please try again shortly.';
+      case AIServiceErrorCode.invalidResponse:
+      case AIServiceErrorCode.unknown:
+        return isPortuguese
+            ? 'Recebi uma resposta invalida da IA agora. Pode tentar novamente?'
+            : 'I got an invalid AI response just now. Could you try again?';
+    }
   }
 
   String _formatSpeedLabel(double multiplier) {

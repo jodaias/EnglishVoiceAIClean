@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:english_voice_ai_clean/features/voice_chat/application/app_settings_controller.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/app_locale.dart';
+import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/session_scene.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/infrastructure/local/local_user_preferences_repository.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/app_settings_scope.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/session_settings_page.dart';
@@ -47,6 +48,7 @@ void main() {
 
       expect(find.text('Session Settings'), findsOneWidget);
       expect(find.byType(SwitchListTile), findsNWidgets(2));
+      expect(find.text('Studio'), findsOneWidget);
 
       await tester.tap(find.text('Auto resume listening after bot speech'));
       await tester.pumpAndSettle();
@@ -61,6 +63,7 @@ void main() {
       final prefsAfterSave = await repository.getSessionUiPreferences();
       expect(prefsAfterSave.autoResumeListening, isFalse);
       expect(prefsAfterSave.showStartupTips, isFalse);
+      expect(prefsAfterSave.selectedScene, SessionScene.studio);
       expect(await repository.getAppLocale(), AppLocale.ptBr);
       expect(find.text('Configuracoes da Sessao'), findsOneWidget);
 
@@ -78,6 +81,7 @@ void main() {
           .toList();
       expect(switches[0].value, isFalse);
       expect(switches[1].value, isFalse);
+      expect(find.text('Estudio'), findsOneWidget);
       expect(find.text('Configuracoes da Sessao'), findsOneWidget);
 
       secondController.dispose();

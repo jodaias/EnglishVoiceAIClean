@@ -169,6 +169,31 @@ Blockers and decisions taken
 - Decision: keep safe defaults in code and allow optional environment override keys.
 - No blockers.
 
+## Implementation Cycle Update (2026-03-07 - Flutter Stable + Android Build Recovery)
+
+Completed items
+
+- Upgraded local Flutter SDK to latest stable (`3.41.4`) with Dart `3.11.1`.
+- Updated Android toolchain versions in project:
+  - Gradle wrapper to `8.7`
+  - Android Gradle Plugin to `8.6.0`
+  - Kotlin Gradle plugin to `2.1.0`
+- Updated app compatibility dependencies/constraints:
+  - Dart SDK constraint in `pubspec.yaml` to `>=3.0.0 <4.0.0`
+  - `speech_to_text` to `^7.3.0`
+- Removed stale generated Android file `android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java` that referenced obsolete plugin package names.
+- Validated successful APK generation in split mode (`--split-per-abi`) for real-device testing.
+
+New priorities discovered during testing
+
+- Consider upgrading Java compile target from 8 to 17 in Android config to remove obsolete source/target warnings and align with modern AGP defaults.
+- Plan a dependency refresh pass for remaining outdated packages flagged by `flutter pub get`.
+
+Blockers and decisions taken
+
+- Decision: prioritize minimal compatibility upgrades required to restore release APK build first, then handle wider dependency modernization in a dedicated cycle.
+- No blockers.
+
 ## Implementation Cycle Update (2026-03-07 - Web STT Stability)
 
 Completed items
@@ -344,6 +369,26 @@ New priorities discovered during testing
 Blockers and decisions taken
 
 - Decision: keep persistence lightweight in Hive using enum `name` strings for compatibility and simplicity.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Java 17 Android Compile Target)
+
+Completed items
+
+- Updated Android app compile target to Java 17 in `android/app/build.gradle`:
+  - `sourceCompatibility = JavaVersion.VERSION_17`
+  - `targetCompatibility = JavaVersion.VERSION_17`
+  - `kotlinOptions.jvmTarget = "17"`
+- Added Android subproject-level fallback in `android/build.gradle` to enforce Java/Kotlin 17 defaults for modules with Android plugin, reducing obsolete Java 8 warnings from transitive plugin modules.
+- Validated release APK build success after migration using `flutter build apk --release --split-per-abi`.
+
+New priorities discovered during testing
+
+- Consider adding a short CI smoke build step for Android release to catch future Gradle/JDK drift earlier.
+
+Blockers and decisions taken
+
+- Decision: prefer true compile-target modernization (Java 17) instead of suppressing warnings with `-Xlint:-options`.
 - No blockers.
 
 ## Implementation Cycle Update (2026-03-07 - App Language in Settings)
@@ -560,4 +605,84 @@ New priorities discovered during testing
 Blockers and decisions taken
 
 - Decision: keep internal TTS mapping proportional to base rate while exposing user-facing controls only as multipliers.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - AI Fallback Diagnostics on Device)
+
+Completed items
+
+- Refactored Gemini integration to throw typed failures (`AIServiceException`) with explicit categories:
+  - missing key
+  - unauthorized/forbidden
+  - rate limit/quota
+  - network/timeout
+  - service unavailable
+  - invalid response
+- Added request timeout + safer JSON parsing in `GeminiService` to avoid collapsing all failures into one generic branch.
+- Updated `VoiceChatController` to speak actionable bilingual fallback messages based on real error category instead of always saying only a generic retry phrase.
+- Added test coverage in `voice_chat_controller_test.dart` for network-classified AI fallback messaging.
+
+New priorities discovered during testing
+
+- Add lightweight non-sensitive telemetry counters for AI error categories (debug and release) to compare real-device stability.
+- Add a small diagnostics panel in app settings to show latest STT/TTS/AI failure category for faster troubleshooting.
+
+Blockers and decisions taken
+
+- Decision: keep fallback messages concise and actionable without exposing raw API payloads or secrets.
+- Blocker: could not run live Gemini probe in this environment due terminal session instability; real-device validation will confirm after rebuild.
+
+## Implementation Cycle Update (2026-03-07 - AI Provider Switch to OpenAI)
+
+Completed items
+
+- Switched runtime provider in `VoiceChatPage` from `GeminiService` to `OpenAIService` to avoid current Gemini free-tier instability during device tests.
+- Added `OpenAIService` implementation in infrastructure layer with the same `AIService` contract and typed error mapping (`AIServiceException`) already used by controller fallback logic.
+- Kept existing prompt behavior and bilingual response rules unchanged (`en-US` and `pt-BR`), preserving conversation UX and architecture boundaries.
+- Added optional environment key documentation in `.env.example`:
+  - `OPENAI_MODEL` (default `gpt-4o-mini`)
+
+New priorities discovered during testing
+
+- Add provider selection via environment flag (`AI_PROVIDER=openai|gemini`) for easier A/B validation without code change.
+- Add focused service-level tests for `OpenAIService` response parsing and HTTP error mapping.
+
+Blockers and decisions taken
+
+- Decision: keep Gemini implementation in codebase for fallback/rollback, but set OpenAI as default runtime provider now.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - AI Provider by Environment)
+
+Completed items
+
+- Added runtime provider toggle via `.env` using `AI_PROVIDER` with supported values `openai` and `gemini`.
+- Implemented provider selection in `VoiceChatPage` through environment parsing with safe default to `openai` for production reliability.
+- Updated `.env.example` documentation and local `.env` to explicit `AI_PROVIDER=openai`.
+
+New priorities discovered during testing
+
+- Add a small settings/debug label showing active AI provider at runtime to avoid confusion during manual device tests.
+- Add focused unit tests for provider selection behavior from environment values (valid/invalid/default).
+
+Blockers and decisions taken
+
+- Decision: invalid or missing provider values fallback automatically to `openai`.
+- No blockers.
+
+## Implementation Cycle Update (2026-03-07 - Enum for AI Provider)
+
+Completed items
+
+- Replaced string-based provider parsing with domain enum `AiProvider` in `lib/features/voice_chat/domain/entities/ai_provider.dart`.
+- Updated `VoiceChatPage` to parse `AI_PROVIDER` through `AiProviderX.fromEnv(...)` and select provider via `switch` on enum values.
+- Preserved safe default behavior (`openai`) when `.env` value is missing or invalid.
+
+New priorities discovered during testing
+
+- Add dedicated unit tests for `AiProviderX.fromEnv` (valid values, casing, empty string, unknown value).
+
+Blockers and decisions taken
+
+- Decision: keep env values lowercase (`openai`, `gemini`) and normalize input internally.
 - No blockers.

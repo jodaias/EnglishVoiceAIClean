@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../application/session_settings_controller.dart';
 import '../domain/entities/app_locale.dart';
+import '../domain/entities/session_scene.dart';
 import '../domain/entities/session_ui_preferences.dart';
 import 'app_settings_scope.dart';
 import 'app_text.dart';
@@ -19,6 +20,7 @@ class SessionSettingsPage extends StatefulWidget {
 
 class _SessionSettingsPageState extends State<SessionSettingsPage> {
   late final SessionSettingsController sessionSettingsController;
+  static const List<SessionScene> _sceneOptions = SessionScene.values;
 
   @override
   void initState() {
@@ -104,6 +106,32 @@ class _SessionSettingsPageState extends State<SessionSettingsPage> {
                       onChanged: (value) {
                         if (value == null) return;
                         appSettingsController.setAppLocale(value);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<SessionScene>(
+                      key: ValueKey<SessionScene>(preferences.selectedScene),
+                      initialValue: preferences.selectedScene,
+                      decoration: InputDecoration(
+                        labelText: appText(
+                          context,
+                          en: 'Session Scene',
+                          pt: 'Cenario da Sessao',
+                        ),
+                        border: const OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      items: _sceneOptions
+                          .map(
+                            (scene) => DropdownMenuItem<SessionScene>(
+                              value: scene,
+                              child: Text(_sceneLabel(context, scene)),
+                            ),
+                          )
+                          .toList(growable: false),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        sessionSettingsController.setSelectedScene(value);
                       },
                     ),
                     const SizedBox(height: 12),
@@ -225,5 +253,16 @@ class _SessionSettingsPageState extends State<SessionSettingsPage> {
         ],
       ),
     );
+  }
+
+  String _sceneLabel(BuildContext context, SessionScene scene) {
+    switch (scene) {
+      case SessionScene.studio:
+        return appText(context, en: 'Studio', pt: 'Estudio');
+      case SessionScene.city:
+        return appText(context, en: 'City', pt: 'Cidade');
+      case SessionScene.library:
+        return appText(context, en: 'Library', pt: 'Biblioteca');
+    }
   }
 }

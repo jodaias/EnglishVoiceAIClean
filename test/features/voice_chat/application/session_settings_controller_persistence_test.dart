@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:english_voice_ai_clean/features/voice_chat/application/session_settings_controller.dart';
+import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/session_scene.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/infrastructure/local/local_user_preferences_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -43,13 +44,18 @@ void main() {
     expect(
         firstController.preferencesNotifier.value.autoResumeListening, isTrue);
     expect(firstController.preferencesNotifier.value.showStartupTips, isTrue);
+    expect(firstController.preferencesNotifier.value.selectedScene,
+        SessionScene.studio);
 
     await firstController.setAutoResumeListening(false);
     await firstController.setShowStartupTips(false);
+    await firstController.setSelectedScene(SessionScene.city);
 
     expect(
         firstController.preferencesNotifier.value.autoResumeListening, isFalse);
     expect(firstController.preferencesNotifier.value.showStartupTips, isFalse);
+    expect(firstController.preferencesNotifier.value.selectedScene,
+        SessionScene.city);
 
     firstController.dispose();
 
@@ -62,6 +68,8 @@ void main() {
     expect(secondController.preferencesNotifier.value.autoResumeListening,
         isFalse);
     expect(secondController.preferencesNotifier.value.showStartupTips, isFalse);
+    expect(secondController.preferencesNotifier.value.selectedScene,
+        SessionScene.city);
 
     secondController.dispose();
   });

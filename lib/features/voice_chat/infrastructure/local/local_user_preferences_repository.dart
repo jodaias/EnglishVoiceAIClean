@@ -2,6 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../domain/entities/app_locale.dart';
 import '../../domain/entities/conversation_language.dart';
+import '../../domain/entities/session_scene.dart';
 import '../../domain/entities/session_ui_preferences.dart';
 
 class LocalUserPreferencesRepository {
@@ -12,6 +13,7 @@ class LocalUserPreferencesRepository {
   static const String _autoResumeListeningKey =
       'voice_chat_auto_resume_listening_v1';
   static const String _showStartupTipsKey = 'voice_chat_show_startup_tips_v1';
+  static const String _selectedSceneKey = 'voice_chat_selected_scene_v1';
 
   Future<ConversationLanguage> getPreferredLanguage() async {
     final box = await _openBox();
@@ -56,10 +58,12 @@ class LocalUserPreferencesRepository {
 
     final autoResumeRaw = box.get(_autoResumeListeningKey);
     final showTipsRaw = box.get(_showStartupTipsKey);
+    final selectedSceneRaw = box.get(_selectedSceneKey)?.toString() ?? '';
 
     return SessionUiPreferences(
       autoResumeListening: autoResumeRaw is bool ? autoResumeRaw : true,
       showStartupTips: showTipsRaw is bool ? showTipsRaw : true,
+      selectedScene: SessionSceneX.fromStorage(selectedSceneRaw),
     );
   }
 
@@ -67,6 +71,7 @@ class LocalUserPreferencesRepository {
     final box = await _openBox();
     await box.put(_autoResumeListeningKey, value.autoResumeListening);
     await box.put(_showStartupTipsKey, value.showStartupTips);
+    await box.put(_selectedSceneKey, value.selectedScene.name);
   }
 
   Future<Box<dynamic>> _openBox() async {
