@@ -616,13 +616,13 @@ lib/features/voice_chat/presentation/
 
 **Objetivo**: tela da trilha
 
-- [ ] `LearningPathPage` com scroll de bolhas conectadas
-- [ ] `LessonNodeWidget` com estados (locked, available, completed, perfect)
-- [ ] Banners de unidade entre grupos de bolhas
-- [ ] Header com XP, streak, vidas
-- [ ] Navegacao: tocar bolha → abre licao
-- [ ] Integrar com rotas existentes e dashboard
-- [ ] Testes de widget para trilha
+- [x] `LearningPathPage` com scroll de bolhas conectadas
+- [x] `LessonNodeWidget` com estados (locked, available, completed, perfect)
+- [x] Banners de unidade entre grupos de bolhas
+- [x] Header com XP, streak, vidas
+- [x] Navegacao: tocar bolha → abre licao
+- [x] Integrar com rotas existentes e dashboard
+- [x] Testes de widget para trilha
 
 ### Sprint 8 — Conteudo Expandido
 

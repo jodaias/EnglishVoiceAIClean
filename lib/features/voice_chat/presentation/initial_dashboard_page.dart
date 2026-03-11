@@ -147,13 +147,13 @@ class InitialDashboardPage extends StatelessWidget {
                   ),
                   _QuickMenuCard(
                     icon: Icons.school_outlined,
-                    title:
-                        appText(context, en: 'Lesson Mode', pt: 'Modo Licao'),
+                    title: appText(context,
+                        en: 'Learning Path', pt: 'Trilha de Aprendizado'),
                     subtitle: appText(context,
-                        en: 'CHECK/CONTINUE lesson flow',
-                        pt: 'Fluxo de licao com VERIFICAR/CONTINUAR'),
-                    onTap: () =>
-                        Navigator.of(context).pushNamed(DashboardRoutes.lesson),
+                        en: 'Units, bubbles and progressive unlock',
+                        pt: 'Unidades, bolhas e desbloqueio progressivo'),
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(DashboardRoutes.learningPath),
                   ),
                   _QuickMenuCard(
                     icon: Icons.history_outlined,
@@ -174,7 +174,7 @@ class InitialDashboardPage extends StatelessWidget {
                         pt: 'Viagem, entrevista, rotina...'),
                     onTap: () => Navigator.of(context)
                         .pushNamed(DashboardRoutes.session),
-                  ),
+                  )
                 ],
               ),
               const SizedBox(height: 14),

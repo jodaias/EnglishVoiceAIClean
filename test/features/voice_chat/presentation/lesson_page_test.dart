@@ -9,7 +9,6 @@ import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/conve
 import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/exercise_type.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/lesson.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/lesson_exercise.dart';
-import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/lesson_progress.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/reading_listening_exercise.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/user_progress.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/lesson_page.dart';

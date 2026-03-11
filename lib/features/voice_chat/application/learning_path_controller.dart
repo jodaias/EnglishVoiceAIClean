@@ -34,6 +34,7 @@ class LearningPathController {
           <String, LearningPathUnitState>{});
   final ValueNotifier<int> totalXpNotifier = ValueNotifier<int>(0);
   final ValueNotifier<int> streakDaysNotifier = ValueNotifier<int>(0);
+  final ValueNotifier<int> availableHeartsNotifier = ValueNotifier<int>(5);
   final ValueNotifier<bool> isLoadingNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<String?> errorNotifier = ValueNotifier<String?>(null);
 
@@ -92,6 +93,7 @@ class LearningPathController {
       unitStatesNotifier.value = states;
       totalXpNotifier.value = user.totalXp;
       streakDaysNotifier.value = _resolveStreakDays(user);
+      availableHeartsNotifier.value = user.availableHearts;
     } catch (_) {
       errorNotifier.value =
           'Nao foi possivel carregar a trilha de aprendizado.';
@@ -127,6 +129,7 @@ class LearningPathController {
     unitStatesNotifier.dispose();
     totalXpNotifier.dispose();
     streakDaysNotifier.dispose();
+    availableHeartsNotifier.dispose();
     isLoadingNotifier.dispose();
     errorNotifier.dispose();
   }

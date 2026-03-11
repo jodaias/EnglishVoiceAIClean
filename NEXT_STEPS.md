@@ -126,9 +126,25 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
   - `test/features/voice_chat/presentation/lesson_page_test.dart`
 - Validation update: presentation tests 19/19 passing.
 
+- Sprint 7 (Learning Path Page) implemented in code and tests.
+- New trail UI added:
+  - `LearningPathPage` with unit banners, horizontal bubble rows, and connected lesson nodes
+  - Header with XP, streak and hearts
+  - Open-lesson flow from node taps with refresh after returning
+- New reusable widget added:
+  - `LessonNodeWidget` with states: locked, available, completed and perfect
+- Controller enhancement:
+  - `LearningPathController` now exposes `availableHeartsNotifier` for path header state
+- Routing/dashboard integration:
+  - Added `/learning-path` route and route constant
+  - Dashboard quick menu now opens the learning path
+- New automated tests added:
+  - `test/features/voice_chat/presentation/learning_path_page_test.dart`
+- Validation update: Sprint 7 focused presentation tests 10/10 passing.
+
 ### Next execution target
 
-- Sprint 7: `LearningPathPage` com bolhas conectadas, `LessonNodeWidget`, header com XP/streak/vidas e testes de widget.
+- Sprint 8: expandir catalogo com Unidades 3-10 e adicionar testes de integridade do catalogo.
 
 ## Video Call Mode (new — 2026-03-07)
 
