@@ -660,11 +660,11 @@ lib/features/voice_chat/presentation/
 
 **Objetivo**: revisao inteligente
 
-- [ ] `SpacedRepetitionService` com fila de revisao
-- [ ] Rastrear exercicios errados com timestamps
-- [ ] Inserir exercicios de revisao em licoes futuras
-- [ ] "Revisao Diaria" como tipo de sessao no hub
-- [ ] Testes para algoritmo de espacamento
+- [x] `SpacedRepetitionService` com fila de revisao
+- [x] Rastrear exercicios errados com timestamps
+- [x] Inserir exercicios de revisao em licoes futuras
+- [x] "Revisao Diaria" como tipo de sessao no hub
+- [x] Testes para algoritmo de espacamento
 
 ### Sprint 12 — Integracao e Migracao
 

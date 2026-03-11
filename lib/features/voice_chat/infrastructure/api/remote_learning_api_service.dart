@@ -50,7 +50,17 @@ class RemoteLearningApiService implements LearningApiService {
   }
 
   @override
+  Future<void> upsertReviewItem(ReviewQueueItem item) async {
+    throw UnimplementedError('Remote API service is not implemented yet.');
+  }
+
+  @override
   Future<void> updateReviewItem(ReviewQueueItem item) async {
+    throw UnimplementedError('Remote API service is not implemented yet.');
+  }
+
+  @override
+  Future<void> removeReviewItem(String exerciseId) async {
     throw UnimplementedError('Remote API service is not implemented yet.');
   }
 }

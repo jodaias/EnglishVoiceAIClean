@@ -191,9 +191,23 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
   - `PracticeOverviewPage` now lets users choose topic + difficulty, generates a lesson on-the-fly, and opens `LessonPage` with generated content.
   - New widget test added for surprise-lesson CTA behavior.
 
+- Sprint 11 (Spaced Repetition) implemented in code and tests.
+- New review-flow components added:
+  - `SpacedRepetitionService` with progression rule: wrong -> 1 day, correct -> 3 days, correct -> 7 days, correct -> remove from queue.
+  - `LearningApiService` expanded with review queue upsert/remove operations; local and remote implementations updated.
+  - `LessonController` now reports per-exercise results to spaced-repetition service after lesson persistence.
+- Hub and UX integration delivered:
+  - `PracticeHubController` now loads pending review count and can build a dynamic daily-review lesson from due queue items.
+  - `PracticeHubSheet` now exposes "Daily Review" section with due count and start action.
+  - `PracticeOverviewPage` now opens a generated daily-review lesson and refreshes queue state after completion.
+- New tests:
+  - `test/features/voice_chat/application/spaced_repetition_service_test.dart`
+  - `test/features/voice_chat/presentation/practice_hub_sheet_test.dart` (daily review CTA)
+- Validation update: focused Sprint 11 tests passing.
+
 ### Next execution target
 
-- Sprint 11: iniciar "Repeticao Espacada" com `SpacedRepetitionService` e fila de revisao.
+- Sprint 12: iniciar integracao e migracao final para consolidar `/learning-path` como entrada principal.
 
 ## Video Call Mode (new — 2026-03-07)
 

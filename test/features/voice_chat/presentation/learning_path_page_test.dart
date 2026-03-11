@@ -142,5 +142,11 @@ class _FakeLearningApiService implements LearningApiService {
   }
 
   @override
+  Future<void> upsertReviewItem(ReviewQueueItem item) async {}
+
+  @override
   Future<void> updateReviewItem(ReviewQueueItem item) async {}
+
+  @override
+  Future<void> removeReviewItem(String exerciseId) async {}
 }

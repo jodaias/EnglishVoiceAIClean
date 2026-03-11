@@ -151,7 +151,13 @@ class _FakeLearningApiService implements LearningApiService {
       const <ReviewQueueItem>[];
 
   @override
+  Future<void> upsertReviewItem(ReviewQueueItem item) async {}
+
+  @override
   Future<void> updateReviewItem(ReviewQueueItem item) async {}
+
+  @override
+  Future<void> removeReviewItem(String exerciseId) async {}
 }
 
 class _FakePracticeHubController extends PracticeHubController {

@@ -11,14 +11,18 @@ class PracticeHubSheet extends StatelessWidget {
   final PracticeHubController controller;
   final VoidCallback? onOpenReadingListening;
   final VoidCallback? onOpenSurpriseLesson;
+  final VoidCallback? onOpenDailyReview;
   final bool isGeneratingSurpriseLesson;
+  final bool isOpeningDailyReview;
 
   const PracticeHubSheet({
     super.key,
     required this.controller,
     this.onOpenReadingListening,
     this.onOpenSurpriseLesson,
+    this.onOpenDailyReview,
     this.isGeneratingSurpriseLesson = false,
+    this.isOpeningDailyReview = false,
   });
 
   @override
@@ -62,6 +66,8 @@ class PracticeHubSheet extends StatelessWidget {
                     children: [
                       _buildReadingListeningCard(context),
                       const SizedBox(height: 12),
+                      _buildDailyReviewCard(context),
+                      const SizedBox(height: 12),
                       _buildDailyChallengeCard(context),
                       const SizedBox(height: 12),
                       _buildProgressCard(context),
@@ -74,6 +80,62 @@ class PracticeHubSheet extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDailyReviewCard(BuildContext context) {
+    return _PanelCard(
+      title: appText(context, en: 'Daily Review', pt: 'Revisao Diaria'),
+      icon: Icons.refresh,
+      child: ValueListenableBuilder<int>(
+        valueListenable: controller.pendingReviewCountNotifier,
+        builder: (context, pendingCount, _) {
+          final hasPending = pendingCount > 0;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                hasPending
+                    ? appText(
+                        context,
+                        en: '$pendingCount review items are due now.',
+                        pt: '$pendingCount itens de revisao vencem agora.',
+                      )
+                    : appText(
+                        context,
+                        en: 'No review items due right now.',
+                        pt: 'Nenhum item de revisao vencendo agora.',
+                      ),
+                style: const TextStyle(color: Colors.white70),
+              ),
+              const SizedBox(height: 8),
+              FilledButton.icon(
+                onPressed: (!hasPending || isOpeningDailyReview)
+                    ? null
+                    : onOpenDailyReview,
+                icon: isOpeningDailyReview
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.playlist_play),
+                label: Text(
+                  appText(
+                    context,
+                    en: isOpeningDailyReview
+                        ? 'Preparing review...'
+                        : 'Start daily review',
+                    pt: isOpeningDailyReview
+                        ? 'Preparando revisao...'
+                        : 'Iniciar revisao diaria',
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

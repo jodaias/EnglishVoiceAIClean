@@ -1,10 +1,14 @@
 import 'package:flutter/foundation.dart';
 
 import 'app_feature_flags.dart';
+import 'learning_api_service.dart';
+import 'lesson_content_catalog.dart';
 import 'session_history_repository.dart';
 import 'session_history_service.dart';
 import '../domain/entities/daily_challenge.dart';
 import '../domain/entities/daily_challenge_history.dart';
+import '../domain/entities/lesson.dart';
+import '../domain/entities/lesson_exercise.dart';
 import '../domain/entities/practice_session_record.dart';
 
 enum SessionDateRange { allTime, last7Days, last30Days }
@@ -13,6 +17,7 @@ class PracticeHubController {
   final SessionHistoryRepository repository;
   final SessionHistoryService historyService;
   final AppFeatureFlags featureFlags;
+  final LearningApiService? learningApiService;
 
   final ValueNotifier<List<PracticeSessionRecord>> sessionsNotifier =
       ValueNotifier<List<PracticeSessionRecord>>(<PracticeSessionRecord>[]);
@@ -33,11 +38,13 @@ class PracticeHubController {
   final ValueNotifier<bool> isLoadingNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<SessionDateRange> sessionDateRangeNotifier =
       ValueNotifier<SessionDateRange>(SessionDateRange.allTime);
+  final ValueNotifier<int> pendingReviewCountNotifier = ValueNotifier<int>(0);
 
   PracticeHubController({
     required this.repository,
     required this.historyService,
     required this.featureFlags,
+    this.learningApiService,
   });
 
   Future<void> load() async {
@@ -56,9 +63,63 @@ class PracticeHubController {
       dailyChallengeNotifier.value = challenge;
       dailyChallengeHistoryNotifier.value = challengeHistory;
       weeklySnapshotNotifier.value = snapshot;
+
+      final api = learningApiService;
+      if (api != null) {
+        final pending = await api.getReviewQueue(until: DateTime.now());
+        pendingReviewCountNotifier.value = pending.length;
+      } else {
+        pendingReviewCountNotifier.value = 0;
+      }
     } finally {
       isLoadingNotifier.value = false;
     }
+  }
+
+  Future<Lesson?> buildDailyReviewLesson({int maxExercises = 6}) async {
+    final api = learningApiService;
+    if (api == null) {
+      return null;
+    }
+
+    final pending = await api.getReviewQueue(until: DateTime.now());
+    if (pending.isEmpty) {
+      return null;
+    }
+
+    final index = _exerciseIndexFromCatalog();
+    final selectedExercises = <LessonExercise>[];
+
+    for (final item in pending) {
+      final exercise = index[item.exerciseId];
+      if (exercise == null) {
+        continue;
+      }
+      selectedExercises.add(exercise);
+      if (selectedExercises.length >= maxExercises) {
+        break;
+      }
+    }
+
+    if (selectedExercises.isEmpty) {
+      return null;
+    }
+
+    return Lesson(
+      id: 'daily_review_${DateTime.now().millisecondsSinceEpoch}',
+      unitId: 'unit_daily_review',
+      orderIndex: 0,
+      exercises: selectedExercises,
+    );
+  }
+
+  Map<String, LessonExercise> _exerciseIndexFromCatalog() {
+    final units = LessonContentCatalog().loadDefaultUnits();
+    return {
+      for (final unit in units)
+        for (final lesson in unit.lessons)
+          for (final exercise in lesson.exercises) exercise.id: exercise,
+    };
   }
 
   Future<void> markDailyChallengeCompleted() async {
@@ -150,5 +211,6 @@ class PracticeHubController {
     filteredSessionsNotifier.dispose();
     isLoadingNotifier.dispose();
     sessionDateRangeNotifier.dispose();
+    pendingReviewCountNotifier.dispose();
   }
 }

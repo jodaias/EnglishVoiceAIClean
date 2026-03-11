@@ -9,6 +9,7 @@ import '../application/lesson_feedback_audio_service.dart';
 import '../application/lesson_content_catalog.dart';
 import '../application/lesson_controller.dart';
 import '../application/pronunciation_comparer.dart';
+import '../application/spaced_repetition_service.dart';
 import '../application/xp_calculator.dart';
 import '../domain/entities/app_locale.dart';
 import '../domain/entities/conversation_language.dart';
@@ -17,6 +18,7 @@ import '../domain/entities/lesson.dart';
 import '../domain/entities/lesson_exercise.dart';
 import '../infrastructure/local/local_learning_progress_repository.dart';
 import '../infrastructure/audio/system_lesson_feedback_audio_service.dart';
+import '../infrastructure/local/local_learning_api_service.dart';
 import '../infrastructure/speech/speech_service.dart';
 import '../infrastructure/speech/stt_pronunciation_capture_service.dart';
 import '../infrastructure/tts/learning_audio_tts_service.dart';
@@ -35,6 +37,7 @@ class LessonPage extends StatefulWidget {
   final Lesson? lesson;
   final LessonController? controller;
   final LessonFeedbackAudioService? feedbackAudioService;
+  final SpacedRepetitionService? spacedRepetitionService;
 
   const LessonPage({
     super.key,
@@ -42,6 +45,7 @@ class LessonPage extends StatefulWidget {
     this.lesson,
     this.controller,
     this.feedbackAudioService,
+    this.spacedRepetitionService,
   });
 
   @override
@@ -400,6 +404,15 @@ class _LessonPageState extends State<LessonPage> {
       pronunciationCaptureService: SttPronunciationCaptureService(
         speechService: SpeechService(),
       ),
+      spacedRepetitionService: widget.spacedRepetitionService ??
+          SpacedRepetitionService(
+            learningApiService: LocalLearningApiService(),
+            trackableExerciseIds: units
+                .expand((unit) => unit.lessons)
+                .expand((lesson) => lesson.exercises)
+                .map((exercise) => exercise.id)
+                .toSet(),
+          ),
     );
   }
 

@@ -43,6 +43,40 @@ void main() {
 
     controller.dispose();
   });
+
+  testWidgets('PracticeHubSheet triggers daily review callback when due',
+      (tester) async {
+    final controller = PracticeHubController(
+      repository: _FakeSessionHistoryRepository(),
+      historyService: SessionHistoryService(),
+      featureFlags: const AppFeatureFlags(),
+    );
+    controller.pendingReviewCountNotifier.value = 3;
+
+    var triggered = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: PracticeHubSheet(
+            controller: controller,
+            onOpenDailyReview: () {
+              triggered = true;
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Start daily review'));
+    await tester.pumpAndSettle();
+
+    expect(triggered, isTrue);
+
+    controller.dispose();
+  });
 }
 
 class _FakeSessionHistoryRepository implements SessionHistoryRepository {

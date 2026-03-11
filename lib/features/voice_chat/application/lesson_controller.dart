@@ -12,6 +12,7 @@ import 'hearts_manager.dart';
 import 'learning_audio_service.dart';
 import 'learning_progress_repository.dart';
 import 'pronunciation_capture_service.dart';
+import 'spaced_repetition_service.dart';
 import 'xp_calculator.dart';
 
 class LessonAnswerFeedback {
@@ -51,6 +52,7 @@ class LessonController {
   final LearningProgressRepository progressRepository;
   final LearningAudioService audioService;
   final PronunciationCaptureService? pronunciationCaptureService;
+  final SpacedRepetitionService? spacedRepetitionService;
 
   final ValueNotifier<ConversationLanguage> languageNotifier;
   final ValueNotifier<int> currentExerciseIndexNotifier = ValueNotifier<int>(0);
@@ -72,6 +74,7 @@ class LessonController {
   final ValueNotifier<String?> errorNotifier = ValueNotifier<String?>(null);
 
   final Map<String, int> _attemptsByExerciseId = <String, int>{};
+  final Map<String, bool> _exerciseResultsById = <String, bool>{};
   int _correctAnswers = 0;
   int _lastPronunciationAccuracyPercent = 0;
   bool _sessionPersisted = false;
@@ -85,6 +88,7 @@ class LessonController {
     required this.progressRepository,
     required this.audioService,
     this.pronunciationCaptureService,
+    this.spacedRepetitionService,
     ConversationLanguage initialLanguage = ConversationLanguage.englishUs,
   }) : languageNotifier = ValueNotifier<ConversationLanguage>(initialLanguage) {
     heartsNotifier.value = heartsManager.state.currentHearts;
@@ -159,6 +163,8 @@ class LessonController {
       heartsManager.consumeHeart(DateTime.now());
       heartsNotifier.value = heartsManager.state.currentHearts;
     }
+
+    _exerciseResultsById[exercise.id] = validation.isCorrect;
 
     feedbackNotifier.value = LessonAnswerFeedback(
       isCorrect: validation.isCorrect,
@@ -355,6 +361,14 @@ class LessonController {
 
       await progressRepository.saveUserProgress(updatedUser);
       _sessionPersisted = true;
+
+      final reviewService = spacedRepetitionService;
+      if (reviewService != null && _exerciseResultsById.isNotEmpty) {
+        await reviewService.registerLessonResults(
+          exerciseResults: _exerciseResultsById,
+          now: DateTime.now(),
+        );
+      }
     } catch (_) {
       errorNotifier.value = 'Nao foi possivel salvar o progresso da licao.';
     }

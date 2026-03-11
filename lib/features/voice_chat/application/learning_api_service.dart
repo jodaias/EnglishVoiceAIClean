@@ -21,5 +21,7 @@ abstract class LearningApiService {
   Future<UserProgress> getUserStats();
 
   Future<List<ReviewQueueItem>> getReviewQueue({DateTime? until});
+  Future<void> upsertReviewItem(ReviewQueueItem item);
   Future<void> updateReviewItem(ReviewQueueItem item);
+  Future<void> removeReviewItem(String exerciseId);
 }

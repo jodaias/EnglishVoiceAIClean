@@ -4,10 +4,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../application/app_feature_flags.dart';
 import '../application/lesson_content_catalog.dart';
 import '../application/practice_hub_controller.dart';
+import '../application/spaced_repetition_service.dart';
 import '../application/session_history_service.dart';
 import '../domain/entities/lesson.dart';
 import '../domain/entities/reading_listening_exercise.dart';
 import '../infrastructure/ai/exercise_generator_service.dart';
+import '../infrastructure/local/local_learning_api_service.dart';
 import '../infrastructure/local/local_session_history_repository.dart';
 import 'app_text.dart';
 import 'dashboard_routes.dart';
@@ -25,7 +27,10 @@ class PracticeOverviewPage extends StatefulWidget {
 class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
   late final PracticeHubController controller;
   late final ExerciseGeneratorService _exerciseGeneratorService;
+  late final SpacedRepetitionService _spacedRepetitionService;
   final ValueNotifier<bool> _isGeneratingSurpriseLessonNotifier =
+      ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _isOpeningDailyReviewNotifier =
       ValueNotifier<bool>(false);
 
   @override
@@ -33,10 +38,21 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
     super.initState();
     final featureFlags = AppFeatureFlags.fromEnv(dotenv.env);
     final historyRepository = LocalSessionHistoryRepository();
+    final learningApiService = LocalLearningApiService();
     controller = PracticeHubController(
       repository: historyRepository,
       historyService: SessionHistoryService(),
       featureFlags: featureFlags,
+      learningApiService: learningApiService,
+    );
+    _spacedRepetitionService = SpacedRepetitionService(
+      learningApiService: learningApiService,
+      trackableExerciseIds: LessonContentCatalog()
+          .loadDefaultUnits()
+          .expand((unit) => unit.lessons)
+          .expand((lesson) => lesson.exercises)
+          .map((exercise) => exercise.id)
+          .toSet(),
     );
     _exerciseGeneratorService = ExerciseGeneratorService();
     controller.load();
@@ -45,6 +61,7 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
   @override
   void dispose() {
     _isGeneratingSurpriseLessonNotifier.dispose();
+    _isOpeningDailyReviewNotifier.dispose();
     controller.dispose();
     super.dispose();
   }
@@ -61,14 +78,21 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
         child: ValueListenableBuilder<bool>(
           valueListenable: _isGeneratingSurpriseLessonNotifier,
           builder: (context, isGenerating, _) {
-            return PracticeHubSheet(
-              controller: controller,
-              isGeneratingSurpriseLesson: isGenerating,
-              onOpenReadingListening: () {
-                Navigator.of(context)
-                    .pushNamed(DashboardRoutes.readingListening);
+            return ValueListenableBuilder<bool>(
+              valueListenable: _isOpeningDailyReviewNotifier,
+              builder: (context, isOpeningReview, __) {
+                return PracticeHubSheet(
+                  controller: controller,
+                  isGeneratingSurpriseLesson: isGenerating,
+                  isOpeningDailyReview: isOpeningReview,
+                  onOpenReadingListening: () {
+                    Navigator.of(context)
+                        .pushNamed(DashboardRoutes.readingListening);
+                  },
+                  onOpenSurpriseLesson: _openSurpriseLesson,
+                  onOpenDailyReview: _openDailyReviewLesson,
+                );
               },
-              onOpenSurpriseLesson: _openSurpriseLesson,
             );
           },
         ),
@@ -142,6 +166,7 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
           builder: (_) => LessonPage(
             unitId: lesson.unitId,
             lesson: lesson,
+            spacedRepetitionService: _spacedRepetitionService,
           ),
         ),
       );
@@ -163,6 +188,49 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
       );
     } finally {
       _isGeneratingSurpriseLessonNotifier.value = false;
+    }
+  }
+
+  Future<void> _openDailyReviewLesson() async {
+    if (_isOpeningDailyReviewNotifier.value) {
+      return;
+    }
+
+    _isOpeningDailyReviewNotifier.value = true;
+    try {
+      final lesson = await controller.buildDailyReviewLesson();
+      if (!mounted) {
+        return;
+      }
+
+      if (lesson == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              appText(
+                context,
+                en: 'No review items due right now. Come back later.',
+                pt: 'Nao ha revisoes vencidas agora. Volte mais tarde.',
+              ),
+            ),
+          ),
+        );
+        return;
+      }
+
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => LessonPage(
+            unitId: lesson.unitId,
+            lesson: lesson,
+            spacedRepetitionService: _spacedRepetitionService,
+          ),
+        ),
+      );
+
+      await controller.load();
+    } finally {
+      _isOpeningDailyReviewNotifier.value = false;
     }
   }
 

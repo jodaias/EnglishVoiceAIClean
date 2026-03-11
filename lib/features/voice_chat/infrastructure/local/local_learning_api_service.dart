@@ -83,9 +83,21 @@ class LocalLearningApiService implements LearningApiService {
   }
 
   @override
+  Future<void> upsertReviewItem(ReviewQueueItem item) async {
+    final db = await _openDb();
+    await SpacedRepetitionDao(db).enqueue(item);
+  }
+
+  @override
   Future<void> updateReviewItem(ReviewQueueItem item) async {
     final db = await _openDb();
     await SpacedRepetitionDao(db).updateAfterReview(item);
+  }
+
+  @override
+  Future<void> removeReviewItem(String exerciseId) async {
+    final db = await _openDb();
+    await SpacedRepetitionDao(db).deleteByExerciseId(exerciseId);
   }
 }
 

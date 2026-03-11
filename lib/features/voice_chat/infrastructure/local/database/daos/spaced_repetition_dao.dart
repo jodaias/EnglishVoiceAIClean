@@ -46,6 +46,14 @@ class SpacedRepetitionDao {
     );
   }
 
+  Future<void> deleteByExerciseId(String exerciseId) async {
+    await db.delete(
+      'review_queue',
+      where: 'exercise_id = ?',
+      whereArgs: [exerciseId],
+    );
+  }
+
   ReviewQueueItem _mapItem(Map<String, Object?> row) {
     return ReviewQueueItem(
       exerciseId: (row['exercise_id'] ?? '').toString(),
