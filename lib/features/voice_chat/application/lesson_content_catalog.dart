@@ -430,7 +430,340 @@ class LessonContentCatalog {
           ),
         ],
       ),
+      ..._buildExpandedUnits(),
     ];
+  }
+
+  List<LearningUnit> _buildExpandedUnits() {
+    return <LearningUnit>[
+      _buildTemplateUnit(
+        id: 'unit_getting_around',
+        titleEn: 'Getting Around',
+        titlePt: 'Locomocao',
+        orderIndex: 2,
+        difficulty: ReadingListeningDifficulty.beginner,
+        contextEn: 'transport',
+        contextPt: 'transporte',
+        nounEn: 'station',
+        nounPt: 'estacao',
+      ),
+      _buildTemplateUnit(
+        id: 'unit_daily_routine',
+        titleEn: 'Daily Routine',
+        titlePt: 'Rotina Diaria',
+        orderIndex: 3,
+        difficulty: ReadingListeningDifficulty.beginner,
+        contextEn: 'daily routine',
+        contextPt: 'rotina diaria',
+        nounEn: 'breakfast',
+        nounPt: 'cafe da manha',
+      ),
+      _buildTemplateUnit(
+        id: 'unit_shopping',
+        titleEn: 'Shopping',
+        titlePt: 'Compras',
+        orderIndex: 4,
+        difficulty: ReadingListeningDifficulty.beginner,
+        contextEn: 'shopping',
+        contextPt: 'compras',
+        nounEn: 'price',
+        nounPt: 'preco',
+      ),
+      _buildTemplateUnit(
+        id: 'unit_airport',
+        titleEn: 'At the Airport',
+        titlePt: 'No Aeroporto',
+        orderIndex: 5,
+        difficulty: ReadingListeningDifficulty.intermediate,
+        contextEn: 'airport',
+        contextPt: 'aeroporto',
+        nounEn: 'boarding gate',
+        nounPt: 'portao de embarque',
+      ),
+      _buildTemplateUnit(
+        id: 'unit_work',
+        titleEn: 'At Work',
+        titlePt: 'No Trabalho',
+        orderIndex: 6,
+        difficulty: ReadingListeningDifficulty.intermediate,
+        contextEn: 'work meetings',
+        contextPt: 'reunioes de trabalho',
+        nounEn: 'deadline',
+        nounPt: 'prazo',
+      ),
+      _buildTemplateUnit(
+        id: 'unit_health',
+        titleEn: 'Health and Doctor',
+        titlePt: 'Saude e Medico',
+        orderIndex: 7,
+        difficulty: ReadingListeningDifficulty.intermediate,
+        contextEn: 'health',
+        contextPt: 'saude',
+        nounEn: 'appointment',
+        nounPt: 'consulta',
+      ),
+      _buildTemplateUnit(
+        id: 'unit_making_plans',
+        titleEn: 'Making Plans',
+        titlePt: 'Fazendo Planos',
+        orderIndex: 8,
+        difficulty: ReadingListeningDifficulty.intermediate,
+        contextEn: 'plans',
+        contextPt: 'planos',
+        nounEn: 'schedule',
+        nounPt: 'agenda',
+      ),
+      _buildTemplateUnit(
+        id: 'unit_telling_stories',
+        titleEn: 'Telling Stories',
+        titlePt: 'Contando Historias',
+        orderIndex: 9,
+        difficulty: ReadingListeningDifficulty.intermediate,
+        contextEn: 'stories',
+        contextPt: 'historias',
+        nounEn: 'memory',
+        nounPt: 'memoria',
+      ),
+    ];
+  }
+
+  LearningUnit _buildTemplateUnit({
+    required String id,
+    required String titleEn,
+    required String titlePt,
+    required int orderIndex,
+    required ReadingListeningDifficulty difficulty,
+    required String contextEn,
+    required String contextPt,
+    required String nounEn,
+    required String nounPt,
+  }) {
+    final prefix = id.replaceAll('unit_', 'u').replaceAll('_', '');
+
+    return LearningUnit(
+      id: id,
+      titleEn: titleEn,
+      titlePt: titlePt,
+      iconAsset: 'assets/images/scenes/library_scene.png',
+      orderIndex: orderIndex,
+      difficulty: difficulty,
+      lessons: <Lesson>[
+        Lesson(
+          id: 'lesson_${prefix}_1',
+          unitId: id,
+          orderIndex: 0,
+          exercises: <LessonExercise>[
+            _optionExercise(
+              id: '${prefix}_1_1',
+              type: ExerciseType.multipleChoice,
+              promptEn: 'Choose the best sentence about $contextEn.',
+              promptPt: 'Escolha a melhor frase sobre $contextPt.',
+              optionsEn: <String>[
+                'I need help with $nounEn.',
+                'I like purple elephants.',
+                'Today is triangle.',
+              ],
+              optionsPt: <String>[
+                'Eu preciso de ajuda com $nounPt.',
+                'Eu gosto de elefantes roxos.',
+                'Hoje e triangulo.',
+              ],
+              correctOptionIndex: 0,
+              difficulty: difficulty,
+            ),
+            _optionExercise(
+              id: '${prefix}_1_2',
+              type: ExerciseType.listenAndSelect,
+              promptEn: 'Please show me the $nounEn.',
+              promptPt: 'Por favor, me mostre o $nounPt.',
+              optionsEn: <String>[
+                'Please show me the $nounEn.',
+                'Please paint me a cloud.',
+                'Please read me a mountain.',
+              ],
+              optionsPt: <String>[
+                'Por favor, me mostre o $nounPt.',
+                'Por favor, pinte uma nuvem.',
+                'Por favor, leia uma montanha.',
+              ],
+              correctOptionIndex: 0,
+              difficulty: difficulty,
+            ),
+            _textExercise(
+              id: '${prefix}_1_3',
+              type: ExerciseType.listenAndType,
+              promptEn: 'Type: We are talking about $contextEn now.',
+              promptPt: 'Digite: Estamos falando de $contextPt agora.',
+              acceptedAnswers: <String>['We are talking about $contextEn now'],
+              difficulty: difficulty,
+            ),
+            _optionExercise(
+              id: '${prefix}_1_4',
+              type: ExerciseType.fillInTheBlank,
+              promptEn: 'Complete: I need this ___.',
+              promptPt: 'Complete: I need this ___.',
+              optionsEn: <String>[nounEn, 'banana', 'window'],
+              optionsPt: <String>[nounEn, 'banana', 'janela'],
+              correctOptionIndex: 0,
+              difficulty: difficulty,
+            ),
+            _wordOrderExercise(
+              id: '${prefix}_1_5',
+              promptEn: 'Order: need / I / help',
+              promptPt: 'Ordene: need / I / help',
+              correctTokens: const <String>['i', 'need', 'help'],
+              difficulty: difficulty,
+            ),
+            _speakExercise(
+              id: '${prefix}_1_6',
+              promptEn: 'Say: I can handle this $contextEn task.',
+              promptPt: 'Fale: I can handle this $contextEn task.',
+              referenceText: 'I can handle this $contextEn task',
+              difficulty: difficulty,
+            ),
+          ],
+        ),
+        Lesson(
+          id: 'lesson_${prefix}_2',
+          unitId: id,
+          orderIndex: 1,
+          exercises: <LessonExercise>[
+            _textExercise(
+              id: '${prefix}_2_1',
+              type: ExerciseType.translate,
+              promptEn: 'Translate: Preciso confirmar este $nounPt.',
+              promptPt: 'Traduza: Preciso confirmar este $nounPt.',
+              acceptedAnswers: <String>['I need to confirm this $nounEn'],
+              difficulty: difficulty,
+            ),
+            _matchPairsExercise(
+              id: '${prefix}_2_2',
+              promptEn: 'Match each term with its meaning.',
+              promptPt: 'Conecte cada termo com seu significado.',
+              pairs: <String, String>{
+                nounEn: nounPt,
+                'problem': 'problema',
+                'solution': 'solucao',
+              },
+              difficulty: difficulty,
+            ),
+            _trueFalseExercise(
+              id: '${prefix}_2_3',
+              promptEn: 'True or false: Planning helps reduce mistakes.',
+              promptPt: 'Verdadeiro ou falso: Planejar ajuda a reduzir erros.',
+              correctAnswer: true,
+              difficulty: difficulty,
+            ),
+            _optionExercise(
+              id: '${prefix}_2_4',
+              type: ExerciseType.listenAndSelect,
+              promptEn: 'Can we review this $contextEn step?',
+              promptPt: 'Podemos revisar esta etapa de $contextPt?',
+              optionsEn: <String>[
+                'Can we review this $contextEn step?',
+                'Can we review this yellow river?',
+                'Can we review this loud sandwich?',
+              ],
+              optionsPt: <String>[
+                'Podemos revisar esta etapa de $contextPt?',
+                'Podemos revisar este rio amarelo?',
+                'Podemos revisar este sanduiche barulhento?',
+              ],
+              correctOptionIndex: 0,
+              difficulty: difficulty,
+            ),
+            _textExercise(
+              id: '${prefix}_2_5',
+              type: ExerciseType.listenAndType,
+              promptEn: 'Type: This $nounEn is very important today.',
+              promptPt: 'Digite: Este $nounPt e muito importante hoje.',
+              acceptedAnswers: <String>[
+                'This $nounEn is very important today',
+              ],
+              difficulty: difficulty,
+            ),
+            _optionExercise(
+              id: '${prefix}_2_6',
+              type: ExerciseType.fillInTheBlank,
+              promptEn: 'Complete: We need a clear ___.',
+              promptPt: 'Complete: We need a clear ___.',
+              optionsEn: const <String>['plan', 'cloud', 'pillow'],
+              optionsPt: const <String>['plan', 'nuvem', 'travesseiro'],
+              correctOptionIndex: 0,
+              difficulty: difficulty,
+            ),
+          ],
+        ),
+        Lesson(
+          id: 'lesson_${prefix}_3',
+          unitId: id,
+          orderIndex: 2,
+          exercises: <LessonExercise>[
+            _wordOrderExercise(
+              id: '${prefix}_3_1',
+              promptEn: 'Order: this / can / we / solve',
+              promptPt: 'Ordene: this / can / we / solve',
+              correctTokens: const <String>['we', 'can', 'solve', 'this'],
+              difficulty: difficulty,
+            ),
+            _speakExercise(
+              id: '${prefix}_3_2',
+              promptEn: 'Say: I am ready to continue with this plan.',
+              promptPt: 'Fale: I am ready to continue with this plan.',
+              referenceText: 'I am ready to continue with this plan',
+              difficulty: difficulty,
+            ),
+            _optionExercise(
+              id: '${prefix}_3_3',
+              type: ExerciseType.multipleChoice,
+              promptEn: 'Choose the most professional response.',
+              promptPt: 'Escolha a resposta mais profissional.',
+              optionsEn: const <String>[
+                'Let us review the details together.',
+                'No idea, maybe later.',
+                'This is impossible forever.',
+              ],
+              optionsPt: const <String>[
+                'Vamos revisar os detalhes juntos.',
+                'Sem ideia, talvez depois.',
+                'Isto e impossivel para sempre.',
+              ],
+              correctOptionIndex: 0,
+              difficulty: difficulty,
+            ),
+            _textExercise(
+              id: '${prefix}_3_4',
+              type: ExerciseType.translate,
+              promptEn: 'Translate: Podemos fazer isso passo a passo.',
+              promptPt: 'Traduza: Podemos fazer isso passo a passo.',
+              acceptedAnswers: const <String>[
+                'We can do this step by step',
+              ],
+              difficulty: difficulty,
+            ),
+            _matchPairsExercise(
+              id: '${prefix}_3_5',
+              promptEn: 'Match strategy words.',
+              promptPt: 'Conecte palavras de estrategia.',
+              pairs: const <String, String>{
+                'goal': 'objetivo',
+                'result': 'resultado',
+                'review': 'revisao',
+              },
+              difficulty: difficulty,
+            ),
+            _trueFalseExercise(
+              id: '${prefix}_3_6',
+              promptEn: 'True or false: Clear communication improves teamwork.',
+              promptPt:
+                  'Verdadeiro ou falso: Comunicacao clara melhora o trabalho em equipe.',
+              correctAnswer: true,
+              difficulty: difficulty,
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   LessonExercise _optionExercise({
@@ -441,11 +774,12 @@ class LessonContentCatalog {
     required List<String> optionsEn,
     required List<String> optionsPt,
     required int correctOptionIndex,
+    ReadingListeningDifficulty difficulty = ReadingListeningDifficulty.beginner,
   }) {
     return LessonExercise(
       id: id,
       type: type,
-      difficulty: ReadingListeningDifficulty.beginner,
+      difficulty: difficulty,
       content: <String, dynamic>{
         'promptEn': promptEn,
         'promptPt': promptPt,
@@ -462,11 +796,12 @@ class LessonContentCatalog {
     required String promptEn,
     required String promptPt,
     required List<String> acceptedAnswers,
+    ReadingListeningDifficulty difficulty = ReadingListeningDifficulty.beginner,
   }) {
     return LessonExercise(
       id: id,
       type: type,
-      difficulty: ReadingListeningDifficulty.beginner,
+      difficulty: difficulty,
       content: <String, dynamic>{
         'promptEn': promptEn,
         'promptPt': promptPt,
@@ -480,11 +815,12 @@ class LessonContentCatalog {
     required String promptEn,
     required String promptPt,
     required List<String> correctTokens,
+    ReadingListeningDifficulty difficulty = ReadingListeningDifficulty.beginner,
   }) {
     return LessonExercise(
       id: id,
       type: ExerciseType.wordOrder,
-      difficulty: ReadingListeningDifficulty.beginner,
+      difficulty: difficulty,
       content: <String, dynamic>{
         'promptEn': promptEn,
         'promptPt': promptPt,
@@ -498,11 +834,12 @@ class LessonContentCatalog {
     required String promptEn,
     required String promptPt,
     required Map<String, String> pairs,
+    ReadingListeningDifficulty difficulty = ReadingListeningDifficulty.beginner,
   }) {
     return LessonExercise(
       id: id,
       type: ExerciseType.matchPairs,
-      difficulty: ReadingListeningDifficulty.beginner,
+      difficulty: difficulty,
       content: <String, dynamic>{
         'promptEn': promptEn,
         'promptPt': promptPt,
@@ -516,11 +853,12 @@ class LessonContentCatalog {
     required String promptEn,
     required String promptPt,
     required String referenceText,
+    ReadingListeningDifficulty difficulty = ReadingListeningDifficulty.beginner,
   }) {
     return LessonExercise(
       id: id,
       type: ExerciseType.speakTheSentence,
-      difficulty: ReadingListeningDifficulty.beginner,
+      difficulty: difficulty,
       content: <String, dynamic>{
         'promptEn': promptEn,
         'promptPt': promptPt,
@@ -535,11 +873,12 @@ class LessonContentCatalog {
     required String promptEn,
     required String promptPt,
     required bool correctAnswer,
+    ReadingListeningDifficulty difficulty = ReadingListeningDifficulty.beginner,
   }) {
     return LessonExercise(
       id: id,
       type: ExerciseType.trueOrFalse,
-      difficulty: ReadingListeningDifficulty.beginner,
+      difficulty: difficulty,
       content: <String, dynamic>{
         'promptEn': promptEn,
         'promptPt': promptPt,

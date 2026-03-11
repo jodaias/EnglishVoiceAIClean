@@ -628,11 +628,11 @@ lib/features/voice_chat/presentation/
 
 **Objetivo**: mais unidades
 
-- [ ] Unidades 3-5 (Beginner): Getting Around, Daily Routine, Shopping
-- [ ] Unidades 6-8 (Intermediate): Airport, At Work, Health
-- [ ] Unidades 9-10 (Intermediate): Making Plans, Telling Stories
-- [ ] Revisao de qualidade bilingue em todo conteudo
-- [ ] Testes de integridade do catalogo
+- [x] Unidades 3-5 (Beginner): Getting Around, Daily Routine, Shopping
+- [x] Unidades 6-8 (Intermediate): Airport, At Work, Health
+- [x] Unidades 9-10 (Intermediate): Making Plans, Telling Stories
+- [x] Revisao de qualidade bilingue em todo conteudo
+- [x] Testes de integridade do catalogo
 
 ### Sprint 9 — Sons e Polish
 

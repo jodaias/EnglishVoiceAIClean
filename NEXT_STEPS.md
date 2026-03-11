@@ -142,9 +142,21 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
   - `test/features/voice_chat/presentation/learning_path_page_test.dart`
 - Validation update: Sprint 7 focused presentation tests 10/10 passing.
 
+- Sprint 8 (Expanded Content) implemented in code and tests.
+- Catalog expansion delivered:
+  - Units 3-5 (Beginner): Getting Around, Daily Routine, Shopping
+  - Units 6-8 (Intermediate): At the Airport, At Work, Health and Doctor
+  - Units 9-10 (Intermediate): Making Plans, Telling Stories
+- Content quality updates:
+  - Added structured bilingual prompts (`promptEn`/`promptPt`) across expanded units
+  - Kept mixed exercise distribution (option, listening, text, order, matching, speaking, true/false)
+- Test integrity updates:
+  - `lesson_content_catalog_test.dart` now validates 10 units, beginner/intermediate split (5/5), lesson/exercise volume per unit, and per-type bilingual content structure
+- Validation update: Sprint 8 focused application tests 6/6 passing.
+
 ### Next execution target
 
-- Sprint 8: expandir catalogo com Unidades 3-10 e adicionar testes de integridade do catalogo.
+- Sprint 9: sons de acerto/erro/conclusao, haptic feedback e polish de micro-interacoes.
 
 ## Video Call Mode (new — 2026-03-07)
 
