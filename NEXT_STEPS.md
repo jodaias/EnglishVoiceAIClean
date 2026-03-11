@@ -77,9 +77,42 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
   - `test/features/voice_chat/application/lesson_controller_test.dart`
 - Validation: lesson controller tests 4/4 and voice_chat suite 48/48 passing.
 
+- Sprint 4 (Learning Path Controller) implemented in code and tests.
+- New orchestration layer added:
+  - `LearningPathController` with `ValueNotifier` states for units, unlock/completion map, total XP, streak, loading and errors
+  - Progressive unlock evaluation based on completion of the previous unit
+  - Crown synchronization logic per unit (bounded to 0..5)
+- Integration added:
+  - Optional integration with `PracticeHubController` to reuse weekly streak signal
+  - `registerLessonResult()` persists lesson progress via `LearningApiService` and refreshes learning-path state
+- New automated tests added:
+  - `test/features/voice_chat/application/learning_path_controller_test.dart`
+- Validation: learning-path tests passing and full `voice_chat` suite 57/57 passing.
+
+- Sprint 5 (Exercise Widgets baseline) implemented in code and tests.
+- New presentation widgets added:
+  - `ProgressBarWidget` (lesson progress percentage)
+  - `HeartsDisplay` (remaining lives visual)
+  - `FeedbackOverlay` (correct/incorrect visual feedback with continue action)
+- New exercise renderer added:
+  - `LessonExerciseRenderer` with per-type inputs for multiple choice, listen/select, listen/type, fill-in-blank, word-order, translate, true/false, match-pairs and speak-the-sentence
+  - Unified callback contract for answer selection and audio/speech actions
+- New automated tests added:
+  - `test/features/voice_chat/presentation/lesson_ui_widgets_test.dart`
+- Validation: presentation tests 15/15 passing and focused application regression tests 13/13 passing.
+
+- Sprint 5 refinements completed.
+- UI gaps closed:
+  - `ExerciseMatchPairs` upgraded to interactive two-column pairing flow with selection highlight and pair replacement handling.
+  - `ExerciseSpeakSentence` now displays pronunciation accuracy text + progress bar.
+  - `FeedbackOverlay` now has animated entrance and animated background emphasis by feedback state.
+- Test coverage expanded:
+  - Added match-pairs interaction test and speak-accuracy rendering test in `test/features/voice_chat/presentation/lesson_ui_widgets_test.dart`.
+- Validation update: presentation tests 17/17 passing.
+
 ### Next execution target
 
-- Sprint 4: `LearningPathController` com desbloqueio progressivo, calculo de crowns na trilha, integracao com streak e testes de progressao.
+- Sprint 6: `LessonPage` com fluxo completo (CHECK/CONTINUE), renderizacao por `ExerciseType`, transicoes e `LessonSummaryPage`.
 
 ## Video Call Mode (new — 2026-03-07)
 

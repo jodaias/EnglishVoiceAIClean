@@ -576,29 +576,29 @@ lib/features/voice_chat/presentation/
 
 **Objetivo**: orquestracao da trilha
 
-- [ ] Criar `LearningPathController`
+- [x] Criar `LearningPathController`
   - unidades, estado de desbloqueio, XP total, streak
-- [ ] Implementar logica de desbloqueio progressivo
-- [ ] Implementar calculo de crowns
-- [ ] Integrar com `PracticeHubController` existente
-- [ ] Testes para desbloqueio e progressao
+- [x] Implementar logica de desbloqueio progressivo
+- [x] Implementar calculo de crowns
+- [x] Integrar com `PracticeHubController` existente
+- [x] Testes para desbloqueio e progressao
 
 ### Sprint 5 — UI: Widgets de Exercicio
 
 **Objetivo**: renderizar cada tipo de exercicio
 
-- [ ] `ExerciseMultipleChoice` — redesign com cards coloridos
-- [ ] `ExerciseListenAndSelect` — play button + opcoes
-- [ ] `ExerciseListenAndType` — play + text field
-- [ ] `ExerciseFillBlank` — texto com gap + chips
-- [ ] `ExerciseWordOrder` — chips draggaveis (usar `Wrap` + `GestureDetector` ou `ReorderableListView`)
-- [ ] `ExerciseTranslate` — frase + word bank
-- [ ] `ExerciseMatchPairs` — grid interativo
-- [ ] `ExerciseSpeakSentence` — frase + mic + accuracy bar
-- [ ] `ExerciseTrueFalse` — dois botoes grandes
-- [ ] `FeedbackOverlay` — fundo verde/vermelho animado
-- [ ] `ProgressBarWidget` — barra fina no topo
-- [ ] `HeartsDisplay` — icones de coracao
+- [x] `ExerciseMultipleChoice` — redesign com cards coloridos
+- [x] `ExerciseListenAndSelect` — play button + opcoes
+- [x] `ExerciseListenAndType` — play + text field
+- [x] `ExerciseFillBlank` — texto com gap + chips
+- [x] `ExerciseWordOrder` — chips draggaveis (usar `Wrap` + `GestureDetector` ou `ReorderableListView`)
+- [x] `ExerciseTranslate` — frase + word bank
+- [x] `ExerciseMatchPairs` — grid interativo
+- [x] `ExerciseSpeakSentence` — frase + mic + accuracy bar
+- [x] `ExerciseTrueFalse` — dois botoes grandes
+- [x] `FeedbackOverlay` — fundo verde/vermelho animado
+- [x] `ProgressBarWidget` — barra fina no topo
+- [x] `HeartsDisplay` — icones de coracao
 
 ### Sprint 6 — UI: Lesson Page
 
