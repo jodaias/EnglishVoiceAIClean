@@ -46,6 +46,8 @@ void main() {
     expect(states['u1']?.isUnlocked, isTrue);
     expect(states['u1']?.isCompleted, isTrue);
     expect(states['u2']?.isUnlocked, isTrue);
+    expect(controller.unitsNotifier.value, isNotEmpty);
+    expect(controller.unitsNotifier.value.first.lessons, hasLength(2));
     expect(controller.totalXpNotifier.value, 240);
     expect(controller.streakDaysNotifier.value, 3);
 
@@ -110,6 +112,73 @@ void main() {
     controller.dispose();
     hub.dispose();
   });
+
+  test('locks next lesson in same unit until previous is completed', () async {
+    final api = _FakeLearningApiService()
+      ..units = _buildUnits().take(1).toList(growable: false)
+      ..lessonsByUnit = <String, List<Lesson>>{
+        'u1': const <Lesson>[
+          Lesson(
+            id: 'u1_l1',
+            unitId: 'u1',
+            orderIndex: 0,
+            exercises: <LessonExercise>[],
+          ),
+          Lesson(
+            id: 'u1_l2',
+            unitId: 'u1',
+            orderIndex: 1,
+            exercises: <LessonExercise>[],
+          ),
+        ],
+      }
+      ..user = UserProgress.initial().copyWith(
+        units: <String, UnitProgress>{
+          'u1': UnitProgress.empty('u1', isUnlocked: true),
+        },
+      );
+
+    final controller = LearningPathController(apiService: api);
+    await controller.load();
+
+    final state = controller.unitStatesNotifier.value['u1'];
+    expect(state, isNotNull);
+    expect(state!.lessonUnlocked['u1_l1'], isTrue);
+    expect(state.lessonUnlocked['u1_l2'], isFalse);
+
+    controller.dispose();
+  });
+
+  test('refreshProgressOnly updates stats without reloading catalog data',
+      () async {
+    final api = _FakeLearningApiService()
+      ..units = _buildUnits()
+      ..lessonsByUnit = _buildLessonsByUnit()
+      ..user = UserProgress.initial().copyWith(
+        units: <String, UnitProgress>{
+          'u1': UnitProgress.empty('u1', isUnlocked: true),
+          'u2': UnitProgress.empty('u2', isUnlocked: false),
+        },
+        totalXp: 10,
+        streakDays: 1,
+      );
+
+    final controller = LearningPathController(apiService: api);
+    await controller.load();
+
+    expect(api.getUnitsCalls, 1);
+    expect(api.getLessonsForUnitCalls, 2);
+
+    api.user = api.user.copyWith(totalXp: 42, streakDays: 5);
+    await controller.refreshProgressOnly();
+
+    expect(api.getUnitsCalls, 1);
+    expect(api.getLessonsForUnitCalls, 2);
+    expect(controller.totalXpNotifier.value, 42);
+    expect(controller.streakDaysNotifier.value, 5);
+
+    controller.dispose();
+  });
 }
 
 class _FakeLearningApiService implements LearningApiService {
@@ -117,13 +186,20 @@ class _FakeLearningApiService implements LearningApiService {
   Map<String, List<Lesson>> lessonsByUnit = <String, List<Lesson>>{};
   UserProgress user = const UserProgress.initial();
   int saveCalls = 0;
+  int getUnitsCalls = 0;
+  int getLessonsForUnitCalls = 0;
 
   @override
-  Future<List<LearningUnit>> getUnits() async => units;
+  Future<List<LearningUnit>> getUnits() async {
+    getUnitsCalls += 1;
+    return units;
+  }
 
   @override
-  Future<List<Lesson>> getLessonsForUnit(String unitId) async =>
-      lessonsByUnit[unitId] ?? const <Lesson>[];
+  Future<List<Lesson>> getLessonsForUnit(String unitId) async {
+    getLessonsForUnitCalls += 1;
+    return lessonsByUnit[unitId] ?? const <Lesson>[];
+  }
 
   @override
   Future<List<LessonExercise>> getExercisesForLesson(String lessonId) async =>

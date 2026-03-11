@@ -71,3 +71,88 @@ Future<void> seedInitialLearningContent(Database db) async {
 
   await batch.commit(noResult: true);
 }
+
+Future<void> ensureLearningContentBackfill(Database db) async {
+  final catalog = LessonContentCatalog().loadDefaultUnits();
+
+  final batch = db.batch();
+  for (final unit in catalog) {
+    batch.insert(
+      'learning_units',
+      {
+        'id': unit.id,
+        'title_en': unit.titleEn,
+        'title_pt': unit.titlePt,
+        'icon_asset': unit.iconAsset,
+        'order_index': unit.orderIndex,
+        'difficulty': unit.difficulty.name,
+      },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+
+    batch.insert(
+      'unit_progress',
+      {
+        'unit_id': unit.id,
+        'is_unlocked': unit.orderIndex == 0 ? 1 : 0,
+        'crowns': 0,
+      },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+
+    for (final lesson in unit.lessons) {
+      batch.insert(
+        'lessons',
+        {
+          'id': lesson.id,
+          'unit_id': lesson.unitId,
+          'order_index': lesson.orderIndex,
+        },
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+
+      batch.insert(
+        'lesson_progress',
+        {
+          'lesson_id': lesson.id,
+          'unit_id': lesson.unitId,
+          'is_completed': 0,
+          'best_score': 0,
+          'xp_earned': 0,
+          'completed_at': null,
+          'attempts': 0,
+        },
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+
+      for (final exercise in lesson.exercises) {
+        batch.insert(
+          'exercises',
+          {
+            'id': exercise.id,
+            'lesson_id': lesson.id,
+            'type': exercise.type.name,
+            'difficulty': exercise.difficulty.name,
+            'content_json': jsonEncode(exercise.content),
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+    }
+  }
+
+  batch.insert(
+    'user_stats',
+    {
+      'id': 1,
+      'total_xp': 0,
+      'available_hearts': 5,
+      'hearts_refill_at': null,
+      'streak_days': 0,
+      'last_completed_date_key': null,
+    },
+    conflictAlgorithm: ConflictAlgorithm.ignore,
+  );
+
+  await batch.commit(noResult: true);
+}

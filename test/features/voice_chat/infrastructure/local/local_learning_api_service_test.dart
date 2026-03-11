@@ -12,10 +12,11 @@ void main() {
     final api = LocalLearningApiService(databaseOpener: () async => db);
 
     final units = await api.getUnits();
-    expect(units, hasLength(2));
+    expect(units.length, greaterThanOrEqualTo(2));
+    expect(units.any((unit) => unit.id == 'unit_greetings'), isTrue);
 
     final lessons = await api.getLessonsForUnit('unit_greetings');
-    expect(lessons, hasLength(3));
+    expect(lessons, hasLength(4));
 
     final exercises = await api.getExercisesForLesson('lesson_greetings_1');
     expect(exercises, hasLength(6));

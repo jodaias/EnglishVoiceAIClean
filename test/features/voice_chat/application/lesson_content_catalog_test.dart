@@ -26,19 +26,19 @@ void main() {
     expect(intermediateUnits, hasLength(5));
 
     for (final unit in units) {
-      expect(unit.lessons, hasLength(3));
+      expect(unit.lessons, hasLength(4));
       for (final lesson in unit.lessons) {
         expect(lesson.exercises, hasLength(6));
       }
     }
   });
 
-  test('starter units keep exact 18-exercise volume each', () {
+  test('starter units keep exact 24-exercise volume each', () {
     final catalog = LessonContentCatalog();
     final units = catalog.loadDefaultUnits();
 
-    expect(units[0].lessons, hasLength(3));
-    expect(units[1].lessons, hasLength(3));
+    expect(units[0].lessons, hasLength(4));
+    expect(units[1].lessons, hasLength(4));
 
     final unit1Count = units[0].lessons.fold<int>(
           0,
@@ -49,8 +49,8 @@ void main() {
           (sum, lesson) => sum + lesson.exercises.length,
         );
 
-    expect(unit1Count, 18);
-    expect(unit2Count, 18);
+    expect(unit1Count, 24);
+    expect(unit2Count, 24);
   });
 
   test('covers all exercise types and validates bilingual exercise content',
@@ -82,6 +82,18 @@ void main() {
               expect(exercise.content['correctOptionIndex'] is int, isTrue);
               break;
             case ExerciseType.listenAndType:
+              expect((exercise.content['audioTextEn'] ?? '').toString().trim(),
+                  isNotEmpty);
+              expect((exercise.content['audioTextPt'] ?? '').toString().trim(),
+                  isNotEmpty);
+              final audioEn = exercise.content['audioTextEn'].toString();
+              final audioPt = exercise.content['audioTextPt'].toString();
+              expect(audioEn.contains(':'), isFalse);
+              expect(audioPt.contains(':'), isFalse);
+              final acceptedAnswers = exercise.content['acceptedAnswers'];
+              expect(acceptedAnswers is List && acceptedAnswers.isNotEmpty,
+                  isTrue);
+              break;
             case ExerciseType.translate:
               final acceptedAnswers = exercise.content['acceptedAnswers'];
               expect(acceptedAnswers is List && acceptedAnswers.isNotEmpty,
@@ -94,6 +106,10 @@ void main() {
             case ExerciseType.matchPairs:
               final pairs = exercise.content['correctPairs'];
               expect(pairs is Map && pairs.length >= 3, isTrue);
+              if (pairs is Map) {
+                final values = pairs.values.map((e) => e.toString()).toList();
+                expect(values.toSet().length, values.length);
+              }
               break;
             case ExerciseType.speakTheSentence:
               final ref = (exercise.content['referenceText'] ?? '').toString();

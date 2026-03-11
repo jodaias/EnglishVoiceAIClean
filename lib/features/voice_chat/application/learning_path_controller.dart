@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../domain/entities/lesson.dart';
 import '../domain/entities/lesson_progress.dart';
 import '../domain/entities/learning_unit.dart';
 import '../domain/entities/unit_progress.dart';
@@ -10,6 +11,7 @@ import 'practice_hub_controller.dart';
 class LearningPathUnitState {
   final LearningUnit unit;
   final UnitProgress progress;
+  final Map<String, bool> lessonUnlocked;
   final bool isUnlocked;
   final bool isCompleted;
   final int completionPercent;
@@ -17,6 +19,7 @@ class LearningPathUnitState {
   const LearningPathUnitState({
     required this.unit,
     required this.progress,
+    required this.lessonUnlocked,
     required this.isUnlocked,
     required this.isCompleted,
     required this.completionPercent,
@@ -50,27 +53,35 @@ class LearningPathController {
     try {
       final units = List<LearningUnit>.from(await apiService.getUnits());
       final user = await apiService.getUserStats();
+      final hydratedUnits = <LearningUnit>[];
 
       units.sort((a, b) => a.orderIndex.compareTo(b.orderIndex));
 
       final states = <String, LearningPathUnitState>{};
       for (var i = 0; i < units.length; i += 1) {
         final unit = units[i];
-        final lessons = await apiService.getLessonsForUnit(unit.id);
+        final orderedLessons = List<Lesson>.from(
+          await apiService.getLessonsForUnit(unit.id),
+        )..sort((a, b) => a.orderIndex.compareTo(b.orderIndex));
         final progress = user.units[unit.id] ??
             UnitProgress.empty(unit.id, isUnlocked: i == 0);
 
         final synchronizedProgress = _synchronizeCrowns(
           progress: progress,
-          lessonsCount: lessons.length,
+          lessonsCount: orderedLessons.length,
         );
 
         final shouldUnlock =
             i == 0 || _isPreviousUnitCompleted(units[i - 1], states);
         final unlocked = synchronizedProgress.isUnlocked || shouldUnlock;
+        final lessonUnlockMap = _buildLessonUnlockMap(
+          lessons: orderedLessons,
+          unitUnlocked: unlocked,
+          lessonProgress: synchronizedProgress.lessons,
+        );
 
-        final completionPercent =
-            _completionPercent(synchronizedProgress.lessons, lessons.length);
+        final completionPercent = _completionPercent(
+            synchronizedProgress.lessons, orderedLessons.length);
 
         states[unit.id] = LearningPathUnitState(
           unit: LearningUnit(
@@ -80,16 +91,18 @@ class LearningPathController {
             iconAsset: unit.iconAsset,
             orderIndex: unit.orderIndex,
             difficulty: unit.difficulty,
-            lessons: lessons,
+            lessons: orderedLessons,
           ),
           progress: synchronizedProgress.copyWith(isUnlocked: unlocked),
+          lessonUnlocked: lessonUnlockMap,
           isUnlocked: unlocked,
           isCompleted: completionPercent == 100,
           completionPercent: completionPercent,
         );
+        hydratedUnits.add(states[unit.id]!.unit);
       }
 
-      unitsNotifier.value = units;
+      unitsNotifier.value = hydratedUnits;
       unitStatesNotifier.value = states;
       totalXpNotifier.value = user.totalXp;
       streakDaysNotifier.value = _resolveStreakDays(user);
@@ -104,6 +117,66 @@ class LearningPathController {
 
   Future<void> refresh() async {
     await load();
+  }
+
+  Future<void> refreshProgressOnly() async {
+    errorNotifier.value = null;
+
+    final currentUnits = List<LearningUnit>.from(unitsNotifier.value);
+    if (currentUnits.isEmpty) {
+      await load();
+      return;
+    }
+
+    try {
+      final user = await apiService.getUserStats();
+      final updatedStates = <String, LearningPathUnitState>{};
+      final hydratedUnits = <LearningUnit>[];
+
+      for (var i = 0; i < currentUnits.length; i += 1) {
+        final unit = currentUnits[i];
+        final previousState = unitStatesNotifier.value[unit.id];
+        final baseProgress = user.units[unit.id] ??
+            previousState?.progress ??
+            UnitProgress.empty(unit.id, isUnlocked: i == 0);
+
+        final synchronizedProgress = _synchronizeCrowns(
+          progress: baseProgress,
+          lessonsCount: unit.lessons.length,
+        );
+
+        final shouldUnlock = i == 0 ||
+            _isPreviousUnitCompleted(currentUnits[i - 1], updatedStates);
+        final unlocked = synchronizedProgress.isUnlocked || shouldUnlock;
+
+        final completionPercent = _completionPercent(
+            synchronizedProgress.lessons, unit.lessons.length);
+        final lessonUnlockMap = _buildLessonUnlockMap(
+          lessons: unit.lessons,
+          unitUnlocked: unlocked,
+          lessonProgress: synchronizedProgress.lessons,
+        );
+
+        final state = LearningPathUnitState(
+          unit: unit,
+          progress: synchronizedProgress.copyWith(isUnlocked: unlocked),
+          lessonUnlocked: lessonUnlockMap,
+          isUnlocked: unlocked,
+          isCompleted: completionPercent == 100,
+          completionPercent: completionPercent,
+        );
+        updatedStates[unit.id] = state;
+        hydratedUnits.add(state.unit);
+      }
+
+      unitsNotifier.value = hydratedUnits;
+      unitStatesNotifier.value = updatedStates;
+      totalXpNotifier.value = user.totalXp;
+      streakDaysNotifier.value = _resolveStreakDays(user);
+      availableHeartsNotifier.value = user.availableHearts;
+    } catch (_) {
+      errorNotifier.value = 'Nao foi possivel atualizar o progresso da trilha.';
+    }
   }
 
   Future<void> registerLessonResult({
@@ -167,6 +240,34 @@ class LearningPathController {
     }
     final completed = lessons.values.where((item) => item.isCompleted).length;
     return ((completed / lessonsCount) * 100).round();
+  }
+
+  Map<String, bool> _buildLessonUnlockMap({
+    required List<Lesson> lessons,
+    required bool unitUnlocked,
+    required Map<String, LessonProgress> lessonProgress,
+  }) {
+    final lessonUnlockMap = <String, bool>{};
+    if (lessons.isEmpty || !unitUnlocked) {
+      for (final lesson in lessons) {
+        lessonUnlockMap[lesson.id] = false;
+      }
+      return lessonUnlockMap;
+    }
+
+    for (var index = 0; index < lessons.length; index += 1) {
+      final lesson = lessons[index];
+      if (index == 0) {
+        lessonUnlockMap[lesson.id] = true;
+        continue;
+      }
+
+      final previousLesson = lessons[index - 1];
+      final previousProgress = lessonProgress[previousLesson.id];
+      lessonUnlockMap[lesson.id] = previousProgress?.isCompleted == true;
+    }
+
+    return lessonUnlockMap;
   }
 
   int _resolveStreakDays(UserProgress user) {

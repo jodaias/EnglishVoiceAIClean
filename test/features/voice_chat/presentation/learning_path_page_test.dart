@@ -62,9 +62,42 @@ void main() {
 
     controller.dispose();
   });
+
+  testWidgets(
+      'LearningPathPage keeps lesson 2 locked until lesson 1 is completed',
+      (tester) async {
+    final controller = LearningPathController(
+      apiService: _FakeLearningApiService(firstLessonCompleted: false),
+    );
+    String? openedLessonId;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LearningPathPage(
+          controller: controller,
+          onOpenLesson: (context, unitId, lesson) async {
+            openedLessonId = lesson.id;
+          },
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey<String>('lesson-node-l2')));
+    await tester.pumpAndSettle();
+
+    expect(openedLessonId, isNull);
+
+    controller.dispose();
+  });
 }
 
 class _FakeLearningApiService implements LearningApiService {
+  final bool firstLessonCompleted;
+
+  _FakeLearningApiService({this.firstLessonCompleted = true});
+
   @override
   Future<List<LearningUnit>> getUnits() async {
     return <LearningUnit>[
@@ -120,13 +153,16 @@ class _FakeLearningApiService implements LearningApiService {
 
   @override
   Future<UserProgress> getUserStats() async {
+    final lessons = <String, LessonProgress>{};
+    if (firstLessonCompleted) {
+      lessons['l1'] = LessonProgress.empty('l1')
+          .copyWith(isCompleted: true, bestScore: 100);
+    }
+
     return UserProgress.initial().copyWith(
       units: <String, UnitProgress>{
         'u1': UnitProgress.empty('u1', isUnlocked: true).copyWith(
-          lessons: <String, LessonProgress>{
-            'l1': LessonProgress.empty('l1')
-                .copyWith(isCompleted: true, bestScore: 100),
-          },
+          lessons: lessons,
           crowns: 1,
         ),
       },

@@ -209,6 +209,79 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
 
 - Sprint 12: iniciar integracao e migracao final para consolidar `/learning-path` como entrada principal.
 
+### Hotfix update (2026-03-11)
+
+- Learning Path content volume increased per unit:
+  - Expanded all units from 3 to 4 lessons each (maintaining 6 exercises per lesson).
+  - Added new curated lessons for `unit_greetings` and `unit_cafe` (`lesson_*_4`).
+  - Expanded template-generated units (`unit_getting_around` ... `unit_telling_stories`) with a new Lesson 4 block.
+  - Updated impacted test expectations in catalog and local persistence/API suites.
+  - Validation update: focused test run with 7/7 passing.
+
+- Listening pedagogy refinement delivered for audio-driven exercises:
+  - `listenAndSelect` and `listenAndType` now hide transcript text by default.
+  - Added explicit reveal control (`Show text` / `Mostrar texto`) and hide toggle.
+  - Difficulty-based behavior: beginner/intermediate can reveal text; advanced keeps text hidden (no reveal button).
+  - Added UI guidance message for advanced mode to reinforce listening-first behavior.
+  - Updated widget tests with regression coverage for hidden-by-default and advanced no-reveal rules.
+
+- Listening transcript cleanup for `listenAndType` prompts:
+  - Revealed text now shows only the target sentence, without instructional prefix.
+  - Audio playback now reads only the target sentence (for example: `hello, my name is Anna`), instead of `Type what you hear: ...`.
+  - Applied safe prefix parsing for both EN and PT prompt formats.
+  - Validation update: focused widget + controller tests passing.
+
+- Listening transcript model refactor (without prefix filtering):
+  - Added explicit per-language transcript fields in exercise content: `audioTextEn` and `audioTextPt`.
+  - `LessonContentCatalog` now seeds `listenAndType` exercises with these fields.
+  - UI reveal and TTS playback now read transcript from explicit fields first.
+  - Kept only minimal legacy fallback (`:` split) for previously persisted local records.
+  - Updated catalog, controller and widget tests to validate explicit transcript behavior.
+
+- Lesson completion navigation flow adjusted:
+  - After finishing a lesson and tapping continue on summary, flow now returns to previous screen when possible (for example, Learning Path) instead of always forcing dashboard.
+  - This enables immediate lesson-list refresh with next lesson unlocked state visible.
+  - Dashboard redirect remains as fallback when there is no back stack.
+
+- Learning Path immediate-unlock + completion visual polish:
+  - `LessonPage` now persists lesson completion directly to `LearningApiService` (SQLite/local API) before showing summary, keeping progression source aligned with Learning Path.
+  - Returning from summary now reflects newly unlocked next lesson without requiring full app restart.
+  - `LessonNodeWidget` now shows a compact completion badge (`DONE` / `PERFECT`) with distinct colors.
+  - Node dimensions were adjusted to avoid overflow in the horizontal lesson rail.
+
+- Match-pairs ambiguity fix delivered:
+  - Corrected duplicated right-side value in greetings lesson (`g_4_4`) that could make pair selection ambiguous (`formal` repeated).
+  - Added catalog test assertion to enforce unique right-side values in all `matchPairs` exercises.
+  - Updated content backfill to `replace` existing `exercises` rows, so seed corrections apply to already-initialized local databases.
+
+- Match-pairs pedagogical tuning:
+  - Refined `g_4_4` to keep unique targets without making the answer obvious by time-based hints.
+  - New labels use social register categories (`formal`, `informal`, `polite`) with more contextual greeting examples.
+
+- Learning Path intra-unit sequential unlock adjusted:
+  - Within an unlocked unit, only the first lesson is immediately clickable.
+  - The next lesson now unlocks only after the previous lesson is completed.
+  - Rule moved to `LearningPathController` (per-lesson unlock map) and applied by `LearningPathPage` to avoid business logic in widgets.
+  - Added regression coverage for controller and page lock behavior.
+
+- Learning Path return-flow refresh optimized:
+  - Exiting a lesson no longer triggers full trilha reload with loading spinner.
+  - Added `refreshProgressOnly()` in `LearningPathController` to refresh only user progress/stats, reusing already loaded units/lessons.
+  - `LearningPathPage` now calls progress-only refresh after returning from lesson flow.
+  - Added regression test ensuring progress-only refresh does not re-fetch units/lessons catalog.
+
+- Learning Path content backfill resilience delivered for legacy local databases:
+  - Added `ensureLearningContentBackfill(db)` in `seed_data.dart` with idempotent `INSERT OR IGNORE` for units, lessons, exercises, progress rows and `user_stats` baseline.
+  - `AppDatabase.open()` now executes this backfill after opening the database, fixing cases where users had partial local content (for example units present but lessons/exercises missing).
+  - Added debug runtime diagnostics in `AppDatabase.open()` to print counts of `learning_units`, `lessons` and `exercises` in debug builds.
+  - Added regression coverage in `seed_data_test.dart` for partial legacy state recovery.
+  - Updated local API seed expectations in tests to derive counts from the active `LessonContentCatalog`.
+
+- Learning Path lesson visibility fix delivered:
+  - Root cause: `LearningPathController` exposed `unitsNotifier` using `getUnits()` output, which can contain units without embedded lessons; UI used this list to render lesson nodes.
+  - Fix: controller now publishes hydrated units (with lessons/exercises from `getLessonsForUnit`) into `unitsNotifier`.
+  - Added assertion in `learning_path_controller_test.dart` to guarantee hydrated lessons are present in the notifier.
+
 ## Video Call Mode (new — 2026-03-07)
 
 ### Done

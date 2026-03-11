@@ -34,6 +34,10 @@ class AppDatabase {
       },
     );
 
+    // Backfill any missing rows for legacy partial databases without touching existing progress.
+    await ensureLearningContentBackfill(_database!);
+    await _debugLogLearningContentCounts(_database!);
+
     return _database!;
   }
 
@@ -149,5 +153,28 @@ class AppDatabase {
       await _createSchema(db);
       await seedInitialLearningContent(db);
     }
+  }
+
+  Future<void> _debugLogLearningContentCounts(Database db) async {
+    if (!kDebugMode) {
+      return;
+    }
+
+    final units = Sqflite.firstIntValue(
+          await db.rawQuery('SELECT COUNT(*) FROM learning_units'),
+        ) ??
+        0;
+    final lessons = Sqflite.firstIntValue(
+          await db.rawQuery('SELECT COUNT(*) FROM lessons'),
+        ) ??
+        0;
+    final exercises = Sqflite.firstIntValue(
+          await db.rawQuery('SELECT COUNT(*) FROM exercises'),
+        ) ??
+        0;
+
+    debugPrint(
+      '[AppDatabase] Seed check -> units: $units, lessons: $lessons, exercises: $exercises',
+    );
   }
 }

@@ -166,10 +166,95 @@ void main() {
     expect(answer, isFalse);
   });
 
+  testWidgets(
+      'listen and type hides transcript by default and reveals on show tap',
+      (tester) async {
+    const exercise = LessonExercise(
+      id: 'audio_text_1',
+      type: ExerciseType.listenAndType,
+      difficulty: ReadingListeningDifficulty.beginner,
+      content: <String, dynamic>{
+        'promptEn': 'Type what you hear: I am at the station.',
+        'promptPt': 'Digite o que voce ouviu: Eu estou na estacao.',
+        'audioTextEn': 'I am at the station.',
+        'audioTextPt': 'Eu estou na estacao.',
+        'acceptedAnswers': <String>['I am at the station'],
+      },
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: LessonExerciseRenderer(
+            exercise: exercise,
+            language: ConversationLanguage.englishUs,
+            selectedAnswer: null,
+            onAnswerChanged: (_) {},
+            onPlayAudio: () {},
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.text('Listen to the audio and answer without reading the text.'),
+      findsOneWidget,
+    );
+    expect(find.text('Type what you hear: I am at the station.'), findsNothing);
+    expect(find.text('I am at the station.'), findsNothing);
+    expect(find.text('Show text'), findsOneWidget);
+
+    await tester.tap(find.text('Show text'));
+    await tester.pump();
+
+    expect(find.text('Type what you hear: I am at the station.'), findsNothing);
+    expect(find.text('I am at the station.'), findsOneWidget);
+    expect(find.text('Hide text'), findsOneWidget);
+  });
+
+  testWidgets('advanced listening keeps text hidden without show button',
+      (tester) async {
+    const exercise = LessonExercise(
+      id: 'audio_select_1',
+      type: ExerciseType.listenAndSelect,
+      difficulty: ReadingListeningDifficulty.advanced,
+      content: <String, dynamic>{
+        'promptEn': 'The next train leaves at nine fifteen.',
+        'promptPt': 'O proximo trem sai as nove e quinze.',
+        'optionsEn': <String>['A', 'B', 'C'],
+        'optionsPt': <String>['A', 'B', 'C'],
+        'correctOptionIndex': 0,
+      },
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: LessonExerciseRenderer(
+            exercise: exercise,
+            language: ConversationLanguage.englishUs,
+            selectedAnswer: null,
+            onAnswerChanged: (_) {},
+            onPlayAudio: () {},
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.text('Listen to the audio and answer without reading the text.'),
+      findsOneWidget,
+    );
+    expect(find.text('The next train leaves at nine fifteen.'), findsNothing);
+    expect(find.text('Show text'), findsNothing);
+    expect(find.text('Advanced level: text hidden to focus on listening.'),
+        findsOneWidget);
+  });
+
   testWidgets('LessonExerciseRenderer connects match pairs interactively',
       (tester) async {
     Object? answer;
-    final exercise = LessonExercise(
+    const exercise = LessonExercise(
       id: 'e4',
       type: ExerciseType.matchPairs,
       difficulty: ReadingListeningDifficulty.beginner,

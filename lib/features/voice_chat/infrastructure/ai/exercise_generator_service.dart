@@ -180,6 +180,16 @@ $schema
       case ExerciseType.listenAndType:
       case ExerciseType.translate:
         content['acceptedAnswers'] = _asStringList(jsonMap['acceptedAnswers']);
+        if (type == ExerciseType.listenAndType) {
+          final audioTextEn = (jsonMap['audioTextEn'] ?? '').toString().trim();
+          final audioTextPt = (jsonMap['audioTextPt'] ?? '').toString().trim();
+          if (audioTextEn.isNotEmpty) {
+            content['audioTextEn'] = audioTextEn;
+          }
+          if (audioTextPt.isNotEmpty) {
+            content['audioTextPt'] = audioTextPt;
+          }
+        }
         break;
       case ExerciseType.wordOrder:
         content['correctTokens'] = _asStringList(jsonMap['correctTokens']);
@@ -398,6 +408,8 @@ $schema
   "id": "string",
   "promptEn": "string",
   "promptPt": "string",
+  "audioTextEn": "string (required only for listenAndType)",
+  "audioTextPt": "string (required only for listenAndType)",
   "acceptedAnswers": ["..."]
 }
 ''';

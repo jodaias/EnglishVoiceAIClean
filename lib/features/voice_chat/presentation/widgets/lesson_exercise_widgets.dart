@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/conversation_language.dart';
 import '../../domain/entities/exercise_type.dart';
 import '../../domain/entities/lesson_exercise.dart';
+import '../../domain/entities/reading_listening_exercise.dart';
 
 typedef LessonAnswerChanged = void Function(Object answer);
 
@@ -90,7 +91,7 @@ class LessonExerciseRenderer extends StatelessWidget {
   }
 }
 
-class _OptionExerciseWidget extends StatelessWidget {
+class _OptionExerciseWidget extends StatefulWidget {
   final LessonExercise exercise;
   final ConversationLanguage language;
   final Object? selectedAnswer;
@@ -108,25 +109,81 @@ class _OptionExerciseWidget extends StatelessWidget {
   });
 
   @override
+  State<_OptionExerciseWidget> createState() => _OptionExerciseWidgetState();
+}
+
+class _OptionExerciseWidgetState extends State<_OptionExerciseWidget> {
+  bool _showAudioText = false;
+
+  @override
+  void didUpdateWidget(covariant _OptionExerciseWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.exercise.id != widget.exercise.id) {
+      _showAudioText = false;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final prompt = _promptFor(exercise, language);
-    final options = _optionsFor(exercise, language);
-    final selectedIndex = selectedAnswer is int ? selectedAnswer as int : null;
+    final isListeningExercise =
+        widget.exercise.type == ExerciseType.listenAndSelect;
+    final canRevealText = _canRevealAudioText(widget.exercise);
+
+    final prompt = isListeningExercise && !_showAudioText
+        ? _hiddenAudioPrompt(widget.language)
+        : _promptFor(widget.exercise, widget.language);
+    final options = _optionsFor(widget.exercise, widget.language);
+    final selectedIndex =
+        widget.selectedAnswer is int ? widget.selectedAnswer as int : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(prompt,
             style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-        if (exercise.type == ExerciseType.listenAndSelect &&
-            onPlayAudio != null) ...[
+        if (isListeningExercise && widget.onPlayAudio != null) ...[
           const SizedBox(height: 8),
-          FilledButton.icon(
-            onPressed: enabled ? onPlayAudio : null,
-            icon: const Icon(Icons.volume_up_outlined),
-            label: Text(language == ConversationLanguage.portugueseBr
-                ? 'Ouvir audio'
-                : 'Play audio'),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              FilledButton.icon(
+                onPressed: widget.enabled ? widget.onPlayAudio : null,
+                icon: const Icon(Icons.volume_up_outlined),
+                label: Text(widget.language == ConversationLanguage.portugueseBr
+                    ? 'Ouvir audio'
+                    : 'Play audio'),
+              ),
+              if (canRevealText)
+                OutlinedButton.icon(
+                  onPressed: widget.enabled
+                      ? () {
+                          setState(() {
+                            _showAudioText = !_showAudioText;
+                          });
+                        }
+                      : null,
+                  icon: Icon(_showAudioText
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined),
+                  label: Text(_showAudioText
+                      ? (widget.language == ConversationLanguage.portugueseBr
+                          ? 'Ocultar texto'
+                          : 'Hide text')
+                      : (widget.language == ConversationLanguage.portugueseBr
+                          ? 'Mostrar texto'
+                          : 'Show text')),
+                ),
+            ],
+          ),
+        ],
+        if (isListeningExercise && !canRevealText) ...[
+          const SizedBox(height: 6),
+          Text(
+            widget.language == ConversationLanguage.portugueseBr
+                ? 'Nivel avancado: texto oculto para foco em escuta.'
+                : 'Advanced level: text hidden to focus on listening.',
+            style: const TextStyle(color: Colors.white70),
           ),
         ],
         const SizedBox(height: 8),
@@ -134,8 +191,9 @@ class _OptionExerciseWidget extends StatelessWidget {
           return RadioListTile<int>(
             value: entry.key,
             groupValue: selectedIndex,
-            onChanged:
-                enabled ? (value) => onAnswerChanged(value ?? entry.key) : null,
+            onChanged: widget.enabled
+                ? (value) => widget.onAnswerChanged(value ?? entry.key)
+                : null,
             title: Text(entry.value),
             dense: true,
             contentPadding: EdgeInsets.zero,
@@ -169,6 +227,7 @@ class _TextExerciseWidget extends StatefulWidget {
 
 class _TextExerciseWidgetState extends State<_TextExerciseWidget> {
   late final TextEditingController _controller;
+  bool _showAudioText = false;
 
   @override
   void initState() {
@@ -184,6 +243,9 @@ class _TextExerciseWidgetState extends State<_TextExerciseWidget> {
     if (next != _controller.text) {
       _controller.text = next;
     }
+    if (oldWidget.exercise.id != widget.exercise.id) {
+      _showAudioText = false;
+    }
   }
 
   @override
@@ -194,22 +256,61 @@ class _TextExerciseWidgetState extends State<_TextExerciseWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final prompt = _promptFor(widget.exercise, widget.language);
+    final isListeningExercise =
+        widget.exercise.type == ExerciseType.listenAndType;
+    final canRevealText = _canRevealAudioText(widget.exercise);
+    final prompt = isListeningExercise && !_showAudioText
+        ? _hiddenAudioPrompt(widget.language)
+        : _displayPrompt(widget.exercise, widget.language);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(prompt,
             style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-        if (widget.exercise.type == ExerciseType.listenAndType &&
-            widget.onPlayAudio != null) ...[
+        if (isListeningExercise && widget.onPlayAudio != null) ...[
           const SizedBox(height: 8),
-          FilledButton.icon(
-            onPressed: widget.enabled ? widget.onPlayAudio : null,
-            icon: const Icon(Icons.volume_up_outlined),
-            label: Text(widget.language == ConversationLanguage.portugueseBr
-                ? 'Ouvir audio'
-                : 'Play audio'),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              FilledButton.icon(
+                onPressed: widget.enabled ? widget.onPlayAudio : null,
+                icon: const Icon(Icons.volume_up_outlined),
+                label: Text(widget.language == ConversationLanguage.portugueseBr
+                    ? 'Ouvir audio'
+                    : 'Play audio'),
+              ),
+              if (canRevealText)
+                OutlinedButton.icon(
+                  onPressed: widget.enabled
+                      ? () {
+                          setState(() {
+                            _showAudioText = !_showAudioText;
+                          });
+                        }
+                      : null,
+                  icon: Icon(_showAudioText
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined),
+                  label: Text(_showAudioText
+                      ? (widget.language == ConversationLanguage.portugueseBr
+                          ? 'Ocultar texto'
+                          : 'Hide text')
+                      : (widget.language == ConversationLanguage.portugueseBr
+                          ? 'Mostrar texto'
+                          : 'Show text')),
+                ),
+            ],
+          ),
+        ],
+        if (isListeningExercise && !canRevealText) ...[
+          const SizedBox(height: 6),
+          Text(
+            widget.language == ConversationLanguage.portugueseBr
+                ? 'Nivel avancado: texto oculto para foco em escuta.'
+                : 'Advanced level: text hidden to focus on listening.',
+            style: const TextStyle(color: Colors.white70),
           ),
         ],
         const SizedBox(height: 8),
@@ -661,6 +762,48 @@ String _promptFor(LessonExercise exercise, ConversationLanguage language) {
   final key =
       language == ConversationLanguage.portugueseBr ? 'promptPt' : 'promptEn';
   return (exercise.content[key] ?? '').toString();
+}
+
+String _displayPrompt(LessonExercise exercise, ConversationLanguage language) {
+  if (exercise.type == ExerciseType.listenAndType) {
+    return _listeningTranscriptFor(exercise, language);
+  }
+  return _promptFor(exercise, language);
+}
+
+String _listeningTranscriptFor(
+  LessonExercise exercise,
+  ConversationLanguage language,
+) {
+  final audioKey = language == ConversationLanguage.portugueseBr
+      ? 'audioTextPt'
+      : 'audioTextEn';
+  final explicitAudioText =
+      (exercise.content[audioKey] ?? '').toString().trim();
+  if (explicitAudioText.isNotEmpty) {
+    return explicitAudioText;
+  }
+
+  // Legacy fallback for previously seeded content without explicit audioText keys.
+  final prompt = _promptFor(exercise, language).trim();
+  final colon = prompt.indexOf(':');
+  if (colon >= 0 && colon + 1 < prompt.length) {
+    final candidate = prompt.substring(colon + 1).trim();
+    if (candidate.isNotEmpty) {
+      return candidate;
+    }
+  }
+  return prompt;
+}
+
+bool _canRevealAudioText(LessonExercise exercise) {
+  return exercise.difficulty != ReadingListeningDifficulty.advanced;
+}
+
+String _hiddenAudioPrompt(ConversationLanguage language) {
+  return language == ConversationLanguage.portugueseBr
+      ? 'Ouca o audio e responda sem ler o texto.'
+      : 'Listen to the audio and answer without reading the text.';
 }
 
 List<String> _optionsFor(

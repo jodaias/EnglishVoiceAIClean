@@ -29,8 +29,8 @@ class LessonNodeWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 72,
-            height: 72,
+            width: 64,
+            height: 64,
             decoration: BoxDecoration(
               color: style.fill,
               shape: BoxShape.circle,
@@ -43,17 +43,45 @@ class LessonNodeWidget extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(style.icon, color: style.iconColor, size: 30),
+            child: Icon(style.icon, color: style.iconColor, size: 26),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w700,
               color: style.label,
             ),
           ),
+          if (state == LessonNodeState.completed ||
+              state == LessonNodeState.perfect) ...[
+            const SizedBox(height: 2),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+              decoration: BoxDecoration(
+                color: state == LessonNodeState.perfect
+                    ? const Color(0xFFFFE082)
+                    : const Color(0xFFC8E6C9),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: state == LessonNodeState.perfect
+                      ? const Color(0xFFF9A825)
+                      : const Color(0xFF2E7D32),
+                ),
+              ),
+              child: Text(
+                state == LessonNodeState.perfect ? 'PERFECT' : 'DONE',
+                style: TextStyle(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w800,
+                  color: state == LessonNodeState.perfect
+                      ? const Color(0xFF3E2723)
+                      : const Color(0xFF1B5E20),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

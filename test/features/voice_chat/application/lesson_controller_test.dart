@@ -37,6 +37,8 @@ void main() {
           content: <String, dynamic>{
             'promptEn': 'Type: hello friend',
             'promptPt': 'Digite: ola amigo',
+            'audioTextEn': 'hello friend',
+            'audioTextPt': 'ola amigo',
             'acceptedAnswers': <String>['hello friend'],
           },
         ),
@@ -136,6 +138,30 @@ void main() {
 
     expect(audio.lastLocale, 'pt-BR');
     expect(audio.lastText, 'Escolha o cumprimento');
+    controller.dispose();
+  });
+
+  test('plays only transcript for listen and type prompts', () async {
+    final audio = _FakeAudioService();
+    final controller = LessonController(
+      unitId: 'unit_1',
+      lesson: buildLesson(),
+      validator: const ExerciseValidator(),
+      xpCalculator: const XpCalculator(),
+      heartsManager: HeartsManager(maxHearts: 5),
+      progressRepository: _InMemoryProgressRepository(),
+      audioService: audio,
+      initialLanguage: ConversationLanguage.englishUs,
+    );
+
+    controller.selectAnswer(1);
+    expect(controller.submitCurrentAnswer(), isTrue);
+    expect(await controller.continueAfterFeedback(), isTrue);
+
+    await controller.playCurrentPromptAudio();
+
+    expect(audio.lastText, 'hello friend');
+    expect(audio.lastLocale, 'en-US');
     controller.dispose();
   });
 

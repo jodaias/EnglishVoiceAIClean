@@ -123,7 +123,13 @@ class LessonSummaryPage extends StatelessWidget {
               const Spacer(),
               FilledButton(
                 onPressed: () {
-                  Navigator.of(context).pushNamedAndRemoveUntil(
+                  final navigator = Navigator.of(context);
+                  if (navigator.canPop()) {
+                    navigator.pop(true);
+                    return;
+                  }
+
+                  navigator.pushNamedAndRemoveUntil(
                     DashboardRoutes.dashboard,
                     (route) => false,
                   );

@@ -9,12 +9,12 @@ void main() {
     final dao = LearningUnitsDao(db);
 
     final units = await dao.listUnitsOrdered();
-    expect(units, hasLength(2));
+    expect(units, hasLength(10));
     expect(units.first.orderIndex, 0);
 
     final withLessons = await dao.listUnitsWithLessons();
-    expect(withLessons.first.lessons, hasLength(3));
-    expect(withLessons.last.lessons, hasLength(3));
+    expect(withLessons.first.lessons, hasLength(4));
+    expect(withLessons.last.lessons, hasLength(4));
 
     await db.close();
   });

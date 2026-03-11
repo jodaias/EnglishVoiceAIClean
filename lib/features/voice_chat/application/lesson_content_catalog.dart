@@ -59,6 +59,8 @@ class LessonContentCatalog {
                 type: ExerciseType.listenAndType,
                 promptEn: 'Type what you hear: Hello, my name is Anna.',
                 promptPt: 'Digite o que voce ouviu: Ola, meu nome e Anna.',
+                audioTextEn: 'Hello, my name is Anna.',
+                audioTextPt: 'Ola, meu nome e Anna.',
                 acceptedAnswers: const <String>[
                   'Hello my name is Anna',
                   'Hello, my name is Anna'
@@ -158,6 +160,8 @@ class LessonContentCatalog {
                 promptEn: 'Type what you hear: See you tomorrow at school.',
                 promptPt:
                     'Digite o que voce ouviu: Vejo voce amanha na escola.',
+                audioTextEn: 'See you tomorrow at school.',
+                audioTextPt: 'Vejo voce amanha na escola.',
                 acceptedAnswers: const <String>['See you tomorrow at school'],
               ),
               _wordOrderExercise(
@@ -208,6 +212,62 @@ class LessonContentCatalog {
                 promptEn: 'True or false: "Hello" is informal only.',
                 promptPt: 'Verdadeiro ou falso: "Hello" e apenas informal.',
                 correctAnswer: false,
+              ),
+            ],
+          ),
+          Lesson(
+            id: 'lesson_greetings_4',
+            unitId: 'unit_greetings',
+            orderIndex: 3,
+            exercises: <LessonExercise>[
+              _optionExercise(
+                id: 'g_4_1',
+                type: ExerciseType.fillInTheBlank,
+                promptEn: 'Complete: It was ___ talking to you.',
+                promptPt: 'Complete: It was ___ talking to you.',
+                optionsEn: const <String>['nice', 'banana', 'window'],
+                optionsPt: const <String>['nice', 'banana', 'window'],
+                correctOptionIndex: 0,
+              ),
+              _textExercise(
+                id: 'g_4_2',
+                type: ExerciseType.translate,
+                promptEn: 'Translate: Foi um prazer falar com voce.',
+                promptPt: 'Traduza: Foi um prazer falar com voce.',
+                acceptedAnswers: const <String>[
+                  'It was a pleasure talking to you',
+                  'It was nice talking to you'
+                ],
+              ),
+              _wordOrderExercise(
+                id: 'g_4_3',
+                promptEn: 'Order: have / day / a / great',
+                promptPt: 'Ordene: have / day / a / great',
+                correctTokens: const <String>['have', 'a', 'great', 'day'],
+              ),
+              _matchPairsExercise(
+                id: 'g_4_4',
+                promptEn: 'Match each greeting to its social register.',
+                promptPt: 'Associe cada cumprimento ao registro social.',
+                pairs: const <String, String>{
+                  'good morning, professor': 'formal',
+                  'hey, whats up?': 'informal',
+                  'nice to meet you': 'polite',
+                },
+              ),
+              _trueFalseExercise(
+                id: 'g_4_5',
+                promptEn:
+                    'True or false: "How is it going?" can be used informally.',
+                promptPt:
+                    'Verdadeiro ou falso: "How is it going?" pode ser usado informalmente.',
+                correctAnswer: true,
+              ),
+              _speakExercise(
+                id: 'g_4_6',
+                promptEn: 'Say: Hi, how is your week going so far?',
+                promptPt: 'Fale: Hi, how is your week going so far?',
+                referenceText: 'Hi how is your week going so far',
               ),
             ],
           ),
@@ -265,6 +325,8 @@ class LessonContentCatalog {
                 type: ExerciseType.listenAndType,
                 promptEn: 'Type: One cappuccino with oat milk.',
                 promptPt: 'Digite: Um cappuccino com leite de aveia.',
+                audioTextEn: 'One cappuccino with oat milk.',
+                audioTextPt: 'Um cappuccino com leite de aveia.',
                 acceptedAnswers: const <String>['One cappuccino with oat milk'],
               ),
               _optionExercise(
@@ -343,6 +405,8 @@ class LessonContentCatalog {
                 type: ExerciseType.listenAndType,
                 promptEn: 'Type: The espresso is too bitter for me.',
                 promptPt: 'Digite: O espresso esta amargo demais para mim.',
+                audioTextEn: 'The espresso is too bitter for me.',
+                audioTextPt: 'O espresso esta amargo demais para mim.',
                 acceptedAnswers: const <String>[
                   'The espresso is too bitter for me'
                 ],
@@ -424,6 +488,90 @@ class LessonContentCatalog {
                     'True or false: "Refill" means more of the same drink.',
                 promptPt:
                     'Verdadeiro ou falso: "Refill" significa mais da mesma bebida.',
+                correctAnswer: true,
+              ),
+            ],
+          ),
+          Lesson(
+            id: 'lesson_cafe_4',
+            unitId: 'unit_cafe',
+            orderIndex: 3,
+            exercises: <LessonExercise>[
+              _optionExercise(
+                id: 'c_4_1',
+                type: ExerciseType.multipleChoice,
+                promptEn: 'Which phrase asks for a recommendation politely?',
+                promptPt: 'Qual frase pede uma recomendacao com educacao?',
+                optionsEn: const <String>[
+                  'What do you recommend today?',
+                  'Give me your best now.',
+                  'I do not care, choose.'
+                ],
+                optionsPt: const <String>[
+                  'O que voce recomenda hoje?',
+                  'Me de o melhor agora.',
+                  'Nao me importo, escolha.'
+                ],
+                correctOptionIndex: 0,
+              ),
+              _optionExercise(
+                id: 'c_4_2',
+                type: ExerciseType.listenAndSelect,
+                promptEn: 'Could I have this without sugar?',
+                promptPt: 'Posso pedir isso sem acucar?',
+                optionsEn: const <String>[
+                  'Could I have this without sugar?',
+                  'Could I have this without chairs?',
+                  'Could I have this without roads?'
+                ],
+                optionsPt: const <String>[
+                  'Posso pedir isso sem acucar?',
+                  'Posso pedir isso sem cadeiras?',
+                  'Posso pedir isso sem estradas?'
+                ],
+                correctOptionIndex: 0,
+              ),
+              _textExercise(
+                id: 'c_4_3',
+                type: ExerciseType.listenAndType,
+                promptEn: 'Type: Could you warm this up, please?',
+                promptPt: 'Digite: Voce pode esquentar isso, por favor?',
+                audioTextEn: 'Could you warm this up, please?',
+                audioTextPt: 'Voce pode esquentar isso, por favor?',
+                acceptedAnswers: const <String>[
+                  'Could you warm this up please',
+                  'Could you warm this up, please'
+                ],
+              ),
+              _textExercise(
+                id: 'c_4_4',
+                type: ExerciseType.translate,
+                promptEn: 'Translate: Eu vou pedir a sopa do dia.',
+                promptPt: 'Traduza: Eu vou pedir a sopa do dia.',
+                acceptedAnswers: const <String>[
+                  'I will order the soup of the day',
+                  'I am going to order the soup of the day'
+                ],
+              ),
+              _wordOrderExercise(
+                id: 'c_4_5',
+                promptEn: 'Order: table / near / window / a / please',
+                promptPt: 'Ordene: table / near / window / a / please',
+                correctTokens: const <String>[
+                  'a',
+                  'table',
+                  'near',
+                  'a',
+                  'window',
+                  'please'
+                ],
+              ),
+              _trueFalseExercise(
+                id: 'c_4_6',
+                promptEn:
+                    'True or false: "Still water" means water without gas.',
+                promptPt:
+                    'Verdadeiro ou falso: "Still water" significa agua sem gas.',
                 correctAnswer: true,
               ),
             ],
@@ -594,6 +742,8 @@ class LessonContentCatalog {
               type: ExerciseType.listenAndType,
               promptEn: 'Type: We are talking about $contextEn now.',
               promptPt: 'Digite: Estamos falando de $contextPt agora.',
+              audioTextEn: 'We are talking about $contextEn now.',
+              audioTextPt: 'Estamos falando de $contextPt agora.',
               acceptedAnswers: <String>['We are talking about $contextEn now'],
               difficulty: difficulty,
             ),
@@ -677,6 +827,8 @@ class LessonContentCatalog {
               type: ExerciseType.listenAndType,
               promptEn: 'Type: This $nounEn is very important today.',
               promptPt: 'Digite: Este $nounPt e muito importante hoje.',
+              audioTextEn: 'This $nounEn is very important today.',
+              audioTextPt: 'Este $nounPt e muito importante hoje.',
               acceptedAnswers: <String>[
                 'This $nounEn is very important today',
               ],
@@ -762,6 +914,77 @@ class LessonContentCatalog {
             ),
           ],
         ),
+        Lesson(
+          id: 'lesson_${prefix}_4',
+          unitId: id,
+          orderIndex: 3,
+          exercises: <LessonExercise>[
+            _optionExercise(
+              id: '${prefix}_4_1',
+              type: ExerciseType.fillInTheBlank,
+              promptEn: 'Complete: We should revisit the ___.',
+              promptPt: 'Complete: We should revisit the ___.',
+              optionsEn: <String>[nounEn, 'moon', 'blanket'],
+              optionsPt: <String>[nounEn, 'lua', 'cobertor'],
+              correctOptionIndex: 0,
+              difficulty: difficulty,
+            ),
+            _textExercise(
+              id: '${prefix}_4_2',
+              type: ExerciseType.translate,
+              promptEn: 'Translate: Vamos confirmar cada detalhe.',
+              promptPt: 'Traduza: Vamos confirmar cada detalhe.',
+              acceptedAnswers: const <String>[
+                'Let us confirm every detail',
+                'Lets confirm every detail'
+              ],
+              difficulty: difficulty,
+            ),
+            _optionExercise(
+              id: '${prefix}_4_3',
+              type: ExerciseType.listenAndSelect,
+              promptEn: 'Could you explain this part again?',
+              promptPt: 'Voce pode explicar esta parte novamente?',
+              optionsEn: const <String>[
+                'Could you explain this part again?',
+                'Could you erase this ocean again?',
+                'Could you borrow this silence again?'
+              ],
+              optionsPt: const <String>[
+                'Voce pode explicar esta parte novamente?',
+                'Voce pode apagar este oceano novamente?',
+                'Voce pode emprestar este silencio novamente?'
+              ],
+              correctOptionIndex: 0,
+              difficulty: difficulty,
+            ),
+            _wordOrderExercise(
+              id: '${prefix}_4_4',
+              promptEn: 'Order: review / shall / we / now',
+              promptPt: 'Ordene: review / shall / we / now',
+              correctTokens: const <String>['shall', 'we', 'review', 'now'],
+              difficulty: difficulty,
+            ),
+            _matchPairsExercise(
+              id: '${prefix}_4_5',
+              promptEn: 'Match communication words.',
+              promptPt: 'Conecte palavras de comunicacao.',
+              pairs: const <String, String>{
+                'clarify': 'esclarecer',
+                'confirm': 'confirmar',
+                'explain': 'explicar',
+              },
+              difficulty: difficulty,
+            ),
+            _speakExercise(
+              id: '${prefix}_4_6',
+              promptEn: 'Say: Thanks, this explanation really helped me.',
+              promptPt: 'Fale: Thanks, this explanation really helped me.',
+              referenceText: 'Thanks this explanation really helped me',
+              difficulty: difficulty,
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -795,18 +1018,29 @@ class LessonContentCatalog {
     required ExerciseType type,
     required String promptEn,
     required String promptPt,
+    String? audioTextEn,
+    String? audioTextPt,
     required List<String> acceptedAnswers,
     ReadingListeningDifficulty difficulty = ReadingListeningDifficulty.beginner,
   }) {
+    final content = <String, dynamic>{
+      'promptEn': promptEn,
+      'promptPt': promptPt,
+      'acceptedAnswers': acceptedAnswers,
+    };
+
+    if (audioTextEn != null && audioTextEn.trim().isNotEmpty) {
+      content['audioTextEn'] = audioTextEn;
+    }
+    if (audioTextPt != null && audioTextPt.trim().isNotEmpty) {
+      content['audioTextPt'] = audioTextPt;
+    }
+
     return LessonExercise(
       id: id,
       type: type,
       difficulty: difficulty,
-      content: <String, dynamic>{
-        'promptEn': promptEn,
-        'promptPt': promptPt,
-        'acceptedAnswers': acceptedAnswers,
-      },
+      content: content,
     );
   }
 

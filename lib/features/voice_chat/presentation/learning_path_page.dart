@@ -66,7 +66,8 @@ class _LearningPathPageState extends State<LearningPathPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(appText(context, en: 'Learning path', pt: 'Trilha de aprendizado')),
+        title: Text(
+            appText(context, en: 'Learning path', pt: 'Trilha de aprendizado')),
       ),
       body: SafeArea(
         child: ResponsiveContentShell.premium(
@@ -198,13 +199,20 @@ class _LearningPathPageState extends State<LearningPathPage> {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: unit.lessons.length,
-                  separatorBuilder: (_, __) => _connector(state.isUnlocked),
+                  separatorBuilder: (_, separatorIndex) {
+                    final nextLesson = unit.lessons[separatorIndex + 1];
+                    final nextUnlocked =
+                        state.lessonUnlocked[nextLesson.id] ?? false;
+                    return _connector(nextUnlocked);
+                  },
                   itemBuilder: (context, lessonIndex) {
                     final lesson = unit.lessons[lessonIndex];
                     final progress = state.progress.lessons[lesson.id] ??
                         LessonProgress.empty(lesson.id);
+                    final lessonUnlocked =
+                        state.lessonUnlocked[lesson.id] ?? false;
                     final nodeState = _mapLessonNodeState(
-                      unlocked: state.isUnlocked,
+                      unlocked: lessonUnlocked,
                       progress: progress,
                     );
 
@@ -235,7 +243,8 @@ class _LearningPathPageState extends State<LearningPathPage> {
         child: Container(
           height: 4,
           decoration: BoxDecoration(
-            color: unlocked ? Colors.cyanAccent.withOpacity(0.45) : Colors.white24,
+            color:
+                unlocked ? Colors.cyanAccent.withOpacity(0.45) : Colors.white24,
             borderRadius: BorderRadius.circular(999),
           ),
         ),
@@ -267,7 +276,7 @@ class _LearningPathPageState extends State<LearningPathPage> {
     final external = widget.onOpenLesson;
     if (external != null) {
       await external(context, unitId, lesson);
-      await _controller.refresh();
+      await _controller.refreshProgressOnly();
       return;
     }
 
@@ -280,7 +289,7 @@ class _LearningPathPageState extends State<LearningPathPage> {
       ),
     );
 
-    await _controller.refresh();
+    await _controller.refreshProgressOnly();
   }
 }
 
@@ -298,9 +307,11 @@ class _HeaderMetric extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+        Text(label,
+            style: const TextStyle(color: Colors.white70, fontSize: 12)),
         const SizedBox(height: 2),
-        Text(value, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
+        Text(value,
+            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
       ],
     );
   }

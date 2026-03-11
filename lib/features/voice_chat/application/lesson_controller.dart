@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/exercise_type.dart';
 import 'package:flutter/foundation.dart';
 
 import '../domain/entities/conversation_language.dart';
@@ -402,6 +403,34 @@ class LessonController {
   String _promptForLanguage(LessonExercise exercise) {
     final isPt = languageNotifier.value == ConversationLanguage.portugueseBr;
     final key = isPt ? 'promptPt' : 'promptEn';
-    return (exercise.content[key] ?? '').toString();
+    final prompt = (exercise.content[key] ?? '').toString().trim();
+    if (exercise.type == ExerciseType.listenAndType) {
+      return _listeningTranscriptFor(exercise, isPt: isPt, fallback: prompt);
+    }
+    return prompt;
+  }
+
+  String _listeningTranscriptFor(
+    LessonExercise exercise, {
+    required bool isPt,
+    required String fallback,
+  }) {
+    final audioKey = isPt ? 'audioTextPt' : 'audioTextEn';
+    final explicitAudioText =
+        (exercise.content[audioKey] ?? '').toString().trim();
+    if (explicitAudioText.isNotEmpty) {
+      return explicitAudioText;
+    }
+
+    // Legacy fallback for previously persisted content without explicit audioText keys.
+    final colon = fallback.indexOf(':');
+    if (colon >= 0 && colon + 1 < fallback.length) {
+      final candidate = fallback.substring(colon + 1).trim();
+      if (candidate.isNotEmpty) {
+        return candidate;
+      }
+    }
+
+    return fallback;
   }
 }

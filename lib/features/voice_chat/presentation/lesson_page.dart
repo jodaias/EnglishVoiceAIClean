@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../application/exercise_validator.dart';
 import '../application/hearts_manager.dart';
+import '../application/learning_api_service.dart';
 import '../application/lesson_feedback_audio_service.dart';
 import '../application/lesson_content_catalog.dart';
 import '../application/lesson_controller.dart';
@@ -16,6 +17,7 @@ import '../domain/entities/conversation_language.dart';
 import '../domain/entities/exercise_type.dart';
 import '../domain/entities/lesson.dart';
 import '../domain/entities/lesson_exercise.dart';
+import '../domain/entities/lesson_progress.dart';
 import '../infrastructure/local/local_learning_progress_repository.dart';
 import '../infrastructure/audio/system_lesson_feedback_audio_service.dart';
 import '../infrastructure/local/local_learning_api_service.dart';
@@ -38,6 +40,7 @@ class LessonPage extends StatefulWidget {
   final LessonController? controller;
   final LessonFeedbackAudioService? feedbackAudioService;
   final SpacedRepetitionService? spacedRepetitionService;
+  final LearningApiService? learningApiService;
 
   const LessonPage({
     super.key,
@@ -46,6 +49,7 @@ class LessonPage extends StatefulWidget {
     this.controller,
     this.feedbackAudioService,
     this.spacedRepetitionService,
+    this.learningApiService,
   });
 
   @override
@@ -429,6 +433,16 @@ class _LessonPageState extends State<LessonPage> {
     }
 
     _completionHandled = true;
+    unawaited(_finishLessonFlow(summary));
+  }
+
+  Future<void> _finishLessonFlow(LessonSessionSummary summary) async {
+    await _persistCompletionForLearningPath(summary);
+
+    if (!mounted) {
+      return;
+    }
+
     unawaited(_feedbackAudioService.playComplete());
     _safeHaptic(HapticFeedback.mediumImpact);
     Navigator.of(context).pushReplacement(
@@ -436,6 +450,31 @@ class _LessonPageState extends State<LessonPage> {
         builder: (_) => LessonSummaryPage(summary: summary),
       ),
     );
+  }
+
+  Future<void> _persistCompletionForLearningPath(
+      LessonSessionSummary summary) async {
+    final unitId = widget.unitId ?? _controller.unitId;
+    final api = widget.learningApiService ?? LocalLearningApiService();
+    final now = DateTime.now();
+
+    final progress = LessonProgress.empty(_controller.lesson.id).copyWith(
+      isCompleted: summary.isPassed,
+      bestScore: summary.scorePercent,
+      xpEarned: summary.earnedXp,
+      completedAt: summary.isPassed ? now : null,
+      attempts: 1,
+    );
+
+    try {
+      await api.saveLessonProgress(
+        unitId: unitId,
+        progress: progress,
+        earnedXpDelta: summary.earnedXp,
+      );
+    } catch (_) {
+      // Keep summary flow resilient even if local trail persistence fails.
+    }
   }
 
   void _onAnswerChanged(Object answer) {
