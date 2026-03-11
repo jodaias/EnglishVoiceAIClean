@@ -141,6 +141,29 @@ void main() {
     expect(list, hasLength(3));
     expect(list.first.difficulty, ReadingListeningDifficulty.intermediate);
   });
+
+  test('throws AIQuotaExceededException when executor is rate limited',
+      () async {
+    final service = ExerciseGeneratorService(
+      cache: _InMemoryExerciseCache(),
+      executePrompt: (_) async {
+        throw const AIQuotaExceededException(
+          statusCode: 429,
+          retryAfter: Duration(seconds: 30),
+        );
+      },
+    );
+
+    expect(
+      () => service.generateExercise(
+        type: ExerciseType.multipleChoice,
+        difficulty: ReadingListeningDifficulty.beginner,
+        topic: 'greetings',
+        useCache: false,
+      ),
+      throwsA(isA<AIQuotaExceededException>()),
+    );
+  });
 }
 
 class _InMemoryExerciseCache implements ExerciseGenerationCache {

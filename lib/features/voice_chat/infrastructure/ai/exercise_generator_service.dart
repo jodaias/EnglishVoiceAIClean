@@ -10,6 +10,25 @@ import 'exercise_generation_cache.dart';
 
 typedef ExercisePromptExecutor = Future<String> Function(String prompt);
 
+class AIQuotaExceededException implements Exception {
+  final int statusCode;
+  final Duration? retryAfter;
+
+  const AIQuotaExceededException({
+    this.statusCode = 429,
+    this.retryAfter,
+  });
+
+  @override
+  String toString() {
+    final retry = retryAfter;
+    if (retry == null) {
+      return 'AI quota exceeded (HTTP $statusCode).';
+    }
+    return 'AI quota exceeded (HTTP $statusCode). Retry after ${retry.inSeconds}s.';
+  }
+}
+
 class ExerciseGeneratorService {
   final ExerciseGenerationCache cache;
   final ExercisePromptExecutor _executePrompt;
@@ -279,6 +298,17 @@ $schema
       headers: <String, String>{'Content-Type': 'application/json'},
       body: body,
     );
+
+    if (response.statusCode == 429) {
+      final retryAfterHeader = response.headers['retry-after'];
+      final retryAfterSeconds = int.tryParse((retryAfterHeader ?? '').trim());
+      throw AIQuotaExceededException(
+        statusCode: 429,
+        retryAfter: retryAfterSeconds == null
+            ? null
+            : Duration(seconds: retryAfterSeconds),
+      );
+    }
 
     if (response.statusCode != 200) {
       throw FormatException(

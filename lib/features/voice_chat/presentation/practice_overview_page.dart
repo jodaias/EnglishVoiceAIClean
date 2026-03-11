@@ -7,6 +7,7 @@ import '../application/practice_hub_controller.dart';
 import '../application/spaced_repetition_service.dart';
 import '../application/session_history_service.dart';
 import '../domain/entities/lesson.dart';
+import '../domain/entities/lesson_exercise.dart';
 import '../domain/entities/reading_listening_exercise.dart';
 import '../infrastructure/ai/exercise_generator_service.dart';
 import '../infrastructure/local/local_learning_api_service.dart';
@@ -17,8 +18,27 @@ import 'lesson_page.dart';
 import 'practice_hub_sheet.dart';
 import 'responsive_content_shell.dart';
 
+typedef OpenLessonCallback = Future<void> Function(
+  BuildContext context,
+  Lesson lesson,
+  SpacedRepetitionService spacedRepetitionService,
+);
+
 class PracticeOverviewPage extends StatefulWidget {
-  const PracticeOverviewPage({super.key});
+  final PracticeHubController? practiceHubController;
+  final ExerciseGeneratorService? exerciseGeneratorService;
+  final SpacedRepetitionService? spacedRepetitionService;
+  final LessonContentCatalog? lessonContentCatalog;
+  final OpenLessonCallback? onOpenLesson;
+
+  const PracticeOverviewPage({
+    super.key,
+    this.practiceHubController,
+    this.exerciseGeneratorService,
+    this.spacedRepetitionService,
+    this.lessonContentCatalog,
+    this.onOpenLesson,
+  });
 
   @override
   State<PracticeOverviewPage> createState() => _PracticeOverviewPageState();
@@ -28,6 +48,8 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
   late final PracticeHubController controller;
   late final ExerciseGeneratorService _exerciseGeneratorService;
   late final SpacedRepetitionService _spacedRepetitionService;
+  late final LessonContentCatalog _lessonContentCatalog;
+  late final bool _ownsController;
   final ValueNotifier<bool> _isGeneratingSurpriseLessonNotifier =
       ValueNotifier<bool>(false);
   final ValueNotifier<bool> _isOpeningDailyReviewNotifier =
@@ -36,25 +58,46 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
   @override
   void initState() {
     super.initState();
-    final featureFlags = AppFeatureFlags.fromEnv(dotenv.env);
-    final historyRepository = LocalSessionHistoryRepository();
-    final learningApiService = LocalLearningApiService();
-    controller = PracticeHubController(
-      repository: historyRepository,
-      historyService: SessionHistoryService(),
-      featureFlags: featureFlags,
-      learningApiService: learningApiService,
-    );
-    _spacedRepetitionService = SpacedRepetitionService(
-      learningApiService: learningApiService,
-      trackableExerciseIds: LessonContentCatalog()
-          .loadDefaultUnits()
-          .expand((unit) => unit.lessons)
-          .expand((lesson) => lesson.exercises)
-          .map((exercise) => exercise.id)
-          .toSet(),
-    );
-    _exerciseGeneratorService = ExerciseGeneratorService();
+    _lessonContentCatalog =
+        widget.lessonContentCatalog ?? LessonContentCatalog();
+    _ownsController = widget.practiceHubController == null;
+
+    if (_ownsController) {
+      final featureFlags = AppFeatureFlags.fromEnv(dotenv.env);
+      final historyRepository = LocalSessionHistoryRepository();
+      final learningApiService = LocalLearningApiService();
+      controller = PracticeHubController(
+        repository: historyRepository,
+        historyService: SessionHistoryService(),
+        featureFlags: featureFlags,
+        learningApiService: learningApiService,
+      );
+      _spacedRepetitionService = widget.spacedRepetitionService ??
+          SpacedRepetitionService(
+            learningApiService: learningApiService,
+            trackableExerciseIds: _lessonContentCatalog
+                .loadDefaultUnits()
+                .expand((unit) => unit.lessons)
+                .expand((lesson) => lesson.exercises)
+                .map((exercise) => exercise.id)
+                .toSet(),
+          );
+    } else {
+      controller = widget.practiceHubController!;
+      _spacedRepetitionService = widget.spacedRepetitionService ??
+          SpacedRepetitionService(
+            learningApiService: LocalLearningApiService(),
+            trackableExerciseIds: _lessonContentCatalog
+                .loadDefaultUnits()
+                .expand((unit) => unit.lessons)
+                .expand((lesson) => lesson.exercises)
+                .map((exercise) => exercise.id)
+                .toSet(),
+          );
+    }
+
+    _exerciseGeneratorService =
+        widget.exerciseGeneratorService ?? ExerciseGeneratorService();
     controller.load();
   }
 
@@ -62,7 +105,9 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
   void dispose() {
     _isGeneratingSurpriseLessonNotifier.dispose();
     _isOpeningDailyReviewNotifier.dispose();
-    controller.dispose();
+    if (_ownsController) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -131,6 +176,24 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
     );
   }
 
+  Future<void> _openLesson(Lesson lesson) async {
+    final customOpen = widget.onOpenLesson;
+    if (customOpen != null) {
+      await customOpen(context, lesson, _spacedRepetitionService);
+      return;
+    }
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => LessonPage(
+          unitId: lesson.unitId,
+          lesson: lesson,
+          spacedRepetitionService: _spacedRepetitionService,
+        ),
+      ),
+    );
+  }
+
   Future<void> _openSurpriseLesson() async {
     if (_isGeneratingSurpriseLessonNotifier.value) {
       return;
@@ -161,18 +224,42 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
         exercises: generatedExercises,
       );
 
-      await Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => LessonPage(
-            unitId: lesson.unitId,
-            lesson: lesson,
-            spacedRepetitionService: _spacedRepetitionService,
-          ),
-        ),
-      );
-    } catch (_) {
+      await _openLesson(lesson);
+    } catch (error) {
       if (!mounted) {
         return;
+      }
+
+      final rateLimited = error is AIQuotaExceededException;
+      final retryAfterSeconds =
+          rateLimited ? (error).retryAfter?.inSeconds : null;
+
+      if (rateLimited) {
+        final fallbackLesson = _buildFallbackSurpriseLesson(
+          topic: selection.topic,
+          difficulty: selection.difficulty,
+        );
+
+        if (fallbackLesson != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                appText(
+                  context,
+                  en: retryAfterSeconds == null
+                      ? 'AI is rate-limited (HTTP 429). Starting a curated fallback lesson now.'
+                      : 'AI is rate-limited (HTTP 429). Starting fallback now. Try AI again in about $retryAfterSeconds seconds.',
+                  pt: retryAfterSeconds == null
+                      ? 'A IA atingiu limite (HTTP 429). Iniciando uma licao curada de fallback agora.'
+                      : 'A IA atingiu limite (HTTP 429). Iniciando fallback agora. Tente a IA novamente em cerca de $retryAfterSeconds segundos.',
+                ),
+              ),
+            ),
+          );
+
+          await _openLesson(fallbackLesson);
+          return;
+        }
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -180,8 +267,16 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
           content: Text(
             appText(
               context,
-              en: 'Could not generate a surprise lesson right now. Please try again.',
-              pt: 'Nao foi possivel gerar uma licao surpresa agora. Tente novamente.',
+              en: rateLimited
+                  ? retryAfterSeconds == null
+                      ? 'AI is rate-limited (HTTP 429). Please wait a moment and try again.'
+                      : 'AI is rate-limited (HTTP 429). Try again in about $retryAfterSeconds seconds.'
+                  : 'Could not generate a surprise lesson right now. Please try again.',
+              pt: rateLimited
+                  ? retryAfterSeconds == null
+                      ? 'A IA atingiu limite de requisicoes (HTTP 429). Aguarde um pouco e tente novamente.'
+                      : 'A IA atingiu limite de requisicoes (HTTP 429). Tente novamente em cerca de $retryAfterSeconds segundos.'
+                  : 'Nao foi possivel gerar uma licao surpresa agora. Tente novamente.',
             ),
           ),
         ),
@@ -189,6 +284,63 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
     } finally {
       _isGeneratingSurpriseLessonNotifier.value = false;
     }
+  }
+
+  Lesson? _buildFallbackSurpriseLesson({
+    required String topic,
+    required ReadingListeningDifficulty difficulty,
+  }) {
+    final units = _lessonContentCatalog.loadDefaultUnits();
+    if (units.isEmpty) {
+      return null;
+    }
+
+    final topicNormalized = topic.trim().toLowerCase();
+
+    final matchedUnits = units.where((unit) {
+      final titleEn = unit.titleEn.trim().toLowerCase();
+      final titlePt = unit.titlePt.trim().toLowerCase();
+      return titleEn == topicNormalized || titlePt == topicNormalized;
+    }).toList(growable: false);
+    final matchedUnit = matchedUnits.isEmpty ? null : matchedUnits.first;
+
+    final unitByDifficulty =
+        units.where((unit) => unit.difficulty == difficulty);
+    final sourceUnit = matchedUnit ??
+        (unitByDifficulty.isNotEmpty ? unitByDifficulty.first : units.first);
+
+    final allExercises = sourceUnit.lessons
+        .expand((lesson) => lesson.exercises)
+        .toList(growable: false);
+    if (allExercises.isEmpty) {
+      return null;
+    }
+
+    var selected = allExercises
+        .where((exercise) => exercise.difficulty == difficulty)
+        .toList(growable: false);
+    if (selected.isEmpty) {
+      selected = allExercises;
+    }
+
+    final maxExercises = selected.length < 6 ? selected.length : 6;
+    if (maxExercises <= 0) {
+      return null;
+    }
+
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final offset = selected.length <= 1 ? 0 : now % selected.length;
+    final rotated = <LessonExercise>[];
+    for (var i = 0; i < selected.length; i += 1) {
+      rotated.add(selected[(offset + i) % selected.length]);
+    }
+
+    return Lesson(
+      id: 'surprise_fallback_${DateTime.now().millisecondsSinceEpoch}',
+      unitId: 'unit_surprise_fallback',
+      orderIndex: 0,
+      exercises: rotated.take(maxExercises).toList(growable: false),
+    );
   }
 
   Future<void> _openDailyReviewLesson() async {
@@ -218,15 +370,7 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
         return;
       }
 
-      await Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => LessonPage(
-            unitId: lesson.unitId,
-            lesson: lesson,
-            spacedRepetitionService: _spacedRepetitionService,
-          ),
-        ),
-      );
+      await _openLesson(lesson);
 
       await controller.load();
     } finally {
@@ -235,7 +379,7 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
   }
 
   Future<_SurpriseLessonSelection?> _showSurpriseLessonPicker() async {
-    final units = LessonContentCatalog().loadDefaultUnits();
+    final units = _lessonContentCatalog.loadDefaultUnits();
     final topicOptions = units
         .map((unit) => appText(
               context,
