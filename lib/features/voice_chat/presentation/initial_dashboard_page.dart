@@ -146,24 +146,14 @@ class InitialDashboardPage extends StatelessWidget {
                         .pushNamed(DashboardRoutes.language),
                   ),
                   _QuickMenuCard(
-                    icon: Icons.tune_outlined,
-                    title: appText(context,
-                        en: 'Session Focus', pt: 'Foco da Sessao'),
+                    icon: Icons.school_outlined,
+                    title:
+                        appText(context, en: 'Lesson Mode', pt: 'Modo Licao'),
                     subtitle: appText(context,
-                        en: 'Travel, interview, routine...',
-                        pt: 'Viagem, entrevista, rotina...'),
-                    onTap: () => Navigator.of(context)
-                        .pushNamed(DashboardRoutes.session),
-                  ),
-                  _QuickMenuCard(
-                    icon: Icons.headphones_outlined,
-                    title: appText(context,
-                        en: 'Reading + Listening', pt: 'Leitura + Audicao'),
-                    subtitle: appText(context,
-                        en: 'Guided audio and comprehension',
-                        pt: 'Audio guiado e compreensao'),
-                    onTap: () => Navigator.of(context)
-                        .pushNamed(DashboardRoutes.readingListening),
+                        en: 'CHECK/CONTINUE lesson flow',
+                        pt: 'Fluxo de licao com VERIFICAR/CONTINUAR'),
+                    onTap: () =>
+                        Navigator.of(context).pushNamed(DashboardRoutes.lesson),
                   ),
                   _QuickMenuCard(
                     icon: Icons.history_outlined,
@@ -174,6 +164,16 @@ class InitialDashboardPage extends StatelessWidget {
                         pt: 'Buscar e filtrar sessoes anteriores'),
                     onTap: () => Navigator.of(context)
                         .pushNamed(DashboardRoutes.sessionHistory),
+                  ),
+                  _QuickMenuCard(
+                    icon: Icons.tune_outlined,
+                    title: appText(context,
+                        en: 'Session Focus', pt: 'Foco da Sessao'),
+                    subtitle: appText(context,
+                        en: 'Travel, interview, routine...',
+                        pt: 'Viagem, entrevista, rotina...'),
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(DashboardRoutes.session),
                   ),
                 ],
               ),
