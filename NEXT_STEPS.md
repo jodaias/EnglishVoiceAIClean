@@ -44,9 +44,22 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
   - `test/features/voice_chat/application/lesson_content_catalog_test.dart`
 - Validation: Sprint 2 focused tests 15/15 and voice_chat suite 44/44 passing.
 
+- Sprint 3 (Lesson Controller) implemented in code and tests.
+- New orchestration layer added:
+  - `LessonController` with `ValueNotifier` states for exercise index, selected answer, feedback, hearts, XP, progress, completion and summary
+  - Full lesson loop: show -> submit -> feedback -> continue -> summary
+- Runtime integrations added:
+  - TTS playback via `LearningAudioService` (`playCurrentPromptAudio`)
+  - STT capture for speaking exercises via `PronunciationCaptureService` (`captureSpokenAnswer`)
+- Persistence integration added:
+  - Saves lesson completion into `LearningProgressRepository` with score, attempts, XP aggregation, hearts snapshot, and crowns increment (up to 5)
+- New automated tests added:
+  - `test/features/voice_chat/application/lesson_controller_test.dart`
+- Validation: lesson controller tests 4/4 and voice_chat suite 48/48 passing.
+
 ### Next execution target
 
-- Sprint 3: `LessonController` com fluxo completo de licao (exibir -> responder -> feedback -> proximo -> resumo), integrando TTS/STT e salvamento de progresso.
+- Sprint 4: `LearningPathController` com desbloqueio progressivo, calculo de crowns na trilha, integracao com streak e testes de progressao.
 
 ## Video Call Mode (new — 2026-03-07)
 

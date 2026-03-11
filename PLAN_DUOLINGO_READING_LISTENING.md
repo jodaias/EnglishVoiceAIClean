@@ -438,13 +438,13 @@ lib/features/voice_chat/presentation/
 
 **Objetivo**: orquestracao do fluxo de licao
 
-- [ ] Criar `LessonController` com ValueNotifiers
+- [x] Criar `LessonController` com ValueNotifiers
   - exercicio atual, resposta selecionada, feedback, vidas, XP, progresso
-- [ ] Implementar fluxo: exibir → responder → feedback → proximo → resumo
-- [ ] Integrar TTS para exercicios de audio
-- [ ] Integrar STT para exercicios de fala
-- [ ] Salvar progresso ao finalizar licao
-- [ ] Testes completos do controller
+- [x] Implementar fluxo: exibir → responder → feedback → proximo → resumo
+- [x] Integrar TTS para exercicios de audio
+- [x] Integrar STT para exercicios de fala
+- [x] Salvar progresso ao finalizar licao
+- [x] Testes completos do controller
 
 ### Sprint 4 — Learning Path Controller
 
