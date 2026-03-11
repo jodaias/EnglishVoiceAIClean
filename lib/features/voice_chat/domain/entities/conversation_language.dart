@@ -30,7 +30,8 @@ extension ConversationLanguageX on ConversationLanguage {
       case ConversationLanguage.englishUs:
         return 'English (US)';
       case ConversationLanguage.portugueseBr:
-        return 'Portugues (BR)';
+        return 'Português (BR)';
     }
   }
 }
+

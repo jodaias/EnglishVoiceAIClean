@@ -155,7 +155,7 @@ class ReadingListeningController {
       );
     } catch (_) {
       errorNotifier.value =
-          'Nao foi possivel reproduzir o audio agora. Tente novamente.';
+          'Não foi possível reproduzir o áudio agora. Tente novamente.';
     } finally {
       isSpeakingNotifier.value = false;
     }
@@ -201,7 +201,7 @@ class ReadingListeningController {
           PronunciationComparer().compare(original, captured);
     } catch (_) {
       errorNotifier.value =
-          'Nao foi possivel capturar a pronuncia agora. Tente novamente.';
+          'Não foi possível capturar a pronúncia agora. Tente novamente.';
     } finally {
       isCapturingReadAloudNotifier.value = false;
     }
@@ -248,7 +248,7 @@ class ReadingListeningController {
       return true;
     } catch (_) {
       errorNotifier.value =
-          'Nao foi possivel salvar a sessao de aprendizado agora.';
+          'Não foi possível salvar a sessão de aprendizado agora.';
       return false;
     } finally {
       isSavingNotifier.value = false;
@@ -285,7 +285,7 @@ class ReadingListeningController {
 
     final language = practiceLanguageNotifier.value;
     if (language == ConversationLanguage.portugueseBr) {
-      return 'Voce acertou $correct de $total exercicios ($accuracy%). Continue praticando leitura em voz alta e repeticao auditiva.';
+      return 'Você acertou $correct de $total exercícios ($accuracy%). Continue praticando leitura em voz alta e repetição auditiva.';
     }
 
     return 'You got $correct out of $total exercises right ($accuracy%). Keep practicing short read-aloud and listening repetition blocks.';
@@ -357,7 +357,7 @@ class ReadingListeningController {
 
       suggestIntermediateNotifier.value = highAccuracyCount >= 2;
     } catch (_) {
-      // Silently ignore — recommendation is non-critical.
+      // Silently ignore - recommendation is non-critical.
     }
   }
 

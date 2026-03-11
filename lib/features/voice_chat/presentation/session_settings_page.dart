@@ -78,7 +78,7 @@ class _SessionSettingsPageState extends State<SessionSettingsPage> {
                         appText(
                           context,
                           en: 'Use these options to shape how each speaking session starts. Settings are now persisted locally.',
-                          pt: 'Use estas opcoes para ajustar como cada sessao de fala comeca. As configuracoes agora ficam salvas localmente.',
+                          pt: 'Use estas opcoes para ajustar como cada sessao de fala começa. As configuracoes agora ficam salvas localmente.',
                         ),
                         style: const TextStyle(color: Colors.white70),
                       ),
@@ -260,14 +260,14 @@ class _SessionSettingsPageState extends State<SessionSettingsPage> {
                         appText(
                           context,
                           en: 'Auto resume listening after bot speech',
-                          pt: 'Retomar escuta automaticamente apos fala do bot',
+                          pt: 'Retomar escuta automaticamente após fala do bot',
                         ),
                       ),
                       subtitle: Text(
                         appText(
                           context,
                           en: 'Keeps the flow natural after each answer.',
-                          pt: 'Mantem o fluxo natural apos cada resposta.',
+                          pt: 'Mantem o fluxo natural após cada resposta.',
                         ),
                       ),
                       onChanged:
@@ -286,7 +286,7 @@ class _SessionSettingsPageState extends State<SessionSettingsPage> {
                         appText(
                           context,
                           en: 'When enabled, you can edit STT text before it goes to AI.',
-                          pt: 'Quando ativado, voce pode editar o texto do STT antes de ir para a IA.',
+                          pt: 'Quando ativado, você pode editar o texto do STT antes de ir para a IA.',
                         ),
                       ),
                       onChanged: sessionSettingsController.setReviewBeforeSend,
@@ -380,7 +380,7 @@ class _SessionSettingsPageState extends State<SessionSettingsPage> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.insights_outlined),
             activeIcon: const Icon(Icons.insights),
-            label: appText(context, en: 'Practice', pt: 'Pratica'),
+            label: appText(context, en: 'Practice', pt: 'Prática'),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings_outlined),
@@ -424,3 +424,5 @@ class _SessionSettingsPageState extends State<SessionSettingsPage> {
     }
   }
 }
+
+

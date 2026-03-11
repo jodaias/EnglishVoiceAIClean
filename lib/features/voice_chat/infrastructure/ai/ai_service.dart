@@ -98,7 +98,7 @@ class GeminiService implements AIService {
     int? sessionTurns,
   }) {
     final languageRule = language == ConversationLanguage.portugueseBr
-        ? 'Responda em portugues brasileiro.'
+        ? 'Responda em português brasileiro.'
         : 'Reply in American English.';
 
     final transcript = conversation
@@ -268,7 +268,7 @@ $transcript
     required int elapsedSeconds,
   }) {
     final languageRule = language == ConversationLanguage.portugueseBr
-        ? 'Escreva em portugues brasileiro, com exemplos curtos em ingles quando util e para aprendizagem.'
+        ? 'Escreva em português brasileiro, com exemplos curtos em inglês quando util e para aprendizagem.'
         : 'Write in American English.';
 
     final transcript = conversation
@@ -442,7 +442,7 @@ class OpenAIService implements AIService {
     int? sessionTurns,
   }) {
     final languageRule = language == ConversationLanguage.portugueseBr
-        ? 'Responda em portugues brasileiro.'
+        ? 'Responda em português brasileiro.'
         : 'Reply in American English.';
 
     final transcript = conversation
@@ -476,7 +476,7 @@ $transcript
     required int elapsedSeconds,
   }) {
     final languageRule = language == ConversationLanguage.portugueseBr
-        ? 'Escreva em portugues brasileiro, com exemplos curtos em ingles quando util e para aprendizagem.'
+        ? 'Escreva em português brasileiro, com exemplos curtos em inglês quando util e para aprendizagem.'
         : 'Write in American English.';
 
     final transcript = conversation
@@ -546,3 +546,4 @@ $transcript
     return AIServiceErrorCode.unknown;
   }
 }
+

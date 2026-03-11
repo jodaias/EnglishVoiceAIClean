@@ -109,7 +109,7 @@ class LearningPathController {
       availableHeartsNotifier.value = user.availableHearts;
     } catch (_) {
       errorNotifier.value =
-          'Nao foi possivel carregar a trilha de aprendizado.';
+          'Não foi possível carregar a trilha de aprendizado.';
     } finally {
       isLoadingNotifier.value = false;
     }
@@ -175,7 +175,7 @@ class LearningPathController {
       streakDaysNotifier.value = _resolveStreakDays(user);
       availableHeartsNotifier.value = user.availableHearts;
     } catch (_) {
-      errorNotifier.value = 'Nao foi possivel atualizar o progresso da trilha.';
+      errorNotifier.value = 'Não foi possível atualizar o progresso da trilha.';
     }
   }
 
@@ -279,3 +279,4 @@ class LearningPathController {
     return user.streakDays;
   }
 }
+

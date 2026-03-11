@@ -47,7 +47,7 @@ class _SessionHistoryPageState extends State<SessionHistoryPage> {
           appText(
             context,
             en: 'Session History',
-            pt: 'Historico de Sessoes',
+            pt: 'Histórico de Sessoes',
           ),
         ),
       ),
@@ -290,3 +290,4 @@ class _SessionTile extends StatelessWidget {
     );
   }
 }
+

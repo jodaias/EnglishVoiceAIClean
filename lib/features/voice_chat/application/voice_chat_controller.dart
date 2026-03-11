@@ -333,15 +333,15 @@ class VoiceChatController {
     );
 
     final summary = language == ConversationLanguage.portugueseBr
-        ? 'Voce concluiu uma pratica focada em ${practiceFocusNotifier.value} e manteve a conversa ativa.'
+        ? 'Você concluiu uma prática focada em ${practiceFocusNotifier.value} e manteve a conversa ativa.'
         : 'You completed a focused practice on ${practiceFocusNotifier.value} and kept the conversation active.';
 
     final didWell = language == ConversationLanguage.portugueseBr
-        ? 'Boa consistencia em manter turnos de fala durante a sessao.'
+        ? 'Boa consistência em manter turnos de fala durante a sessão.'
         : 'Great consistency keeping your speaking turns active during the session.';
 
     final improveNext = language == ConversationLanguage.portugueseBr
-        ? 'Na proxima sessao, tente respostas um pouco mais longas e conectores simples.'
+        ? 'Na próxima sessão, tente respostas um pouco mais longas e conectores simples.'
         : 'In the next session, try slightly longer answers and simple connectors.';
 
     final nextChallenge = language == ConversationLanguage.portugueseBr
@@ -413,7 +413,7 @@ $nextChallenge
         continue;
       }
 
-      // New user input — dismiss any edit panel from the previous turn.
+      // New user input - dismiss any edit panel from the previous turn.
       _dismissReviewPanel();
 
       _silentTurns = 0;
@@ -1048,12 +1048,12 @@ $nextChallenge
     switch (code) {
       case AIServiceErrorCode.missingApiKey:
         return isPortuguese
-            ? 'Nao consegui responder porque a chave da IA nao foi configurada no app. Verifique o arquivo .env e gere um novo APK.'
+            ? 'Não consegui responder porque a chave da IA não foi configurada no app. Verifique o arquivo .env e gere um novo APK.'
             : 'I could not reply because the AI key is missing in the app configuration. Please verify .env and build a new APK.';
       case AIServiceErrorCode.unauthorized:
       case AIServiceErrorCode.forbidden:
         return isPortuguese
-            ? 'A chave da IA foi rejeitada neste dispositivo. Verifique restricoes da chave para o app em release e tente novamente.'
+            ? 'A chave da IA foi rejeitada neste dispositivo. Verifique restrições da chave para o app em release e tente novamente.'
             : 'The AI key was rejected on this device. Please review key restrictions for the release app and try again.';
       case AIServiceErrorCode.rateLimited:
       case AIServiceErrorCode.quotaExceeded:
@@ -1062,11 +1062,11 @@ $nextChallenge
             : 'The AI API usage limit was reached just now. Please wait a moment and try again.';
       case AIServiceErrorCode.network:
         return isPortuguese
-            ? 'Nao consegui acessar a internet para responder. Confira sua conexao e tente novamente.'
+            ? 'Não consegui acessar a internet para responder. Confira sua conexão e tente novamente.'
             : 'I could not reach the internet to reply. Please check your connection and try again.';
       case AIServiceErrorCode.serviceUnavailable:
         return isPortuguese
-            ? 'O servico de IA esta temporariamente indisponivel. Tente novamente em instantes.'
+            ? 'O serviço de IA está temporariamente indisponível. Tente novamente em instantes.'
             : 'The AI service is temporarily unavailable. Please try again shortly.';
       case AIServiceErrorCode.invalidResponse:
       case AIServiceErrorCode.unknown:

@@ -217,7 +217,7 @@ class LessonController {
         locale: languageNotifier.value.ttsLocale,
       );
     } catch (_) {
-      errorNotifier.value = 'Nao foi possivel reproduzir o audio agora.';
+      errorNotifier.value = 'Não foi possível reproduzir o audio agora.';
     } finally {
       isSpeakingNotifier.value = false;
     }
@@ -256,7 +256,7 @@ class LessonController {
       );
       return normalized;
     } catch (_) {
-      errorNotifier.value = 'Nao foi possivel capturar a fala agora.';
+      errorNotifier.value = 'Não foi possível capturar a fala agora.';
       return null;
     } finally {
       isCapturingSpeechNotifier.value = false;
@@ -371,7 +371,7 @@ class LessonController {
         );
       }
     } catch (_) {
-      errorNotifier.value = 'Nao foi possivel salvar o progresso da licao.';
+      errorNotifier.value = 'Não foi possível salvar o progresso da lição.';
     }
   }
 
@@ -434,3 +434,4 @@ class LessonController {
     return fallback;
   }
 }
+

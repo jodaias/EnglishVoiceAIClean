@@ -198,7 +198,7 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
         actions: [
           IconButton(
             tooltip:
-                appText(context, en: 'Practice hub', pt: 'Central de pratica'),
+                appText(context, en: 'Practice hub', pt: 'Central de prática'),
             icon: const Icon(Icons.insights_outlined),
             onPressed: () async {
               await practiceHubController.load();
@@ -282,7 +282,7 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
                               decoration: InputDecoration(
                                 labelText: appText(context,
                                     en: 'Practice focus',
-                                    pt: 'Foco da pratica'),
+                                    pt: 'Foco da prática'),
                                 border: const OutlineInputBorder(),
                                 isDense: true,
                               ),
@@ -776,3 +776,4 @@ class _StatCard extends StatelessWidget {
     );
   }
 }
+

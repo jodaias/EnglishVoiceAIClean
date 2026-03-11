@@ -128,10 +128,10 @@ class InitialDashboardPage extends StatelessWidget {
                   _QuickMenuCard(
                     icon: Icons.insights_outlined,
                     title: appText(context,
-                        en: 'Practice Hub', pt: 'Central de Pratica'),
+                        en: 'Practice Hub', pt: 'Central de Prática'),
                     subtitle: appText(context,
                         en: 'History and weekly stats',
-                        pt: 'Historico e metricas semanais'),
+                        pt: 'Histórico e metricas semanais'),
                     onTap: () => Navigator.of(context)
                         .pushNamed(DashboardRoutes.practice),
                   ),
@@ -140,8 +140,8 @@ class InitialDashboardPage extends StatelessWidget {
                     title: appText(context,
                         en: 'Language Mode', pt: 'Modo de Idioma'),
                     subtitle: appText(context,
-                        en: 'Auto, English, Portugues',
-                        pt: 'Auto, Ingles, Portugues'),
+                        en: 'Auto, English, Português',
+                        pt: 'Auto, Inglês, Português'),
                     onTap: () => Navigator.of(context)
                         .pushNamed(DashboardRoutes.language),
                   ),
@@ -158,7 +158,7 @@ class InitialDashboardPage extends StatelessWidget {
                   _QuickMenuCard(
                     icon: Icons.history_outlined,
                     title: appText(context,
-                        en: 'Session History', pt: 'Historico de Sessoes'),
+                        en: 'Session History', pt: 'Histórico de Sessoes'),
                     subtitle: appText(context,
                         en: 'Search and filter past sessions',
                         pt: 'Buscar e filtrar sessoes anteriores'),
@@ -223,7 +223,7 @@ class InitialDashboardPage extends StatelessWidget {
           BottomNavigationBarItem(
             icon: const Icon(Icons.insights_outlined),
             activeIcon: const Icon(Icons.insights),
-            label: appText(context, en: 'Practice', pt: 'Pratica'),
+            label: appText(context, en: 'Practice', pt: 'Prática'),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings_outlined),
@@ -381,7 +381,7 @@ class _StreakBannerState extends State<_StreakBanner> {
                 appText(
                   context,
                   en: '$_streakDays-day streak',
-                  pt: 'Sequencia de $_streakDays dias',
+                  pt: 'Sequência de $_streakDays dias',
                 ),
                 style: TextStyle(
                   fontSize: 16,
@@ -443,3 +443,4 @@ class _StreakBannerState extends State<_StreakBanner> {
     return labels[(day.weekday - 1) % 7];
   }
 }
+

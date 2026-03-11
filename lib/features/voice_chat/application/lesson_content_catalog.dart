@@ -24,7 +24,7 @@ class LessonContentCatalog {
                 id: 'g_1_1',
                 type: ExerciseType.multipleChoice,
                 promptEn: 'Good morning! How are you?',
-                promptPt: 'Bom dia! Como voce esta?',
+                promptPt: 'Bom dia! Como você esta?',
                 optionsEn: const <String>[
                   'I am fine, thanks.',
                   'Blue.',
@@ -33,7 +33,7 @@ class LessonContentCatalog {
                 optionsPt: const <String>[
                   'Estou bem, obrigado.',
                   'Azul.',
-                  'Amanha.'
+                  'Amanhã.'
                 ],
                 correctOptionIndex: 0,
               ),
@@ -41,14 +41,14 @@ class LessonContentCatalog {
                 id: 'g_1_2',
                 type: ExerciseType.listenAndSelect,
                 promptEn: 'Nice to meet you.',
-                promptPt: 'Prazer em conhecer voce.',
+                promptPt: 'Prazer em conhecer você.',
                 optionsEn: const <String>[
                   'Nice to meet you.',
                   'See you yesterday.',
                   'Where is my bag?'
                 ],
                 optionsPt: const <String>[
-                  'Prazer em conhecer voce.',
+                  'Prazer em conhecer você.',
                   'Te vejo ontem.',
                   'Onde esta minha bolsa?'
                 ],
@@ -58,7 +58,7 @@ class LessonContentCatalog {
                 id: 'g_1_3',
                 type: ExerciseType.listenAndType,
                 promptEn: 'Type what you hear: Hello, my name is Anna.',
-                promptPt: 'Digite o que voce ouviu: Ola, meu nome e Anna.',
+                promptPt: 'Digite o que você ouviu: Ola, meu nome e Anna.',
                 audioTextEn: 'Hello, my name is Anna.',
                 audioTextPt: 'Ola, meu nome e Anna.',
                 acceptedAnswers: const <String>[
@@ -69,7 +69,7 @@ class LessonContentCatalog {
               _wordOrderExercise(
                 id: 'g_1_4',
                 promptEn: 'Order the words to greet politely.',
-                promptPt: 'Ordene as palavras para cumprimentar com educacao.',
+                promptPt: 'Ordene as palavras para cumprimentar com educação.',
                 correctTokens: const <String>['good', 'afternoon', 'everyone'],
               ),
               _trueFalseExercise(
@@ -82,7 +82,7 @@ class LessonContentCatalog {
               _speakExercise(
                 id: 'g_1_6',
                 promptEn: 'Say: Nice to meet you, I am Carlos.',
-                promptPt: 'Fale: Prazer em conhecer voce, eu sou Carlos.',
+                promptPt: 'Fale: Prazer em conhecer você, eu sou Carlos.',
                 referenceText: 'Nice to meet you I am Carlos',
               ),
             ],
@@ -115,7 +115,7 @@ class LessonContentCatalog {
                 pairs: const <String, String>{
                   'good morning': 'bom dia',
                   'good night': 'boa noite',
-                  'see you later': 'ate mais',
+                  'see you later': 'até mais',
                 },
               ),
               _optionExercise(
@@ -159,9 +159,9 @@ class LessonContentCatalog {
                 type: ExerciseType.listenAndType,
                 promptEn: 'Type what you hear: See you tomorrow at school.',
                 promptPt:
-                    'Digite o que voce ouviu: Vejo voce amanha na escola.',
+                    'Digite o que você ouviu: Vejo você amanhã na escola.',
                 audioTextEn: 'See you tomorrow at school.',
-                audioTextPt: 'Vejo voce amanha na escola.',
+                audioTextPt: 'Vejo você amanhã na escola.',
                 acceptedAnswers: const <String>['See you tomorrow at school'],
               ),
               _wordOrderExercise(
@@ -181,7 +181,7 @@ class LessonContentCatalog {
                   'No way.'
                 ],
                 optionsPt: const <String>[
-                  'Com licenca, posso perguntar?',
+                  'Com licença, posso perguntar?',
                   'Me de isso agora.',
                   'De jeito nenhum.'
                 ],
@@ -190,8 +190,8 @@ class LessonContentCatalog {
               _textExercise(
                 id: 'g_3_4',
                 type: ExerciseType.translate,
-                promptEn: 'Translate: Ate logo, tenha um bom dia.',
-                promptPt: 'Traduza: Ate logo, tenha um bom dia.',
+                promptEn: 'Translate: Até logo, tenha um bom dia.',
+                promptPt: 'Traduza: Até logo, tenha um bom dia.',
                 acceptedAnswers: const <String>[
                   'See you later have a good day',
                   'See you later, have a good day'
@@ -202,7 +202,7 @@ class LessonContentCatalog {
                 promptEn: 'Match phrase and meaning.',
                 promptPt: 'Conecte frase e significado.',
                 pairs: const <String, String>{
-                  'how are you': 'como voce esta',
+                  'how are you': 'como você esta',
                   'goodbye': 'tchau',
                   'long time no see': 'quanto tempo',
                 },
@@ -232,8 +232,8 @@ class LessonContentCatalog {
               _textExercise(
                 id: 'g_4_2',
                 type: ExerciseType.translate,
-                promptEn: 'Translate: Foi um prazer falar com voce.',
-                promptPt: 'Traduza: Foi um prazer falar com voce.',
+                promptEn: 'Translate: Foi um prazer falar com você.',
+                promptPt: 'Traduza: Foi um prazer falar com você.',
                 acceptedAnswers: const <String>[
                   'It was a pleasure talking to you',
                   'It was nice talking to you'
@@ -290,14 +290,14 @@ class LessonContentCatalog {
                 id: 'c_1_1',
                 type: ExerciseType.multipleChoice,
                 promptEn: 'I would like a small coffee, please.',
-                promptPt: 'Eu gostaria de um cafe pequeno, por favor.',
+                promptPt: 'Eu gostaria de um café pequeno, por favor.',
                 optionsEn: const <String>[
                   'A small coffee',
                   'A train ticket',
                   'A hospital bed'
                 ],
                 optionsPt: const <String>[
-                  'Um cafe pequeno',
+                  'Um café pequeno',
                   'Uma passagem de trem',
                   'Uma cama de hospital'
                 ],
@@ -369,12 +369,12 @@ class LessonContentCatalog {
               ),
               _matchPairsExercise(
                 id: 'c_2_2',
-                promptEn: 'Match cafe terms.',
+                promptEn: 'Match café terms.',
                 promptPt: 'Conecte termos da cafeteria.',
                 pairs: const <String, String>{
                   'bill': 'conta',
                   'table': 'mesa',
-                  'waiter': 'garcom',
+                  'waiter': 'garçom',
                 },
               ),
               _trueFalseExercise(
@@ -387,16 +387,16 @@ class LessonContentCatalog {
                 id: 'c_2_4',
                 type: ExerciseType.listenAndSelect,
                 promptEn: 'Do you have any vegan desserts?',
-                promptPt: 'Voce tem sobremesas veganas?',
+                promptPt: 'Você tem sobremesas veganas?',
                 optionsEn: const <String>[
                   'Do you have any vegan desserts?',
                   'Do you have any phones?',
                   'Do you have a bus?'
                 ],
                 optionsPt: const <String>[
-                  'Voce tem sobremesas veganas?',
-                  'Voce tem telefones?',
-                  'Voce tem um onibus?'
+                  'Você tem sobremesas veganas?',
+                  'Você tem telefones?',
+                  'Você tem um ônibus?'
                 ],
                 correctOptionIndex: 0,
               ),
@@ -449,16 +449,16 @@ class LessonContentCatalog {
                 id: 'c_3_3',
                 type: ExerciseType.multipleChoice,
                 promptEn: 'Which response is polite to call the waiter?',
-                promptPt: 'Qual resposta e educada para chamar o garcom?',
+                promptPt: 'Qual resposta e educada para chamar o garçom?',
                 optionsEn: const <String>[
                   'Excuse me, could you help me?',
                   'Come here now!',
                   'You there!'
                 ],
                 optionsPt: const <String>[
-                  'Com licenca, voce pode me ajudar?',
+                  'Com licença, você pode me ajudar?',
                   'Venha aqui agora!',
-                  'Ei, voce!'
+                  'Ei, você!'
                 ],
                 correctOptionIndex: 0,
               ),
@@ -479,7 +479,7 @@ class LessonContentCatalog {
                 pairs: const <String, String>{
                   'for here': 'consumir no local',
                   'to go': 'para viagem',
-                  'sparkling water': 'agua com gas',
+                  'sparkling water': 'agua com gás',
                 },
               ),
               _trueFalseExercise(
@@ -501,16 +501,16 @@ class LessonContentCatalog {
                 id: 'c_4_1',
                 type: ExerciseType.multipleChoice,
                 promptEn: 'Which phrase asks for a recommendation politely?',
-                promptPt: 'Qual frase pede uma recomendacao com educacao?',
+                promptPt: 'Qual frase pede uma recomendação com educação?',
                 optionsEn: const <String>[
                   'What do you recommend today?',
                   'Give me your best now.',
                   'I do not care, choose.'
                 ],
                 optionsPt: const <String>[
-                  'O que voce recomenda hoje?',
+                  'O que você recomenda hoje?',
                   'Me de o melhor agora.',
-                  'Nao me importo, escolha.'
+                  'Não me importo, escolha.'
                 ],
                 correctOptionIndex: 0,
               ),
@@ -518,14 +518,14 @@ class LessonContentCatalog {
                 id: 'c_4_2',
                 type: ExerciseType.listenAndSelect,
                 promptEn: 'Could I have this without sugar?',
-                promptPt: 'Posso pedir isso sem acucar?',
+                promptPt: 'Posso pedir isso sem açúcar?',
                 optionsEn: const <String>[
                   'Could I have this without sugar?',
                   'Could I have this without chairs?',
                   'Could I have this without roads?'
                 ],
                 optionsPt: const <String>[
-                  'Posso pedir isso sem acucar?',
+                  'Posso pedir isso sem açúcar?',
                   'Posso pedir isso sem cadeiras?',
                   'Posso pedir isso sem estradas?'
                 ],
@@ -535,9 +535,9 @@ class LessonContentCatalog {
                 id: 'c_4_3',
                 type: ExerciseType.listenAndType,
                 promptEn: 'Type: Could you warm this up, please?',
-                promptPt: 'Digite: Voce pode esquentar isso, por favor?',
+                promptPt: 'Digite: Você pode esquentar isso, por favor?',
                 audioTextEn: 'Could you warm this up, please?',
-                audioTextPt: 'Voce pode esquentar isso, por favor?',
+                audioTextPt: 'Você pode esquentar isso, por favor?',
                 acceptedAnswers: const <String>[
                   'Could you warm this up please',
                   'Could you warm this up, please'
@@ -571,7 +571,7 @@ class LessonContentCatalog {
                 promptEn:
                     'True or false: "Still water" means water without gas.',
                 promptPt:
-                    'Verdadeiro ou falso: "Still water" significa agua sem gas.',
+                    'Verdadeiro ou falso: "Still water" significa agua sem gás.',
                 correctAnswer: true,
               ),
             ],
@@ -587,24 +587,24 @@ class LessonContentCatalog {
       _buildTemplateUnit(
         id: 'unit_getting_around',
         titleEn: 'Getting Around',
-        titlePt: 'Locomocao',
+        titlePt: 'Locomoção',
         orderIndex: 2,
         difficulty: ReadingListeningDifficulty.beginner,
         contextEn: 'transport',
         contextPt: 'transporte',
         nounEn: 'station',
-        nounPt: 'estacao',
+        nounPt: 'estação',
       ),
       _buildTemplateUnit(
         id: 'unit_daily_routine',
         titleEn: 'Daily Routine',
-        titlePt: 'Rotina Diaria',
+        titlePt: 'Rotina Diária',
         orderIndex: 3,
         difficulty: ReadingListeningDifficulty.beginner,
         contextEn: 'daily routine',
-        contextPt: 'rotina diaria',
+        contextPt: 'rotina diária',
         nounEn: 'breakfast',
-        nounPt: 'cafe da manha',
+        nounPt: 'café da manha',
       ),
       _buildTemplateUnit(
         id: 'unit_shopping',
@@ -626,7 +626,7 @@ class LessonContentCatalog {
         contextEn: 'airport',
         contextPt: 'aeroporto',
         nounEn: 'boarding gate',
-        nounPt: 'portao de embarque',
+        nounPt: 'portão de embarque',
       ),
       _buildTemplateUnit(
         id: 'unit_work',
@@ -635,7 +635,7 @@ class LessonContentCatalog {
         orderIndex: 6,
         difficulty: ReadingListeningDifficulty.intermediate,
         contextEn: 'work meetings',
-        contextPt: 'reunioes de trabalho',
+        contextPt: 'reuniões de trabalho',
         nounEn: 'deadline',
         nounPt: 'prazo',
       ),
@@ -670,7 +670,7 @@ class LessonContentCatalog {
         contextEn: 'stories',
         contextPt: 'historias',
         nounEn: 'memory',
-        nounPt: 'memoria',
+        nounPt: 'memória',
       ),
     ];
   }
@@ -900,7 +900,7 @@ class LessonContentCatalog {
               pairs: const <String, String>{
                 'goal': 'objetivo',
                 'result': 'resultado',
-                'review': 'revisao',
+                'review': 'revisão',
               },
               difficulty: difficulty,
             ),
@@ -908,7 +908,7 @@ class LessonContentCatalog {
               id: '${prefix}_3_6',
               promptEn: 'True or false: Clear communication improves teamwork.',
               promptPt:
-                  'Verdadeiro ou falso: Comunicacao clara melhora o trabalho em equipe.',
+                  'Verdadeiro ou falso: Comunicação clara melhora o trabalho em equipe.',
               correctAnswer: true,
               difficulty: difficulty,
             ),
@@ -944,16 +944,16 @@ class LessonContentCatalog {
               id: '${prefix}_4_3',
               type: ExerciseType.listenAndSelect,
               promptEn: 'Could you explain this part again?',
-              promptPt: 'Voce pode explicar esta parte novamente?',
+              promptPt: 'Você pode explicar esta parte novamente?',
               optionsEn: const <String>[
                 'Could you explain this part again?',
                 'Could you erase this ocean again?',
                 'Could you borrow this silence again?'
               ],
               optionsPt: const <String>[
-                'Voce pode explicar esta parte novamente?',
-                'Voce pode apagar este oceano novamente?',
-                'Voce pode emprestar este silencio novamente?'
+                'Você pode explicar esta parte novamente?',
+                'Você pode apagar este oceano novamente?',
+                'Você pode emprestar este silencio novamente?'
               ],
               correctOptionIndex: 0,
               difficulty: difficulty,
@@ -968,7 +968,7 @@ class LessonContentCatalog {
             _matchPairsExercise(
               id: '${prefix}_4_5',
               promptEn: 'Match communication words.',
-              promptPt: 'Conecte palavras de comunicacao.',
+              promptPt: 'Conecte palavras de comunicação.',
               pairs: const <String, String>{
                 'clarify': 'esclarecer',
                 'confirm': 'confirmar',

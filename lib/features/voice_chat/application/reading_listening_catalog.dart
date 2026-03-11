@@ -10,7 +10,7 @@ class ReadingListeningCatalog {
         readingTextEn:
             'Excuse me, could you tell me where gate twelve is? My flight starts boarding in fifteen minutes.',
         readingTextPt:
-            'Com licenca, voce poderia me dizer onde fica o portao doze? Meu voo comeca o embarque em quinze minutos.',
+            'Com licença, você poderia me dizer onde fica o portão doze? Meu voo começa o embarque em quinze minutos.',
         questionEn: 'What does the speaker need right now?',
         questionPt: 'O que a pessoa precisa agora?',
         optionsEn: <String>[
@@ -19,9 +19,9 @@ class ReadingListeningCatalog {
           'Buy a bus ticket',
         ],
         optionsPt: <String>[
-          'Encontrar o portao de embarque',
+          'Encontrar o portão de embarque',
           'Trocar a data do voo',
-          'Comprar uma passagem de onibus',
+          'Comprar uma passagem de ônibus',
         ],
         correctOptionIndex: 0,
         difficulty: ReadingListeningDifficulty.beginner,
@@ -33,7 +33,7 @@ class ReadingListeningCatalog {
         readingTextEn:
             'Hi, can I get a large cappuccino with oat milk and no sugar, please?',
         readingTextPt:
-            'Oi, posso pegar um cappuccino grande com leite de aveia e sem acucar, por favor?',
+            'Oi, posso pegar um cappuccino grande com leite de aveia e sem açúcar, por favor?',
         questionEn: 'How does the customer want the drink?',
         questionPt: 'Como o cliente quer a bebida?',
         optionsEn: <String>[
@@ -42,8 +42,8 @@ class ReadingListeningCatalog {
           'Large, with soy milk, extra foam',
         ],
         optionsPt: <String>[
-          'Grande, com leite de aveia e sem acucar',
-          'Pequeno, leite comum e com acucar extra',
+          'Grande, com leite de aveia e sem açúcar',
+          'Pequeno, leite comum e com açúcar extra',
           'Grande, com leite de soja e espuma extra',
         ],
         correctOptionIndex: 0,
@@ -56,7 +56,7 @@ class ReadingListeningCatalog {
         readingTextEn:
             'I finished the design draft yesterday, and I will share it with the team right after lunch.',
         readingTextPt:
-            'Eu terminei o rascunho do design ontem e vou compartilhar com a equipe logo apos o almoco.',
+            'Eu terminei o rascunho do design ontem e vou compartilhar com a equipe logo após o almoço.',
         questionEn: 'When will the design draft be shared?',
         questionPt: 'Quando o rascunho sera compartilhado?',
         optionsEn: <String>[
@@ -65,9 +65,9 @@ class ReadingListeningCatalog {
           'Before breakfast today',
         ],
         optionsPt: <String>[
-          'Logo apos o almoco',
-          'Amanha cedo',
-          'Antes do cafe da manha de hoje',
+          'Logo após o almoço',
+          'Amanhã cedo',
+          'Antes do café da manha de hoje',
         ],
         correctOptionIndex: 0,
         difficulty: ReadingListeningDifficulty.intermediate,
@@ -75,11 +75,11 @@ class ReadingListeningCatalog {
       ReadingListeningExercise(
         id: 'doctor_visit',
         titleEn: 'Doctor appointment',
-        titlePt: 'Consulta medica',
+        titlePt: 'Consulta médica',
         readingTextEn:
             'I have had a sore throat for three days, and it gets worse at night.',
         readingTextPt:
-            'Estou com dor de garganta ha tres dias e piora durante a noite.',
+            'Estou com dor de garganta ha três dias e piora durante a noite.',
         questionEn: 'What symptom is described?',
         questionPt: 'Qual sintoma foi descrito?',
         optionsEn: <String>[
@@ -102,7 +102,7 @@ class ReadingListeningCatalog {
         readingTextEn:
             'If the weather is good on Saturday, we are going hiking near the lake.',
         readingTextPt:
-            'Se o tempo estiver bom no sabado, vamos fazer trilha perto do lago.',
+            'Se o tempo estiver bom no sábado, vamos fazer trilha perto do lago.',
         questionEn: 'What is the weekend activity?',
         questionPt: 'Qual e a atividade do fim de semana?',
         optionsEn: <String>[
@@ -125,9 +125,9 @@ class ReadingListeningCatalog {
         readingTextEn:
             'Good evening. I have a reservation under the name Johnson for two nights. Could I also get a room with a view of the city?',
         readingTextPt:
-            'Boa noite. Tenho uma reserva no nome Johnson para duas noites. Seria possivel um quarto com vista para a cidade?',
+            'Boa noite. Tenho uma reserva no nome Johnson para duas noites. Seria possível um quarto com vista para a cidade?',
         questionEn: 'What does the guest request besides the reservation?',
-        questionPt: 'O que o hospede pede alem da reserva?',
+        questionPt: 'O que o hóspede pede alem da reserva?',
         optionsEn: <String>[
           'A room with a city view',
           'A late checkout',
@@ -150,7 +150,7 @@ class ReadingListeningCatalog {
         readingTextPt:
             'Precisamos de ovos, pao e suco de laranja. Ah, e pegue algumas bananas se estiverem frescas.',
         questionEn: 'What is the condition for buying bananas?',
-        questionPt: 'Qual e a condicao para comprar bananas?',
+        questionPt: 'Qual e a condição para comprar bananas?',
         optionsEn: <String>[
           'They must look fresh',
           'They must be on sale',
@@ -158,8 +158,8 @@ class ReadingListeningCatalog {
         ],
         optionsPt: <String>[
           'Devem estar frescas',
-          'Devem estar em promocao',
-          'Devem ser organicas',
+          'Devem estar em promoção',
+          'Devem ser orgânicas',
         ],
         correctOptionIndex: 0,
         difficulty: ReadingListeningDifficulty.beginner,
@@ -171,7 +171,7 @@ class ReadingListeningCatalog {
         readingTextEn:
             'I worked as a software developer for three years, and I am looking for a role where I can lead a small team.',
         readingTextPt:
-            'Trabalhei como desenvolvedor de software por tres anos e estou procurando uma vaga onde eu possa liderar uma equipe pequena.',
+            'Trabalhei como desenvolvedor de software por três anos e estou procurando uma vaga onde eu possa liderar uma equipe pequena.',
         questionEn: 'What kind of role is the person looking for?',
         questionPt: 'Que tipo de vaga a pessoa esta procurando?',
         optionsEn: <String>[
@@ -180,9 +180,9 @@ class ReadingListeningCatalog {
           'An entry-level internship',
         ],
         optionsPt: <String>[
-          'Uma posicao de lideranca de equipe',
+          'Uma posição de liderança de equipe',
           'Um contrato freelance remoto',
-          'Um estagio de nivel iniciante',
+          'Um estágio de nível iniciante',
         ],
         correctOptionIndex: 0,
         difficulty: ReadingListeningDifficulty.intermediate,
@@ -194,7 +194,7 @@ class ReadingListeningCatalog {
         readingTextEn:
             'It has been raining all week, but the forecast says it will be sunny this weekend. Perfect for a barbecue!',
         readingTextPt:
-            'Choveu a semana inteira, mas a previsao diz que vai fazer sol neste fim de semana. Perfeito para um churrasco!',
+            'Choveu a semana inteira, mas a previsão diz que vai fazer sol neste fim de semana. Perfeito para um churrasco!',
         questionEn: 'What is the weather expected to be this weekend?',
         questionPt: 'Como deve ficar o tempo neste fim de semana?',
         optionsEn: <String>[
@@ -213,11 +213,11 @@ class ReadingListeningCatalog {
       ReadingListeningExercise(
         id: 'restaurant_complaint',
         titleEn: 'Restaurant complaint',
-        titlePt: 'Reclamacao no restaurante',
+        titlePt: 'Reclamação no restaurante',
         readingTextEn:
             'Excuse me, I ordered the grilled salmon twenty minutes ago and it still has not arrived. Could you check on that for me?',
         readingTextPt:
-            'Com licenca, eu pedi o salmao grelhado ha vinte minutos e ainda nao chegou. Poderia verificar para mim?',
+            'Com licença, eu pedi o salmão grelhado há vinte minutos e ainda não chegou. Poderia verificar para mim?',
         questionEn: 'What is the customer complaining about?',
         questionPt: 'Sobre o que o cliente esta reclamando?',
         optionsEn: <String>[
@@ -236,11 +236,11 @@ class ReadingListeningCatalog {
       ReadingListeningExercise(
         id: 'giving_directions',
         titleEn: 'Giving directions',
-        titlePt: 'Dando direcoes',
+        titlePt: 'Dando direções',
         readingTextEn:
             'Go straight for two blocks, then turn left at the pharmacy. The library will be on your right, next to the park.',
         readingTextPt:
-            'Siga reto por dois quarteiroes, depois vire a esquerda na farmacia. A biblioteca vai estar a sua direita, ao lado do parque.',
+            'Siga reto por dois quarteirões, depois vire a esquerda na farmacia. A biblioteca vai estar a sua direita, ao lado do parque.',
         questionEn: 'Where is the library?',
         questionPt: 'Onde fica a biblioteca?',
         optionsEn: <String>[
@@ -250,8 +250,8 @@ class ReadingListeningCatalog {
         ],
         optionsPt: <String>[
           'A direita, ao lado do parque',
-          'Atras da farmacia',
-          'Em frente a rodoviaria',
+          'Atrás da farmacia',
+          'Em frente a rodoviária',
         ],
         correctOptionIndex: 0,
         difficulty: ReadingListeningDifficulty.beginner,
@@ -263,7 +263,7 @@ class ReadingListeningCatalog {
         readingTextEn:
             'Hi, I am calling to reschedule my appointment from Thursday to Friday afternoon. Would three o\'clock work?',
         readingTextPt:
-            'Oi, estou ligando para remarcar minha consulta de quinta-feira para sexta-feira a tarde. Tres horas seria possivel?',
+            'Oi, estou ligando para remarcar minha consulta de quinta-feira para sexta-feira a tarde. Três horas seria possível?',
         questionEn: 'What time does the caller suggest?',
         questionPt: 'Que horario o interlocutor sugere?',
         optionsEn: <String>[
@@ -272,9 +272,9 @@ class ReadingListeningCatalog {
           'Five o\'clock on Saturday',
         ],
         optionsPt: <String>[
-          'Tres horas na sexta',
+          'Três horas na sexta',
           'Quinta-feira de manha',
-          'Cinco horas no sabado',
+          'Cinco horas no sábado',
         ],
         correctOptionIndex: 0,
         difficulty: ReadingListeningDifficulty.intermediate,

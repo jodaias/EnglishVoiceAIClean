@@ -18,13 +18,13 @@ class LessonSummaryPage extends StatelessWidget {
     final title = appText(
       context,
       en: summary.isPassed ? 'Lesson completed' : 'Lesson finished',
-      pt: summary.isPassed ? 'Licao concluida' : 'Licao encerrada',
+      pt: summary.isPassed ? 'Lição concluída' : 'Lição encerrada',
     );
 
     return Scaffold(
       appBar: AppBar(
         title:
-            Text(appText(context, en: 'Lesson summary', pt: 'Resumo da licao')),
+            Text(appText(context, en: 'Lesson summary', pt: 'Resumo da lição')),
       ),
       body: SafeArea(
         child: Padding(
@@ -57,7 +57,7 @@ class LessonSummaryPage extends StatelessWidget {
                 value: '${summary.correctAnswers}/${summary.totalExercises}',
               ),
               _SummaryRow(
-                label: appText(context, en: 'Score', pt: 'Pontuacao'),
+                label: appText(context, en: 'Score', pt: 'Pontuação'),
                 value: '${summary.scorePercent}%',
               ),
               _SummaryRow(
@@ -101,7 +101,7 @@ class LessonSummaryPage extends StatelessWidget {
                         appText(
                           context,
                           en: 'Perfect lesson!',
-                          pt: 'Licao perfeita!',
+                          pt: 'Lição perfeita!',
                         ),
                         style: const TextStyle(
                           fontWeight: FontWeight.w800,
@@ -174,3 +174,5 @@ class _SummaryRow extends StatelessWidget {
     );
   }
 }
+
+

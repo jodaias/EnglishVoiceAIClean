@@ -116,7 +116,7 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          appText(context, en: 'Practice Overview', pt: 'Visao de Pratica'),
+          appText(context, en: 'Practice Overview', pt: 'Visao de Prática'),
         ),
       ),
       body: ResponsiveContentShell.premium(
@@ -164,7 +164,7 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.insights_outlined),
             activeIcon: const Icon(Icons.insights),
-            label: appText(context, en: 'Practice', pt: 'Pratica'),
+            label: appText(context, en: 'Practice', pt: 'Prática'),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings_outlined),
@@ -250,7 +250,7 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
                       ? 'AI is rate-limited (HTTP 429). Starting a curated fallback lesson now.'
                       : 'AI is rate-limited (HTTP 429). Starting fallback now. Try AI again in about $retryAfterSeconds seconds.',
                   pt: retryAfterSeconds == null
-                      ? 'A IA atingiu limite (HTTP 429). Iniciando uma licao curada de fallback agora.'
+                      ? 'A IA atingiu limite (HTTP 429). Iniciando uma lição curada de fallback agora.'
                       : 'A IA atingiu limite (HTTP 429). Iniciando fallback agora. Tente a IA novamente em cerca de $retryAfterSeconds segundos.',
                 ),
               ),
@@ -276,7 +276,7 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
                   ? retryAfterSeconds == null
                       ? 'A IA atingiu limite de requisicoes (HTTP 429). Aguarde um pouco e tente novamente.'
                       : 'A IA atingiu limite de requisicoes (HTTP 429). Tente novamente em cerca de $retryAfterSeconds segundos.'
-                  : 'Nao foi possivel gerar uma licao surpresa agora. Tente novamente.',
+                  : 'Não foi possível gerar uma lição surpresa agora. Tente novamente.',
             ),
           ),
         ),
@@ -362,7 +362,7 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
               appText(
                 context,
                 en: 'No review items due right now. Come back later.',
-                pt: 'Nao ha revisoes vencidas agora. Volte mais tarde.',
+                pt: 'Não há revisões vencidas agora. Volte mais tarde.',
               ),
             ),
           ),
@@ -406,7 +406,7 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
                 appText(
                   context,
                   en: 'Surprise Lesson',
-                  pt: 'Licao Surpresa',
+                  pt: 'Lição Surpresa',
                 ),
               ),
               content: Column(

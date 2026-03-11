@@ -277,6 +277,17 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
   - `lesson_exercise_widgets.dart`: labels de áudio/escuta/pronúncia/transcrição e tooltip de significado.
 - Dicionário de significados EN -> PT também recebeu melhorias de acentuação (ex.: "olá", "não", "café", "ônibus", "médico", "lição", "você").
 - Testes atualizados e validados: `lesson_ui_widgets_test.dart` passou 11/11.
+
+### Hotfix update (2026-03-11 - varredura global de acentuacao)
+
+- Realizada varredura global de strings em `lib/**/*.dart` para reduzir textos PT-BR sem acento.
+- Correções aplicadas em presentation e catálogos de conteúdo (ex.: `histórico`, `revisão`, `lição`, `exercício`, `sequência`, `pontuação`, `reclamação`, `com licença`, `salmão`, `há`, `portão`, `ônibus`, `açúcar`, `amanhã`).
+- Ajustes manuais finais em:
+  - `lesson_content_catalog.dart`
+  - `reading_listening_catalog.dart`
+- Validação de regressão:
+  - `lesson_ui_widgets_test.dart` + `learning_path_page_test.dart`: 14/14
+  - `lesson_content_catalog_test.dart` + `reading_listening_controller_test.dart`: 3/3
   - `LessonNodeWidget` now shows a compact completion badge (`DONE` / `PERFECT`) with distinct colors.
   - Node dimensions were adjusted to avoid overflow in the horizontal lesson rail.
 

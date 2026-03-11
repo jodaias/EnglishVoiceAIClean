@@ -24,7 +24,8 @@ extension AppLocaleX on AppLocale {
       case AppLocale.enUs:
         return 'English';
       case AppLocale.ptBr:
-        return 'Portugues (Brasil)';
+        return 'Português (Brasil)';
     }
   }
 }
+

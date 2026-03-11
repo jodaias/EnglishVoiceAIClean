@@ -35,7 +35,7 @@ class PracticeHubSheet extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                appText(context, en: 'Practice Hub', pt: 'Central de Pratica'),
+                appText(context, en: 'Practice Hub', pt: 'Central de Prática'),
                 style:
                     const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
               ),
@@ -86,7 +86,7 @@ class PracticeHubSheet extends StatelessWidget {
 
   Widget _buildDailyReviewCard(BuildContext context) {
     return _PanelCard(
-      title: appText(context, en: 'Daily Review', pt: 'Revisao Diaria'),
+      title: appText(context, en: 'Daily Review', pt: 'Revisão Diária'),
       icon: Icons.refresh,
       child: ValueListenableBuilder<int>(
         valueListenable: controller.pendingReviewCountNotifier,
@@ -100,12 +100,12 @@ class PracticeHubSheet extends StatelessWidget {
                     ? appText(
                         context,
                         en: '$pendingCount review items are due now.',
-                        pt: '$pendingCount itens de revisao vencem agora.',
+                        pt: '$pendingCount itens de revisão vencem agora.',
                       )
                     : appText(
                         context,
                         en: 'No review items due right now.',
-                        pt: 'Nenhum item de revisao vencendo agora.',
+                        pt: 'Nenhum item de revisão vencendo agora.',
                       ),
                 style: const TextStyle(color: Colors.white70),
               ),
@@ -128,8 +128,8 @@ class PracticeHubSheet extends StatelessWidget {
                         ? 'Preparing review...'
                         : 'Start daily review',
                     pt: isOpeningDailyReview
-                        ? 'Preparando revisao...'
-                        : 'Iniciar revisao diaria',
+                        ? 'Preparando revisão...'
+                        : 'Iniciar revisão diária',
                   ),
                 ),
               ),
@@ -155,7 +155,7 @@ class PracticeHubSheet extends StatelessWidget {
             appText(
               context,
               en: 'Follow units and lessons with progressive unlock, mixed exercise types, and XP tracking.',
-              pt: 'Siga unidades e licoes com desbloqueio progressivo, exercicios variados e acompanhamento de XP.',
+              pt: 'Siga unidades e lições com desbloqueio progressivo, exercícios variados e acompanhamento de XP.',
             ),
             style: const TextStyle(color: Colors.white70),
           ),
@@ -188,8 +188,8 @@ class PracticeHubSheet extends StatelessWidget {
                     ? 'Generating surprise lesson...'
                     : 'Start surprise lesson',
                 pt: isGeneratingSurpriseLesson
-                    ? 'Gerando licao surpresa...'
-                    : 'Iniciar licao surpresa',
+                    ? 'Gerando lição surpresa...'
+                    : 'Iniciar lição surpresa',
               ),
             ),
           ),
@@ -251,7 +251,7 @@ class PracticeHubSheet extends StatelessWidget {
                     appText(
                       context,
                       en: 'Challenge history: $last7/7 days, current streak ${streak}d.',
-                      pt: 'Historico do desafio: $last7/7 dias, sequencia atual ${streak}d.',
+                      pt: 'Histórico do desafio: $last7/7 dias, sequência atual ${streak}d.',
                     ),
                     style: const TextStyle(color: Colors.white70),
                   ),
@@ -332,7 +332,7 @@ class PracticeHubSheet extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _MetricTile(
-                      label: appText(context, en: 'Streak', pt: 'Sequencia'),
+                      label: appText(context, en: 'Streak', pt: 'Sequência'),
                       value: '${snapshot.currentStreakDays}d',
                     ),
                   ),
@@ -637,3 +637,5 @@ class _MetricTile extends StatelessWidget {
     );
   }
 }
+
+

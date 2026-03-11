@@ -108,7 +108,7 @@ class _LessonPageState extends State<LessonPage> {
           icon: const Icon(Icons.close),
           onPressed: _confirmExit,
         ),
-        title: Text(appText(context, en: 'Lesson', pt: 'Licao')),
+        title: Text(appText(context, en: 'Lesson', pt: 'Lição')),
       ),
       body: SafeArea(
         child: ResponsiveContentShell.premium(
@@ -165,7 +165,7 @@ class _LessonPageState extends State<LessonPage> {
                     appText(
                       context,
                       en: 'Exercise $current/${_controller.totalExercises}',
-                      pt: 'Exercicio $current/${_controller.totalExercises}',
+                      pt: 'Exercício $current/${_controller.totalExercises}',
                     ),
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   );
@@ -325,25 +325,20 @@ class _LessonPageState extends State<LessonPage> {
 
     final exercise = _controller.currentExerciseNotifier.value;
     if (exercise != null) {
-      if (exercise.type == ExerciseType.multipleChoice ||
-          exercise.type == ExerciseType.listenAndSelect ||
-          exercise.type == ExerciseType.fillInTheBlank) {
-        final options = _optionsForCurrentExercise(exercise);
-        final correct = (exercise.content['correctOptionIndex'] as int?) ?? -1;
-        if (correct >= 0 && correct < options.length) {
-          return appText(
-            context,
-            en: 'Not this time. Correct answer: ${options[correct]}',
-            pt: 'Ainda nao. Resposta correta: ${options[correct]}',
-          );
-        }
+      final correct = _correctAnswerForExercise(exercise);
+      if (correct.trim().isNotEmpty) {
+        return appText(
+          context,
+          en: 'Not this time. Correct answer: $correct',
+          pt: 'Ainda não. Resposta correta: $correct',
+        );
       }
     }
 
     return appText(
       context,
       en: 'Not this time. Review and try again in the next one.',
-      pt: 'Ainda nao. Revise e tente novamente na proxima.',
+      pt: 'Ainda não. Revise e tente novamente na próxima.',
     );
   }
 
@@ -358,18 +353,67 @@ class _LessonPageState extends State<LessonPage> {
     return const <String>[];
   }
 
+  String _correctAnswerForExercise(LessonExercise exercise) {
+    switch (exercise.type) {
+      case ExerciseType.multipleChoice:
+      case ExerciseType.listenAndSelect:
+      case ExerciseType.fillInTheBlank:
+        final options = _optionsForCurrentExercise(exercise);
+        final correct = (exercise.content['correctOptionIndex'] as int?) ?? -1;
+        if (correct >= 0 && correct < options.length) {
+          return options[correct];
+        }
+        return '';
+      case ExerciseType.listenAndType:
+      case ExerciseType.translate:
+        final accepted = exercise.content['acceptedAnswers'];
+        if (accepted is List && accepted.isNotEmpty) {
+          return accepted.first.toString();
+        }
+        return '';
+      case ExerciseType.wordOrder:
+        final tokens = exercise.content['correctTokens'];
+        if (tokens is List && tokens.isNotEmpty) {
+          return tokens.map((item) => item.toString()).join(' ');
+        }
+        return '';
+      case ExerciseType.matchPairs:
+        final pairs = exercise.content['correctPairs'];
+        if (pairs is Map && pairs.isNotEmpty) {
+          return pairs.entries
+              .map((entry) => '${entry.key} -> ${entry.value}')
+              .join('; ');
+        }
+        return '';
+      case ExerciseType.speakTheSentence:
+        final reference = (exercise.content['referenceText'] ?? '').toString();
+        return reference.trim();
+      case ExerciseType.trueOrFalse:
+        final value = exercise.content['correctAnswer'];
+        if (value is bool) {
+          final isPt = _controller.languageNotifier.value ==
+              ConversationLanguage.portugueseBr;
+          if (isPt) {
+            return value ? 'Verdadeiro' : 'Falso';
+          }
+          return value ? 'True' : 'False';
+        }
+        return '';
+    }
+  }
+
   Future<void> _confirmExit() async {
     final shouldExit = await showDialog<bool>(
           context: context,
           builder: (context) {
             return AlertDialog(
               title: Text(
-                  appText(context, en: 'Exit lesson?', pt: 'Sair da licao?')),
+                  appText(context, en: 'Exit lesson?', pt: 'Sair da lição?')),
               content: Text(
                 appText(
                   context,
                   en: 'You may lose your current progress.',
-                  pt: 'Voce pode perder seu progresso atual.',
+                  pt: 'Você pode perder seu progresso atual.',
                 ),
               ),
               actions: [

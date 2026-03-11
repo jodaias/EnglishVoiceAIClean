@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../domain/entities/app_locale.dart';
 import 'app_text.dart';
 import '../domain/entities/conversation_language.dart';
 import '../infrastructure/local/local_user_preferences_repository.dart';
+import 'app_settings_scope.dart';
 import 'responsive_content_shell.dart';
 import 'voice_chat_page.dart';
 
@@ -38,6 +40,13 @@ class _LanguageModePageState extends State<LanguageModePage> {
 
   Future<void> _savePreference() async {
     await _preferencesRepository.savePreferredLanguage(_selected);
+    final appSettingsController = AppSettingsScope.controllerOf(context);
+    if (_selected == ConversationLanguage.portugueseBr) {
+      await appSettingsController.setAppLocale(AppLocale.ptBr);
+    } else if (_selected == ConversationLanguage.englishUs) {
+      await appSettingsController.setAppLocale(AppLocale.enUs);
+    }
+
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -46,7 +55,7 @@ class _LanguageModePageState extends State<LanguageModePage> {
           appText(
             context,
             en: 'Language preference saved.',
-            pt: 'Preferencia de idioma salva.',
+            pt: 'Preferência de idioma salva.',
           ),
         ),
       ),
@@ -85,7 +94,7 @@ class _LanguageModePageState extends State<LanguageModePage> {
                       appText(
                         context,
                         en: 'Choose how listening and responses should handle English and Portuguese.',
-                        pt: 'Escolha como escuta e respostas devem lidar com ingles e portugues.',
+                        pt: 'Escolha como escuta e respostas devem lidar com inglês e português.',
                       ),
                       style: const TextStyle(color: Colors.white70),
                     ),
@@ -96,7 +105,7 @@ class _LanguageModePageState extends State<LanguageModePage> {
                     subtitle: appText(
                       context,
                       en: 'Prioritize Portuguese listening and fallback to English when needed.',
-                      pt: 'Prioriza escuta em portugues e usa fallback para ingles quando necessario.',
+                      pt: 'Prioriza escuta em português e usa fallback para inglês quando necessário.',
                     ),
                     value: ConversationLanguage.auto,
                     isSelected: _selected == ConversationLanguage.auto,
@@ -108,11 +117,11 @@ class _LanguageModePageState extends State<LanguageModePage> {
                   ),
                   _LanguageOptionTile(
                     title:
-                        appText(context, en: 'English (US)', pt: 'Ingles (US)'),
+                        appText(context, en: 'English (US)', pt: 'Inglês (US)'),
                     subtitle: appText(
                       context,
                       en: 'Force session in English for focused practice.',
-                      pt: 'Forca sessao em ingles para pratica focada.',
+                      pt: 'Força sessão em inglês para prática focada.',
                     ),
                     value: ConversationLanguage.englishUs,
                     isSelected: _selected == ConversationLanguage.englishUs,
@@ -124,11 +133,11 @@ class _LanguageModePageState extends State<LanguageModePage> {
                   ),
                   _LanguageOptionTile(
                     title: appText(context,
-                        en: 'Portugues (BR)', pt: 'Portugues (BR)'),
+                        en: 'Portuguese (BR)', pt: 'Português (BR)'),
                     subtitle: appText(
                       context,
                       en: 'Force session in Brazilian Portuguese.',
-                      pt: 'Forca sessao em portugues brasileiro.',
+                      pt: 'Força sessão em português brasileiro.',
                     ),
                     value: ConversationLanguage.portugueseBr,
                     isSelected: _selected == ConversationLanguage.portugueseBr,
@@ -146,7 +155,7 @@ class _LanguageModePageState extends State<LanguageModePage> {
                       appText(
                         context,
                         en: 'Save Language Preference',
-                        pt: 'Salvar Preferencia de Idioma',
+                        pt: 'Salvar Preferência de Idioma',
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
