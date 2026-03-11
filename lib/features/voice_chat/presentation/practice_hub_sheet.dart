@@ -10,11 +10,15 @@ import 'app_text.dart';
 class PracticeHubSheet extends StatelessWidget {
   final PracticeHubController controller;
   final VoidCallback? onOpenReadingListening;
+  final VoidCallback? onOpenSurpriseLesson;
+  final bool isGeneratingSurpriseLesson;
 
   const PracticeHubSheet({
     super.key,
     required this.controller,
     this.onOpenReadingListening,
+    this.onOpenSurpriseLesson,
+    this.isGeneratingSurpriseLesson = false,
   });
 
   @override
@@ -102,6 +106,28 @@ class PracticeHubSheet extends StatelessWidget {
                 context,
                 en: 'Start reading + listening',
                 pt: 'Iniciar leitura + audicao',
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: isGeneratingSurpriseLesson ? null : onOpenSurpriseLesson,
+            icon: isGeneratingSurpriseLesson
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.auto_awesome),
+            label: Text(
+              appText(
+                context,
+                en: isGeneratingSurpriseLesson
+                    ? 'Generating surprise lesson...'
+                    : 'Start surprise lesson',
+                pt: isGeneratingSurpriseLesson
+                    ? 'Gerando licao surpresa...'
+                    : 'Iniciar licao surpresa',
               ),
             ),
           ),

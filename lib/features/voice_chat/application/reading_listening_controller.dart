@@ -263,11 +263,13 @@ class ReadingListeningController {
       ReadingListeningDifficultyFilter.all => '',
       ReadingListeningDifficultyFilter.beginner => ' - Iniciante',
       ReadingListeningDifficultyFilter.intermediate => ' - Intermediario',
+      ReadingListeningDifficultyFilter.advanced => ' - Avancado',
     };
     final suffixEn = switch (filter) {
       ReadingListeningDifficultyFilter.all => '',
       ReadingListeningDifficultyFilter.beginner => ' - Beginner',
       ReadingListeningDifficultyFilter.intermediate => ' - Intermediate',
+      ReadingListeningDifficultyFilter.advanced => ' - Advanced',
     };
 
     if (language == ConversationLanguage.portugueseBr) {

@@ -3,12 +3,14 @@ import 'conversation_language.dart';
 enum ReadingListeningDifficulty {
   beginner,
   intermediate,
+  advanced,
 }
 
 enum ReadingListeningDifficultyFilter {
   all,
   beginner,
   intermediate,
+  advanced,
 }
 
 extension ReadingListeningDifficultyX on ReadingListeningDifficulty {
@@ -20,6 +22,8 @@ extension ReadingListeningDifficultyX on ReadingListeningDifficulty {
         return this == ReadingListeningDifficulty.beginner;
       case ReadingListeningDifficultyFilter.intermediate:
         return this == ReadingListeningDifficulty.intermediate;
+      case ReadingListeningDifficultyFilter.advanced:
+        return this == ReadingListeningDifficulty.advanced;
     }
   }
 }

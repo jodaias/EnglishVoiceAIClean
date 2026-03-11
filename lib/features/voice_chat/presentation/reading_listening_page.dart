@@ -164,6 +164,11 @@ class _ReadingListeningPageState extends State<ReadingListeningPage> {
                     selected: selected,
                     value: ReadingListeningDifficultyFilter.intermediate,
                   ),
+                  _difficultyChip(
+                    context: context,
+                    selected: selected,
+                    value: ReadingListeningDifficultyFilter.advanced,
+                  ),
                 ],
               ),
             ],
@@ -696,6 +701,8 @@ class _ReadingListeningPageState extends State<ReadingListeningPage> {
         return appText(context, en: 'Beginner', pt: 'Iniciante');
       case ReadingListeningDifficultyFilter.intermediate:
         return appText(context, en: 'Intermediate', pt: 'Intermediario');
+      case ReadingListeningDifficultyFilter.advanced:
+        return appText(context, en: 'Advanced', pt: 'Avancado');
     }
   }
 

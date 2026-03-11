@@ -173,9 +173,27 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
   - Sound implementation currently uses system sound fallback and is ready to swap to dedicated MP3 asset playback in the same service interface.
 - Validation update: focused presentation tests 12/12 passing.
 
+- Sprint 10 (AI generation foundation) implemented in code and tests.
+- New AI generation components added:
+  - `ExerciseGeneratorService` with Gemini prompt execution pathway
+  - Structured per-type prompt templates and strict JSON schema expectations
+  - Automatic generated-exercise validation by type (options/text/tokens/pairs/speech/boolean)
+  - Local generation cache abstraction + Hive-backed cache implementation
+  - Surprise-lesson generation method (`generateSurpriseLesson`) with mixed type sequencing
+- New files:
+  - `lib/features/voice_chat/infrastructure/ai/exercise_generator_service.dart`
+  - `lib/features/voice_chat/infrastructure/ai/exercise_generation_cache.dart`
+- New tests:
+  - `test/features/voice_chat/infrastructure/ai/exercise_generator_service_test.dart`
+- Validation update: Sprint 10 focused tests 10/10 passing.
+- Hub integration delivered:
+  - `PracticeHubSheet` now exposes "Start surprise lesson" with generation loading state.
+  - `PracticeOverviewPage` now lets users choose topic + difficulty, generates a lesson on-the-fly, and opens `LessonPage` with generated content.
+  - New widget test added for surprise-lesson CTA behavior.
+
 ### Next execution target
 
-- Sprint 10: iniciar geracao por IA (ExerciseGeneratorService), prompts por tipo e cache local.
+- Sprint 11: iniciar "Repeticao Espacada" com `SpacedRepetitionService` e fila de revisao.
 
 ## Video Call Mode (new — 2026-03-07)
 

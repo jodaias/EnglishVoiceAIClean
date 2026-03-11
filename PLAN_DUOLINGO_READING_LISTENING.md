@@ -649,12 +649,12 @@ lib/features/voice_chat/presentation/
 
 **Objetivo**: conteudo infinito
 
-- [ ] `ExerciseGeneratorService` usando Gemini API
-- [ ] Prompts estruturados para cada tipo de exercicio
-- [ ] Validacao automatica da resposta gerada
-- [ ] Cache local de exercicios gerados
-- [ ] "Licao Surpresa" no hub: licao gerada on-the-fly por tema
-- [ ] Testes para gerador e validacao
+- [x] `ExerciseGeneratorService` usando Gemini API
+- [x] Prompts estruturados para cada tipo de exercicio
+- [x] Validacao automatica da resposta gerada
+- [x] Cache local de exercicios gerados
+- [x] "Licao Surpresa" no hub: licao gerada on-the-fly por tema
+- [x] Testes para gerador e validacao
 
 ### Sprint 11 — Repeticao Espacada (Fase 3)
 
