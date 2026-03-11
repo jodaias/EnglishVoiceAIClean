@@ -17,6 +17,26 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
 
 ### Current execution status (2026-03-11)
 
+- Sprint 0 (API + SQLite) implemented in code and tests.
+- New local database layer added:
+  - `AppDatabase` with schema, indexes, versioning, and migration entrypoint
+  - First-run curated seed (`seed_data.dart`) for Unit 1 and Unit 2
+- New DAOs added:
+  - `LearningUnitsDao`, `ExercisesDao`, `UserProgressDao`, `SpacedRepetitionDao`
+- New API abstraction + implementations added:
+  - `LearningApiService` contract
+  - `LocalLearningApiService` backed by SQLite DAOs
+  - `RemoteLearningApiService` stub for future REST migration
+- Runtime integration added:
+  - SQLite initialization in `main.dart` together with Hive startup
+- Documentation added:
+  - `docs/learning_sqlite_schema.md` (schema, indexes, seed, migration policy)
+- New SQLite in-memory tests added:
+  - DAO tests (units, exercises, user progress, spaced repetition)
+  - Seed integrity test
+  - LocalLearningApiService integration test
+- Validation: Sprint 0 focused SQLite suite passing.
+
 - Sprint 1 (Foundations) implemented in code and tests.
 - New domain entities added for learning path and progression:
   - `ExerciseType`, `LessonExercise`, `Lesson`, `LearningUnit`

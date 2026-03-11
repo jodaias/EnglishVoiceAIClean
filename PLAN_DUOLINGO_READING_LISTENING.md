@@ -360,10 +360,100 @@ lib/features/voice_chat/application/
 ```
 lib/features/voice_chat/infrastructure/
   ├── local/
-  │   └── local_learning_progress_repository.dart  // Hive para progresso
+  │   ├── local_learning_progress_repository.dart  // Hive para progresso (legado/cache)
+  │   └── database/
+  │       ├── app_database.dart                    // init SQLite, migrations, versioning
+  │       ├── learning_units_dao.dart              // CRUD unidades e licoes
+  │       ├── exercises_dao.dart                   // CRUD exercicios por tipo
+  │       ├── user_progress_dao.dart               // progresso, XP, vidas, streaks
+  │       ├── spaced_repetition_dao.dart           // fila de revisao espacada
+  │       └── seed_data.dart                       // seed inicial do catalogo curado
+  ├── api/
+  │   ├── learning_api_service.dart                // interface abstrata da API
+  │   ├── local_learning_api_service.dart          // implementacao local (SQLite direto)
+  │   └── remote_learning_api_service.dart         // (futuro) implementacao REST remota
   └── ai/
       └── exercise_generator_service.dart          // gera exercicios via Gemini (fase 2)
 ```
+
+### 7.3.1 Schema SQLite
+
+```sql
+-- Unidades tematicas
+CREATE TABLE learning_units (
+  id            TEXT PRIMARY KEY,
+  title_en      TEXT NOT NULL,
+  title_pt      TEXT NOT NULL,
+  icon_asset    TEXT,
+  order_index   INTEGER NOT NULL,
+  difficulty    TEXT NOT NULL  -- 'beginner' | 'intermediate'
+);
+
+-- Licoes dentro de unidades
+CREATE TABLE lessons (
+  id            TEXT PRIMARY KEY,
+  unit_id       TEXT NOT NULL REFERENCES learning_units(id),
+  order_index   INTEGER NOT NULL,
+  UNIQUE(unit_id, order_index)
+);
+
+-- Exercicios (polimorfico via type + content JSON)
+CREATE TABLE exercises (
+  id            TEXT PRIMARY KEY,
+  lesson_id     TEXT NOT NULL REFERENCES lessons(id),
+  order_index   INTEGER NOT NULL,
+  type          TEXT NOT NULL,  -- 'multipleChoice', 'listenAndType', etc.
+  difficulty    TEXT NOT NULL,
+  content_json  TEXT NOT NULL,  -- conteudo tipado serializado em JSON
+  UNIQUE(lesson_id, order_index)
+);
+
+-- Progresso do usuario por licao
+CREATE TABLE lesson_progress (
+  lesson_id     TEXT PRIMARY KEY REFERENCES lessons(id),
+  is_completed  INTEGER NOT NULL DEFAULT 0,
+  best_score    INTEGER NOT NULL DEFAULT 0,
+  xp_earned     INTEGER NOT NULL DEFAULT 0,
+  attempts      INTEGER NOT NULL DEFAULT 0,
+  completed_at  TEXT  -- ISO 8601
+);
+
+-- Progresso do usuario por unidade
+CREATE TABLE unit_progress (
+  unit_id       TEXT PRIMARY KEY REFERENCES learning_units(id),
+  is_unlocked   INTEGER NOT NULL DEFAULT 0,
+  crowns        INTEGER NOT NULL DEFAULT 0
+);
+
+-- Estado global do usuario
+CREATE TABLE user_stats (
+  id            INTEGER PRIMARY KEY DEFAULT 1,
+  total_xp      INTEGER NOT NULL DEFAULT 0,
+  current_hearts INTEGER NOT NULL DEFAULT 5,
+  hearts_recharged_at TEXT,  -- ISO 8601
+  current_streak INTEGER NOT NULL DEFAULT 0,
+  last_active_date TEXT      -- yyyy-MM-dd
+);
+
+-- Fila de repeticao espacada
+CREATE TABLE spaced_repetition_queue (
+  exercise_id   TEXT NOT NULL REFERENCES exercises(id),
+  next_review   TEXT NOT NULL,  -- ISO 8601
+  interval_days INTEGER NOT NULL DEFAULT 1,
+  correct_streak INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (exercise_id)
+);
+```
+
+### 7.3.2 Dependencia nova
+
+```yaml
+# pubspec.yaml
+sqflite: ^2.3.0 # SQLite para Flutter (mobile/desktop)
+path: ^1.8.0 # construir path do DB
+```
+
+Nota: `sqflite` funciona em Android, iOS e macOS. Para web, usar `sqflite_common_ffi_web` ou manter Hive como fallback no browser.
 
 ### 7.4 Novos Arquivos — Presentation
 
@@ -408,6 +498,42 @@ lib/features/voice_chat/presentation/
 ---
 
 ## 8. Plano de Sprints
+
+### Sprint 0 — API e Banco de Dados SQLite
+
+**Objetivo**: criar a camada de dados persistente com SQLite e a interface de API local que alimentara todo o modulo
+
+- [x] Adicionar dependencias `sqflite` e `path` no `pubspec.yaml`
+- [x] Criar `AppDatabase` com init, versioning e migrations
+  - Abrir/criar DB no path do app
+  - `onCreate`: executar schema completo (tabelas + indices)
+  - `onUpgrade`: migration incremental por versao
+- [x] Criar `seed_data.dart` com insercao inicial do catalogo curado
+  - Popular `learning_units`, `lessons` e `exercises` com dados das Unidades 1-2
+  - Executar seed automaticamente na primeira abertura do DB
+- [x] Criar DAOs (Data Access Objects):
+  - `LearningUnitsDao` — listar unidades ordenadas, buscar por id, buscar com licoes
+  - `ExercisesDao` — listar exercicios por licao, buscar por id, inserir (para Fase 2 IA)
+  - `UserProgressDao` — ler/salvar progresso por licao e unidade, ler/atualizar XP total, ler/atualizar vidas com logica de recarga por tempo, ler/atualizar streak
+  - `SpacedRepetitionDao` — inserir exercicio na fila, listar pendentes por data, atualizar intervalo apos revisao
+- [x] Criar `LearningApiService` (interface abstrata)
+  - `getUnits()`, `getLessonsForUnit()`, `getExercisesForLesson()`
+  - `savelessonProgress()`, `getUnitProgress()`, `getUserStats()`
+  - `getReviewQueue()`, `updateReviewItem()`
+- [x] Criar `LocalLearningApiService` (implementacao usando DAOs + SQLite)
+- [x] Criar stub `RemoteLearningApiService` (placeholder para futura API REST)
+- [x] Inicializar `AppDatabase` no `main.dart` junto com Hive existente
+- [x] Testes unitarios para cada DAO (usando SQLite in-memory)
+- [x] Testes para `LocalLearningApiService` (integracao com DB in-memory)
+- [x] Testes para seed data (verifica integridade do catalogo inserido)
+- [x] Documentar schema e decisoes de migracao
+
+**Notas tecnicas**:
+
+- Usar `sqflite`'s `inMemoryDatabasePath` nos testes para evitar I/O
+- Conteudo dos exercicios armazenado como JSON no campo `content_json` para flexibilidade polimorfica
+- DAOs sao classes puras que recebem `Database` por injecao, facilitando teste
+- `LocalLearningApiService` eh a unica dependencia dos controllers — quando migrar para API remota, basta trocar a implementacao sem mudar nenhum controller
 
 ### Sprint 1 — Fundacoes (Domain + Infra)
 
@@ -555,14 +681,17 @@ lib/features/voice_chat/presentation/
 
 ## 9. Riscos e Mitigacoes
 
-| Risco                                 | Mitigacao                                                 |
-| ------------------------------------- | --------------------------------------------------------- |
-| Muito conteudo manual                 | Fase 2 com geracao por IA resolve escalabilidade          |
-| Drag-and-drop complexo em Flutter web | Usar chips clicaveis como fallback, drag apenas em mobile |
-| Performance com muitas animacoes      | Lazy loading de unidades, limitar Lottie simultaneos      |
-| Exercicios gerados por IA com erros   | Validacao automatica + opcao de reportar exercicio        |
-| Migracao quebrar fluxo existente      | Arquivo ponte + redirect, testes de regressao             |
-| Escopo grande demais                  | Sprints independentes, cada um entrega valor incremental  |
+| Risco                                 | Mitigacao                                                          |
+| ------------------------------------- | ------------------------------------------------------------------ |
+| Muito conteudo manual                 | Fase 2 com geracao por IA resolve escalabilidade                   |
+| Drag-and-drop complexo em Flutter web | Usar chips clicaveis como fallback, drag apenas em mobile          |
+| Performance com muitas animacoes      | Lazy loading de unidades, limitar Lottie simultaneos               |
+| Exercicios gerados por IA com erros   | Validacao automatica + opcao de reportar exercicio                 |
+| Migracao quebrar fluxo existente      | Arquivo ponte + redirect, testes de regressao                      |
+| Escopo grande demais                  | Sprints independentes, cada um entrega valor incremental           |
+| SQLite nao funciona na web            | Usar `sqflite_common_ffi_web` ou manter Hive como fallback web     |
+| Migrations quebrarem em updates       | Testes de migration com DB in-memory, schema versionado            |
+| Acoplamento com storage concreto      | Controllers usam interface `LearningApiService`, nunca DAOs direto |
 
 ---
 
@@ -580,20 +709,23 @@ lib/features/voice_chat/presentation/
 
 Se for implementar incrementalmente, a ordem de maior valor eh:
 
-1. **Sprint 1** (Domain) — base para tudo
-2. **Sprint 2** (Catalogo + Validacao) — conteudo minimo jogavel
-3. **Sprint 3** (Lesson Controller) — fluxo funcional
-4. **Sprint 5** (Widgets) — UI dos exercicios
-5. **Sprint 6** (Lesson Page) — tela jogavel completa
-6. **Sprint 7** (Learning Path) — trilha visual
-7. **Sprint 4** (Learning Path Controller) — progressao automatica
-8. **Sprint 9** (Polish) — experiencia premium
-9. **Sprint 8** (Conteudo) — expansao
-10. **Sprint 10** (IA) — escala
-11. **Sprint 11** (Repeticao) — retencao de longo prazo
-12. **Sprint 12** (Migracao) — limpeza final
+1. **Sprint 0** (API + SQLite) — fundacao de dados, tudo depende disso
+2. **Sprint 1** (Domain) — entidades e regras puras
+3. **Sprint 2** (Catalogo + Validacao) — conteudo minimo jogavel
+4. **Sprint 3** (Lesson Controller) — fluxo funcional
+5. **Sprint 5** (Widgets) — UI dos exercicios
+6. **Sprint 6** (Lesson Page) — tela jogavel completa
+7. **Sprint 7** (Learning Path) — trilha visual
+8. **Sprint 4** (Learning Path Controller) — progressao automatica
+9. **Sprint 9** (Polish) — experiencia premium
+10. **Sprint 8** (Conteudo) — expansao
+11. **Sprint 10** (IA) — escala
+12. **Sprint 11** (Repeticao) — retencao de longo prazo
+13. **Sprint 12** (Migracao) — limpeza final
 
-**MVP jogavel**: Sprints 1-3 + 5-6 (5 sprints) entregam uma licao funcional com tipos variados de exercicio, XP e vidas. Ja seria uma experiencia dramaticamente melhor que o atual.
+**MVP jogavel**: Sprints 0-3 + 5-6 (6 sprints) entregam banco de dados, API local, entidades, catalogo, controller e tela de licao funcional. Ja seria uma experiencia dramaticamente melhor que o atual, com dados persistidos em SQLite.
+
+**Vantagem do SQLite desde o inicio**: controllers nunca acessam storage diretamente — usam `LearningApiService`. Quando migrar para backend remoto, basta criar `RemoteLearningApiService` implementando a mesma interface, sem alterar nenhum controller ou widget.
 
 ---
 

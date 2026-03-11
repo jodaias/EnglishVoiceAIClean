@@ -7,7 +7,6 @@ import '../domain/entities/lesson.dart';
 import '../domain/entities/lesson_progress.dart';
 import '../domain/entities/lesson_exercise.dart';
 import '../domain/entities/unit_progress.dart';
-import '../domain/entities/user_progress.dart';
 import 'exercise_validator.dart';
 import 'hearts_manager.dart';
 import 'learning_audio_service.dart';
