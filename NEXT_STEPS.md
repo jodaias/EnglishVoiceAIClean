@@ -218,6 +218,18 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
   - Updated impacted test expectations in catalog and local persistence/API suites.
   - Validation update: focused test run with 7/7 passing.
 
+### Hotfix update (2026-03-11 - word meanings)
+
+- Tooltip dictionary coverage expanded for tappable English words:
+  - Increased local `EN -> PT-BR` map in lesson exercise widgets with core vocabulary for greetings, school, cafe, travel, daily routine, connectors and common verbs.
+  - Kept safe fallback text (`Significado ainda nao cadastrado.`) for words not yet mapped.
+  - Result: more words now show immediate meaning on tap during lessons.
+
+- Context-aware word meaning improvement:
+  - Added lightweight disambiguation using neighboring words in the same sentence for ambiguous terms (examples: `work`, `watch`, `call`, `order`, `like`, `class`, `match`, `table`).
+  - Tooltip now prioritizes contextual meaning when possible and falls back to base dictionary otherwise.
+  - Result: reduced odd translations in common lesson contexts.
+
 - Listening pedagogy refinement delivered for audio-driven exercises:
   - `listenAndSelect` and `listenAndType` now hide transcript text by default.
   - Added explicit reveal control (`Show text` / `Mostrar texto`) and hide toggle.
@@ -246,6 +258,25 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
 - Learning Path immediate-unlock + completion visual polish:
   - `LessonPage` now persists lesson completion directly to `LearningApiService` (SQLite/local API) before showing summary, keeping progression source aligned with Learning Path.
   - Returning from summary now reflects newly unlocked next lesson without requiring full app restart.
+
+### Hotfix update (2026-03-11 - language sync on learning path)
+
+- Language mode now also syncs interface locale when user selects an explicit session language:
+  - `LanguageModePage` now updates `AppSettingsController.setAppLocale()` on save for `English (US)` and `Portugues (BR)`.
+  - Result: changing to Portuguese now updates Learning Path UI strings that depend on app locale.
+- Learning Path node status badges localized:
+  - `LessonNodeWidget` labels now use localized text (`DONE`/`PERFECT` -> `CONCLUIDA`/`PERFEITA` in PT-BR).
+
+### Hotfix update (2026-03-11 - acentuacao PT-BR)
+
+- Ajustada a acentuacao de textos em portugues brasileiro nas telas de aprendizado:
+  - `LanguageModePage`: preferencia, português/inglês, força/prática, etc.
+  - `LearningPathPage`: "disponível" e "sequência".
+  - `LessonPage`: "lição", "exercício", "não", "próxima", "você".
+  - `LessonNodeWidget`: selo "CONCLUÍDA".
+  - `lesson_exercise_widgets.dart`: labels de áudio/escuta/pronúncia/transcrição e tooltip de significado.
+- Dicionário de significados EN -> PT também recebeu melhorias de acentuação (ex.: "olá", "não", "café", "ônibus", "médico", "lição", "você").
+- Testes atualizados e validados: `lesson_ui_widgets_test.dart` passou 11/11.
   - `LessonNodeWidget` now shows a compact completion badge (`DONE` / `PERFECT`) with distinct colors.
   - Node dimensions were adjusted to avoid overflow in the horizontal lesson rail.
 
@@ -257,6 +288,21 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
 - Match-pairs pedagogical tuning:
   - Refined `g_4_4` to keep unique targets without making the answer obvious by time-based hints.
   - New labels use social register categories (`formal`, `informal`, `polite`) with more contextual greeting examples.
+
+- Wrong-answer feedback enhancement:
+  - `LessonPage` now shows the correct answer when the user gets an exercise wrong across all exercise types.
+  - Coverage includes options, text answers, word order, match-pairs, speaking reference, and true/false labels.
+  - Added presentation regression test for wrong true/false submission showing `Correct answer: ...`.
+
+- Tap-to-meaning support for English words:
+  - Added interactive word-level support in exercise text (`LessonExerciseRenderer`) for English locale.
+  - Users can tap English words in prompts/options to open a bottom sheet with PT-BR meaning.
+  - Unknown words show a friendly fallback message until dictionary coverage is expanded.
+  - Added widget regression test for tap-to-meaning behavior.
+
+- Tooltip positioning refinement:
+  - Replaced fixed-position meaning hint with tap-anchored tooltip placement.
+  - Tooltip now appears above and near the tapped English word to avoid drifting toward top HUD elements.
 
 - Learning Path intra-unit sequential unlock adjusted:
   - Within an unlocked unit, only the first lesson is immediately clickable.

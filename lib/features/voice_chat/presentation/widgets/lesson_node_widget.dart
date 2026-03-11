@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../app_text.dart';
+
 enum LessonNodeState {
   locked,
   available,
@@ -71,7 +73,9 @@ class LessonNodeWidget extends StatelessWidget {
                 ),
               ),
               child: Text(
-                state == LessonNodeState.perfect ? 'PERFECT' : 'DONE',
+                state == LessonNodeState.perfect
+                    ? appText(context, en: 'PERFECT', pt: 'PERFEITA')
+                    : appText(context, en: 'DONE', pt: 'CONCLUÍDA'),
                 style: TextStyle(
                   fontSize: 8,
                   fontWeight: FontWeight.w800,

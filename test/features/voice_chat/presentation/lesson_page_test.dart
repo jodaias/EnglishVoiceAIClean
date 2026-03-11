@@ -61,6 +61,29 @@ void main() {
 
     controller.dispose();
   });
+
+  testWidgets('LessonPage shows correct answer on wrong submission',
+      (tester) async {
+    final controller = _buildWrongTrueFalseController();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LessonPage(controller: controller),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('True'));
+    await tester.pump();
+
+    await tester.tap(find.text('CHECK'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Correct answer: False'), findsOneWidget);
+
+    controller.dispose();
+  });
 }
 
 LessonController _buildController() {
@@ -81,6 +104,36 @@ LessonController _buildController() {
             'optionsEn': <String>['Yes, I am.', 'Blue.', 'Tomorrow.'],
             'optionsPt': <String>['Sim, estou.', 'Azul.', 'Amanha.'],
             'correctOptionIndex': 0,
+          },
+        ),
+      ],
+    ),
+    validator: const ExerciseValidator(),
+    xpCalculator: const XpCalculator(),
+    heartsManager: HeartsManager(),
+    progressRepository: _InMemoryProgressRepository(),
+    audioService: _FakeAudioService(),
+    pronunciationCaptureService: _FakeCaptureService(),
+    initialLanguage: ConversationLanguage.englishUs,
+  );
+}
+
+LessonController _buildWrongTrueFalseController() {
+  return LessonController(
+    unitId: 'u1',
+    lesson: Lesson(
+      id: 'l2',
+      unitId: 'u1',
+      orderIndex: 0,
+      exercises: <LessonExercise>[
+        LessonExercise(
+          id: 'e2',
+          type: ExerciseType.trueOrFalse,
+          difficulty: ReadingListeningDifficulty.beginner,
+          content: <String, dynamic>{
+            'promptEn': 'The sky is green.',
+            'promptPt': 'O ceu e verde.',
+            'correctAnswer': false,
           },
         ),
       ],

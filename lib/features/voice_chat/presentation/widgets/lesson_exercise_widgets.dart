@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/conversation_language.dart';
@@ -139,8 +140,11 @@ class _OptionExerciseWidgetState extends State<_OptionExerciseWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(prompt,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+        _WordMeaningText(
+          text: prompt,
+          language: widget.language,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+        ),
         if (isListeningExercise && widget.onPlayAudio != null) ...[
           const SizedBox(height: 8),
           Wrap(
@@ -151,7 +155,7 @@ class _OptionExerciseWidgetState extends State<_OptionExerciseWidget> {
                 onPressed: widget.enabled ? widget.onPlayAudio : null,
                 icon: const Icon(Icons.volume_up_outlined),
                 label: Text(widget.language == ConversationLanguage.portugueseBr
-                    ? 'Ouvir audio'
+                    ? 'Ouvir áudio'
                     : 'Play audio'),
               ),
               if (canRevealText)
@@ -181,7 +185,7 @@ class _OptionExerciseWidgetState extends State<_OptionExerciseWidget> {
           const SizedBox(height: 6),
           Text(
             widget.language == ConversationLanguage.portugueseBr
-                ? 'Nivel avancado: texto oculto para foco em escuta.'
+                ? 'Nível avançado: texto oculto para foco em escuta.'
                 : 'Advanced level: text hidden to focus on listening.',
             style: const TextStyle(color: Colors.white70),
           ),
@@ -194,7 +198,11 @@ class _OptionExerciseWidgetState extends State<_OptionExerciseWidget> {
             onChanged: widget.enabled
                 ? (value) => widget.onAnswerChanged(value ?? entry.key)
                 : null,
-            title: Text(entry.value),
+            title: _WordMeaningText(
+              text: entry.value,
+              language: widget.language,
+              enableWordTap: false,
+            ),
             dense: true,
             contentPadding: EdgeInsets.zero,
           );
@@ -266,8 +274,11 @@ class _TextExerciseWidgetState extends State<_TextExerciseWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(prompt,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+        _WordMeaningText(
+          text: prompt,
+          language: widget.language,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+        ),
         if (isListeningExercise && widget.onPlayAudio != null) ...[
           const SizedBox(height: 8),
           Wrap(
@@ -278,7 +289,7 @@ class _TextExerciseWidgetState extends State<_TextExerciseWidget> {
                 onPressed: widget.enabled ? widget.onPlayAudio : null,
                 icon: const Icon(Icons.volume_up_outlined),
                 label: Text(widget.language == ConversationLanguage.portugueseBr
-                    ? 'Ouvir audio'
+                    ? 'Ouvir áudio'
                     : 'Play audio'),
               ),
               if (canRevealText)
@@ -308,7 +319,7 @@ class _TextExerciseWidgetState extends State<_TextExerciseWidget> {
           const SizedBox(height: 6),
           Text(
             widget.language == ConversationLanguage.portugueseBr
-                ? 'Nivel avancado: texto oculto para foco em escuta.'
+                ? 'Nível avançado: texto oculto para foco em escuta.'
                 : 'Advanced level: text hidden to focus on listening.',
             style: const TextStyle(color: Colors.white70),
           ),
@@ -358,8 +369,11 @@ class _WordOrderExerciseWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(prompt,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+        _WordMeaningText(
+          text: prompt,
+          language: language,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 8),
         Container(
           width: double.infinity,
@@ -456,8 +470,11 @@ class _MatchPairsExerciseWidgetState extends State<_MatchPairsExerciseWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(prompt,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+        _WordMeaningText(
+          text: prompt,
+          language: widget.language,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 8),
         Text(
           widget.language == ConversationLanguage.portugueseBr
@@ -559,7 +576,11 @@ class _MatchPairsExerciseWidgetState extends State<_MatchPairsExerciseWidget> {
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: borderColor),
           ),
-          child: Text(label),
+          child: _WordMeaningText(
+            text: label,
+            language: widget.language,
+            enableWordTap: false,
+          ),
         ),
       ),
     );
@@ -653,16 +674,23 @@ class _SpeakSentenceExerciseWidgetState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(prompt,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+        _WordMeaningText(
+          text: prompt,
+          language: widget.language,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+        ),
         if (reference.isNotEmpty) ...[
           const SizedBox(height: 6),
-          Text(reference, style: const TextStyle(color: Colors.white70)),
+          _WordMeaningText(
+            text: reference,
+            language: widget.language,
+            style: const TextStyle(color: Colors.white70),
+          ),
         ],
         const SizedBox(height: 10),
         Text(
           widget.language == ConversationLanguage.portugueseBr
-              ? 'Precisao de pronuncia: $clampedAccuracy%'
+              ? 'Precisão de pronúncia: $clampedAccuracy%'
               : 'Pronunciation accuracy: $clampedAccuracy%',
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
@@ -698,7 +726,7 @@ class _SpeakSentenceExerciseWidgetState
           onChanged: (value) => widget.onAnswerChanged(value),
           decoration: InputDecoration(
             hintText: widget.language == ConversationLanguage.portugueseBr
-                ? 'Transcricao da fala'
+                ? 'Transcrição da fala'
                 : 'Speech transcript',
             border: const OutlineInputBorder(),
           ),
@@ -731,8 +759,11 @@ class _TrueFalseExerciseWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(prompt,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+        _WordMeaningText(
+          text: prompt,
+          language: language,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -802,7 +833,7 @@ bool _canRevealAudioText(LessonExercise exercise) {
 
 String _hiddenAudioPrompt(ConversationLanguage language) {
   return language == ConversationLanguage.portugueseBr
-      ? 'Ouca o audio e responda sem ler o texto.'
+      ? 'Ouça o áudio e responda sem ler o texto.'
       : 'Listen to the audio and answer without reading the text.';
 }
 
@@ -830,3 +861,495 @@ Map<String, String> _pairs(Object? raw) {
   }
   return raw.map((key, value) => MapEntry(key.toString(), value.toString()));
 }
+
+class _WordMeaningText extends StatelessWidget {
+  final String text;
+  final ConversationLanguage language;
+  final TextStyle? style;
+  final bool enableWordTap;
+
+  const _WordMeaningText({
+    required this.text,
+    required this.language,
+    this.style,
+    this.enableWordTap = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (language != ConversationLanguage.englishUs) {
+      return Text(text, style: style);
+    }
+
+    if (!enableWordTap) {
+      return Text(text, style: style);
+    }
+
+    final tokens = RegExp(r"[A-Za-z']+|[^A-Za-z']+")
+        .allMatches(text)
+        .map((m) => m.group(0) ?? '')
+        .toList(growable: false);
+    final words = tokens
+        .where(_isEnglishWord)
+        .map((token) => token.toLowerCase())
+        .toList(growable: false);
+
+    if (tokens.isEmpty) {
+      return Text(text, style: style);
+    }
+
+    final effectiveStyle = style ?? const TextStyle();
+    return Text.rich(
+      TextSpan(
+        style: effectiveStyle,
+        children: tokens.asMap().entries.map((entry) {
+          final token = entry.value;
+          if (!_isEnglishWord(token)) {
+            return TextSpan(text: token);
+          }
+
+          final wordIndex = _wordIndexFromTokenIndex(tokens, entry.key);
+          final meaning = _resolveWordMeaning(tokens, words, wordIndex);
+          Offset? tapAnchor;
+
+          void showMeaning() {
+            _showWordMeaningTooltip(
+              context,
+              meaning == null
+                  ? 'Significado ainda não cadastrado.'
+                  : 'Significado: $meaning',
+              anchor: tapAnchor,
+            );
+          }
+
+          return TextSpan(
+            text: token,
+            style: effectiveStyle.copyWith(
+              decoration: TextDecoration.underline,
+              decorationStyle: TextDecorationStyle.dotted,
+            ),
+            recognizer: TapGestureRecognizer()
+              ..onTapDown = (details) {
+                tapAnchor = details.globalPosition;
+                showMeaning();
+              }
+              ..onTap = showMeaning,
+          );
+        }).toList(growable: false),
+      ),
+    );
+  }
+
+  bool _isEnglishWord(String token) {
+    if (token.trim().isEmpty) {
+      return false;
+    }
+
+    return RegExp(r"^[A-Za-z']+$").hasMatch(token);
+  }
+
+  int _wordIndexFromTokenIndex(List<String> tokens, int tokenIndex) {
+    var count = 0;
+    for (var i = 0; i < tokenIndex; i++) {
+      if (_isEnglishWord(tokens[i])) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  String? _resolveWordMeaning(
+    List<String> tokens,
+    List<String> words,
+    int wordIndex,
+  ) {
+    if (wordIndex < 0 || wordIndex >= words.length) {
+      return null;
+    }
+
+    final word = words[wordIndex];
+    final previous = wordIndex > 0 ? words[wordIndex - 1] : null;
+    final next = wordIndex + 1 < words.length ? words[wordIndex + 1] : null;
+
+    if (word == 'work') {
+      if (previous == 'at' || previous == 'to' || previous == 'for') {
+        return 'trabalho';
+      }
+      if (_subjectPronouns.contains(previous) || next == 'at') {
+        return 'trabalhar';
+      }
+      return 'trabalho/trabalhar';
+    }
+
+    if (word == 'watch') {
+      if (_objectWords.contains(next) || previous == 'to') {
+        return 'assistir';
+      }
+      return 'relógio/assistir';
+    }
+
+    if (word == 'call') {
+      if (_pronouns.contains(next) || next == 'you' || previous == 'can') {
+        return 'ligar/chamar';
+      }
+      return 'ligação/chamada';
+    }
+
+    if (word == 'order') {
+      if (_foodWords.contains(next) ||
+          previous == 'can' ||
+          previous == 'please') {
+        return 'pedir';
+      }
+      return 'ordem/ordenar';
+    }
+
+    if (word == 'like') {
+      if (_pronouns.contains(previous) && next != null) {
+        return 'gostar';
+      }
+      return 'como/igual a';
+    }
+
+    if (word == 'table') {
+      if (previous == 'times') {
+        return 'tabela';
+      }
+      return 'mesa';
+    }
+
+    if (word == 'match') {
+      if (next == 'pairs') {
+        return 'associar';
+      }
+      return 'partida/combinação';
+    }
+
+    if (word == 'class') {
+      if (next == 'today' || previous == 'in' || previous == 'after') {
+        return 'aula';
+      }
+      return 'turma/classe';
+    }
+
+    return _wordMeaningsPt[word];
+  }
+}
+
+const Set<String> _subjectPronouns = <String>{
+  'i',
+  'you',
+  'we',
+  'they',
+  'he',
+  'she',
+  'it',
+};
+
+const Set<String> _pronouns = <String>{
+  'i',
+  'you',
+  'he',
+  'she',
+  'we',
+  'they',
+  'me',
+  'him',
+  'her',
+  'us',
+  'them',
+};
+
+const Set<String> _objectWords = <String>{
+  'movie',
+  'series',
+  'video',
+  'tv',
+  'film',
+};
+
+const Set<String> _foodWords = <String>{
+  'coffee',
+  'tea',
+  'water',
+  'juice',
+  'breakfast',
+  'lunch',
+  'dinner',
+  'food',
+  'menu',
+};
+
+OverlayEntry? _activeMeaningTooltip;
+
+void _showWordMeaningTooltip(
+  BuildContext context,
+  String message, {
+  Offset? anchor,
+}) {
+  _activeMeaningTooltip?.remove();
+  _activeMeaningTooltip = null;
+
+  final overlay = Overlay.of(context, rootOverlay: true);
+  if (!context.mounted || overlay == null) {
+    return;
+  }
+
+  final entry = OverlayEntry(
+    builder: (context) {
+      final screenWidth = MediaQuery.of(context).size.width;
+      final horizontalPadding = 16.0;
+      final maxTooltipWidth = (screenWidth - (horizontalPadding * 2)).clamp(
+        140.0,
+        420.0,
+      );
+
+      double width = maxTooltipWidth;
+      double left = horizontalPadding;
+      double top = 96;
+
+      if (anchor != null) {
+        width = 260.0.clamp(160.0, maxTooltipWidth);
+        final desiredLeft = anchor.dx - (width / 2);
+        final maxLeft = (screenWidth - width - horizontalPadding)
+            .clamp(horizontalPadding, screenWidth);
+        left = desiredLeft.clamp(horizontalPadding, maxLeft);
+        top = (anchor.dy - 34).clamp(8.0, 10000.0);
+      }
+
+      return Positioned(
+        left: left,
+        width: width,
+        top: top,
+        child: IgnorePointer(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF263238).withOpacity(0.96),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white24),
+              ),
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+
+  overlay.insert(entry);
+  _activeMeaningTooltip = entry;
+
+  Future<void>.delayed(const Duration(milliseconds: 2400), () {
+    if (_activeMeaningTooltip == entry) {
+      entry.remove();
+      _activeMeaningTooltip = null;
+    }
+  });
+}
+
+const Map<String, String> _wordMeaningsPt = <String, String>{
+  'a': 'um/uma',
+  'about': 'sobre',
+  'after': 'depois',
+  'afternoon': 'tarde',
+  'again': 'novamente',
+  'airport': 'aeroporto',
+  'already': 'já',
+  'always': 'sempre',
+  'am': 'estou',
+  'an': 'um/uma',
+  'and': 'e',
+  'answer': 'resposta',
+  'apartment': 'apartamento',
+  'are': 'está',
+  'ask': 'perguntar',
+  'at': 'em',
+  'bad': 'ruim',
+  'bag': 'bolsa',
+  'bathroom': 'banheiro',
+  'be': 'ser/estar',
+  'because': 'porque',
+  'before': 'antes',
+  'best': 'melhor',
+  'bill': 'conta',
+  'book': 'livro',
+  'breakfast': 'café da manhã',
+  'bus': 'ônibus',
+  'but': 'mas',
+  'buy': 'comprar',
+  'by': 'por',
+  'call': 'ligar/chamar',
+  'can': 'pode',
+  'cafe': 'cafeteria',
+  'chair': 'cadeira',
+  'cheap': 'barato',
+  'choose': 'escolher',
+  'city': 'cidade',
+  'class': 'aula',
+  'close': 'fechar',
+  'coffee': 'café',
+  'come': 'vir',
+  'correct': 'correto',
+  'could': 'poderia',
+  'day': 'dia',
+  'dinner': 'jantar',
+  'doctor': 'médico',
+  'does': 'faz',
+  'do': 'fazer',
+  'did': 'fez',
+  'e': 'e',
+  'evening': 'noite',
+  'exercise': 'exercício',
+  'excuse': 'com licença',
+  'expensive': 'caro',
+  'false': 'falso',
+  'finish': 'terminar',
+  'food': 'comida',
+  'for': 'para',
+  'forget': 'esquecer',
+  'from': 'de',
+  'go': 'ir',
+  'good': 'bom',
+  'great': 'ótimo',
+  'had': 'teve',
+  'has': 'tem',
+  'have': 'ter',
+  'hello': 'olá',
+  'health': 'saúde',
+  'help': 'ajuda',
+  'here': 'aqui',
+  'he': 'ele',
+  'hi': 'oi',
+  'home': 'casa',
+  'morning': 'manha',
+  'hospital': 'hospital',
+  'night': 'noite',
+  'how': 'como',
+  'i': 'eu',
+  'if': 'se',
+  'in': 'em',
+  'is': 'e',
+  'it': 'isso/ele/ela',
+  'its': 'seu/sua',
+  'juice': 'suco',
+  'know': 'saber',
+  'later': 'depois',
+  'learn': 'aprender',
+  'lesson': 'lição',
+  'less': 'menos',
+  'like': 'gostar',
+  'listen': 'escutar',
+  'look': 'olhar',
+  'love': 'amar',
+  'lunch': 'almoço',
+  'match': 'combinar/associar',
+  'me': 'me',
+  'meet': 'conhecer',
+  'menu': 'cardápio',
+  'month': 'mês',
+  'more': 'mais',
+  'my': 'meu',
+  'name': 'nome',
+  'need': 'precisar',
+  'never': 'nunca',
+  'new': 'novo',
+  'nice': 'legal',
+  'no': 'não',
+  'not': 'não',
+  'now': 'agora',
+  'of': 'de',
+  'office': 'escritório',
+  'old': 'velho/antigo',
+  'on': 'em/sobre',
+  'only': 'apenas',
+  'open': 'abrir',
+  'or': 'ou',
+  'order': 'ordenar/pedir',
+  'our': 'nosso',
+  'plane': 'avião',
+  'please': 'por favor',
+  'pleasure': 'prazer',
+  'price': 'preço',
+  'question': 'pergunta',
+  'read': 'ler',
+  'remember': 'lembrar',
+  'restaurant': 'restaurante',
+  'say': 'dizer',
+  'school': 'escola',
+  'see': 'ver',
+  'she': 'ela',
+  'should': 'deveria',
+  'so': 'então/assim',
+  'sorry': 'desculpe',
+  'sometimes': 'às vezes',
+  'soon': 'em breve',
+  'speak': 'falar',
+  'start': 'começar',
+  'station': 'estação',
+  'still': 'ainda',
+  'stop': 'parar',
+  'street': 'rua',
+  'student': 'aluno',
+  'study': 'estudar',
+  'table': 'mesa',
+  'tea': 'chá',
+  'teacher': 'professor',
+  'tell': 'contar/dizer',
+  'than': 'do que',
+  'thank': 'agradecer',
+  'thanks': 'obrigado',
+  'that': 'aquilo/esse',
+  'the': 'o/a',
+  'their': 'deles/delas',
+  'them': 'eles/elas',
+  'then': 'entao',
+  'there': 'lá',
+  'these': 'estes/essas',
+  'they': 'eles/elas',
+  'this': 'isso/este',
+  'those': 'aqueles/aquelas',
+  'ticket': 'passagem/bilhete',
+  'time': 'tempo/hora',
+  'to': 'para',
+  'today': 'hoje',
+  'tomorrow': 'amanhã',
+  'train': 'trem',
+  'translate': 'traduzir',
+  'true': 'verdadeiro',
+  'type': 'digitar',
+  'understand': 'entender',
+  'very': 'muito',
+  'wait': 'esperar',
+  'want': 'querer',
+  'was': 'era/estava',
+  'watch': 'assistir',
+  'water': 'água',
+  'we': 'nos',
+  'week': 'semana',
+  'were': 'eram/estavam',
+  'what': 'o que',
+  'when': 'quando',
+  'where': 'onde',
+  'which': 'qual',
+  'who': 'quem',
+  'why': 'por que',
+  'with': 'com',
+  'without': 'sem',
+  'work': 'trabalho',
+  'would': 'iria',
+  'write': 'escrever',
+  'wrong': 'errado',
+  'year': 'ano',
+  'yes': 'sim',
+  'yesterday': 'ontem',
+  'you': 'você',
+  'your': 'seu/sua',
+  'yours': 'seu/sua',
+};

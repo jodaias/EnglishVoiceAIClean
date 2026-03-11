@@ -99,7 +99,7 @@ class _LearningPathPageState extends State<LearningPathPage> {
                                 return Center(
                                   child: Text(
                                     isPt
-                                        ? 'Nenhuma unidade disponivel no momento.'
+                                        ? 'Nenhuma unidade disponível no momento.'
                                         : 'No units available right now.',
                                   ),
                                 );
@@ -151,7 +151,7 @@ class _LearningPathPageState extends State<LearningPathPage> {
               valueListenable: _controller.streakDaysNotifier,
               builder: (context, streak, _) {
                 return _HeaderMetric(
-                  label: appText(context, en: 'Streak', pt: 'Sequencia'),
+                  label: appText(context, en: 'Streak', pt: 'Sequência'),
                   value: '$streak',
                 );
               },

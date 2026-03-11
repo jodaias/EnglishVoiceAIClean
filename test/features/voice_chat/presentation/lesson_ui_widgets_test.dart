@@ -96,6 +96,42 @@ void main() {
     expect(answer, 1);
   });
 
+  testWidgets('English words can be tapped to show meaning', (tester) async {
+    final exercise = LessonExercise(
+      id: 'word_help_1',
+      type: ExerciseType.multipleChoice,
+      difficulty: ReadingListeningDifficulty.beginner,
+      content: <String, dynamic>{
+        'promptEn': 'Hello',
+        'promptPt': 'Olá professor',
+        'optionsEn': <String>['A', 'B', 'C'],
+        'optionsPt': <String>['A', 'B', 'C'],
+        'correctOptionIndex': 0,
+      },
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: LessonExerciseRenderer(
+            exercise: exercise,
+            language: ConversationLanguage.englishUs,
+            selectedAnswer: null,
+            onAnswerChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Hello'));
+    await tester.pump();
+
+    expect(find.text('Significado: olá'), findsOneWidget);
+
+    // Allow tooltip overlay auto-dismiss timer to finish before test teardown.
+    await tester.pump(const Duration(milliseconds: 2500));
+  });
+
   testWidgets('LessonExerciseRenderer emits typed text for translate',
       (tester) async {
     Object? answer;
