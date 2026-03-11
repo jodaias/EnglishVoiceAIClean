@@ -121,7 +121,8 @@ void main() {
     controller.dispose();
   });
 
-  test('plays prompt audio using selected language locale', () async {
+  test('plays prompt audio in english even when UI language is portuguese',
+      () async {
     final audio = _FakeAudioService();
     final controller = LessonController(
       unitId: 'unit_1',
@@ -136,8 +137,8 @@ void main() {
 
     await controller.playCurrentPromptAudio();
 
-    expect(audio.lastLocale, 'pt-BR');
-    expect(audio.lastText, 'Escolha o cumprimento');
+    expect(audio.lastLocale, 'en-US');
+    expect(audio.lastText, 'Pick the greeting');
     controller.dispose();
   });
 

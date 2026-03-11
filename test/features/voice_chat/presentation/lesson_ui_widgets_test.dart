@@ -126,7 +126,7 @@ void main() {
     await tester.tap(find.text('Hello'));
     await tester.pump();
 
-    expect(find.text('olá'), findsOneWidget);
+    expect(find.text('Significado: olá'), findsOneWidget);
 
     // Allow tooltip overlay auto-dismiss timer to finish before test teardown.
     await tester.pump(const Duration(milliseconds: 2500));
@@ -285,6 +285,49 @@ void main() {
     expect(find.text('Show text'), findsNothing);
     expect(find.text('Advanced level: text hidden to focus on listening.'),
         findsOneWidget);
+  });
+
+  testWidgets(
+      'pt-BR UI keeps instructions in portuguese and exercise content in english',
+      (tester) async {
+    const exercise = LessonExercise(
+      id: 'pt_ui_en_content_1',
+      type: ExerciseType.multipleChoice,
+      difficulty: ReadingListeningDifficulty.beginner,
+      content: <String, dynamic>{
+        'promptEn': 'Choose the correct sentence.',
+        'promptPt': 'Escolha a frase correta.',
+        'optionsEn': <String>[
+          'I am at school.',
+          'I are at school.',
+          'I be at school.',
+        ],
+        'optionsPt': <String>[
+          'Eu estou na escola.',
+          'Eu esta na escola.',
+          'Eu ser na escola.',
+        ],
+        'correctOptionIndex': 0,
+      },
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: LessonExerciseRenderer(
+            exercise: exercise,
+            language: ConversationLanguage.portugueseBr,
+            selectedAnswer: null,
+            onAnswerChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Choose the correct sentence.'), findsOneWidget);
+    expect(find.text('Escolha a frase correta.'), findsNothing);
+    expect(find.text('I am at school.'), findsOneWidget);
+    expect(find.text('Eu estou na escola.'), findsNothing);
   });
 
   testWidgets('LessonExerciseRenderer connects match pairs interactively',

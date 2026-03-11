@@ -790,9 +790,12 @@ class _TrueFalseExerciseWidget extends StatelessWidget {
 }
 
 String _promptFor(LessonExercise exercise, ConversationLanguage language) {
-  final key =
-      language == ConversationLanguage.portugueseBr ? 'promptPt' : 'promptEn';
-  return (exercise.content[key] ?? '').toString();
+  final promptEn = (exercise.content['promptEn'] ?? '').toString().trim();
+  if (promptEn.isNotEmpty) {
+    return promptEn;
+  }
+  // Fallback for legacy records that may not include english prompt.
+  return (exercise.content['promptPt'] ?? '').toString();
 }
 
 String _displayPrompt(LessonExercise exercise, ConversationLanguage language) {
@@ -806,13 +809,27 @@ String _listeningTranscriptFor(
   LessonExercise exercise,
   ConversationLanguage language,
 ) {
-  final audioKey = language == ConversationLanguage.portugueseBr
-      ? 'audioTextPt'
-      : 'audioTextEn';
   final explicitAudioText =
-      (exercise.content[audioKey] ?? '').toString().trim();
+      (exercise.content['audioTextEn'] ?? '').toString().trim();
   if (explicitAudioText.isNotEmpty) {
     return explicitAudioText;
+  }
+
+  final ptAudioFallback = (exercise.content['audioTextPt'] ?? '').toString().trim();
+  if (ptAudioFallback.isNotEmpty) {
+    return ptAudioFallback;
+  }
+
+  final promptEn = (exercise.content['promptEn'] ?? '').toString().trim();
+  if (promptEn.isNotEmpty) {
+    final colon = promptEn.indexOf(':');
+    if (colon >= 0 && colon + 1 < promptEn.length) {
+      final candidate = promptEn.substring(colon + 1).trim();
+      if (candidate.isNotEmpty) {
+        return candidate;
+      }
+    }
+    return promptEn;
   }
 
   // Legacy fallback for previously seeded content without explicit audioText keys.
@@ -839,11 +856,15 @@ String _hiddenAudioPrompt(ConversationLanguage language) {
 
 List<String> _optionsFor(
     LessonExercise exercise, ConversationLanguage language) {
-  final key =
-      language == ConversationLanguage.portugueseBr ? 'optionsPt' : 'optionsEn';
-  final raw = exercise.content[key];
-  if (raw is List) {
-    return raw.map((item) => item.toString()).toList(growable: false);
+  final rawEn = exercise.content['optionsEn'];
+  if (rawEn is List) {
+    return rawEn.map((item) => item.toString()).toList(growable: false);
+  }
+
+  // Fallback for legacy records that may not include english options.
+  final rawPt = exercise.content['optionsPt'];
+  if (rawPt is List) {
+    return rawPt.map((item) => item.toString()).toList(growable: false);
   }
   return const <String>[];
 }
@@ -877,10 +898,6 @@ class _WordMeaningText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (language != ConversationLanguage.englishUs) {
-      return Text(text, style: style);
-    }
-
     if (!enableWordTap) {
       return Text(text, style: style);
     }
@@ -970,16 +987,16 @@ class _WordMeaningText extends StatelessWidget {
 
     if (word == 'work') {
       if (previous == 'at' || previous == 'to' || previous == 'for') {
-        return const _MeaningHint('trabalho', isContextual: true);
+        return const _MeaningHint('Significado: trabalho', isContextual: true);
       }
       if (_subjectPronouns.contains(previous) || next == 'at') {
         return const _MeaningHint(
-          'trabalhar\nEx.: I work in a cafe = Eu trabalho em uma cafeteria.',
+          'Significado: trabalhar\nEx.: I work in a cafe = Eu trabalho em uma cafeteria.',
           isContextual: true,
         );
       }
       return const _MeaningHint(
-        'trabalho ou trabalhar\nEx.: Work is busy today = O trabalho esta corrido hoje.',
+        'Significados: trabalho ou trabalhar\nEx.: Work is busy today = O trabalho esta corrido hoje.',
         isContextual: true,
       );
     }
@@ -987,12 +1004,12 @@ class _WordMeaningText extends StatelessWidget {
     if (word == 'watch') {
       if (_objectWords.contains(next) || previous == 'to') {
         return const _MeaningHint(
-          'assistir\nEx.: Watch this video = Assista a este video.',
+          'Significado: assistir\nEx.: Watch this video = Assista a este video.',
           isContextual: true,
         );
       }
       return const _MeaningHint(
-        'relogio ou assistir\nEx.: My watch is new = Meu relogio e novo.',
+        'Significados: relogio ou assistir\nEx.: My watch is new = Meu relogio e novo.',
         isContextual: true,
       );
     }
@@ -1000,11 +1017,14 @@ class _WordMeaningText extends StatelessWidget {
     if (word == 'call') {
       if (_pronouns.contains(next) || next == 'you' || previous == 'can') {
         return const _MeaningHint(
-          'ligar/chamar\nEx.: Call me later = Me liga mais tarde.',
+          'Significado: ligar/chamar\nEx.: Call me later = Me liga mais tarde.',
           isContextual: true,
         );
       }
-      return const _MeaningHint('ligacao/chamada', isContextual: true);
+      return const _MeaningHint(
+        'Significado: ligacao/chamada',
+        isContextual: true,
+      );
     }
 
     if (word == 'order') {
@@ -1012,52 +1032,64 @@ class _WordMeaningText extends StatelessWidget {
           previous == 'can' ||
           previous == 'please') {
         return const _MeaningHint(
-          'pedir\nEx.: I want to order coffee = Quero pedir cafe.',
+          'Significado: pedir\nEx.: I want to order coffee = Quero pedir cafe.',
           isContextual: true,
         );
       }
-      return const _MeaningHint('ordem ou ordenar', isContextual: true);
+      return const _MeaningHint(
+        'Significados: ordem ou ordenar',
+        isContextual: true,
+      );
     }
 
     if (word == 'like') {
       if (_pronouns.contains(previous) && next != null) {
         return const _MeaningHint(
-          'gostar\nEx.: I like this class = Eu gosto desta aula.',
+          'Significado: gostar\nEx.: I like this class = Eu gosto desta aula.',
           isContextual: true,
         );
       }
-      return const _MeaningHint('como ou igual a', isContextual: true);
+      return const _MeaningHint(
+        'Significados: como ou igual a',
+        isContextual: true,
+      );
     }
 
     if (word == 'table') {
       if (previous == 'times') {
-        return const _MeaningHint('tabela', isContextual: true);
+        return const _MeaningHint('Significado: tabela', isContextual: true);
       }
-      return const _MeaningHint('mesa', isContextual: true);
+      return const _MeaningHint('Significado: mesa');
     }
 
     if (word == 'match') {
       if (next == 'pairs') {
         return const _MeaningHint(
-          'associar\nEx.: Match pairs = Associe os pares.',
+          'Significado: associar\nEx.: Match pairs = Associe os pares.',
           isContextual: true,
         );
       }
-      return const _MeaningHint('partida ou combinacao', isContextual: true);
+      return const _MeaningHint(
+        'Significados: partida ou combinacao',
+        isContextual: true,
+      );
     }
 
     if (word == 'class') {
       if (next == 'today' || previous == 'in' || previous == 'after') {
-        return const _MeaningHint('aula', isContextual: true);
+        return const _MeaningHint('Significado: aula', isContextual: true);
       }
-      return const _MeaningHint('turma ou classe', isContextual: true);
+      return const _MeaningHint(
+        'Significados: turma ou classe',
+        isContextual: true,
+      );
     }
 
     final baseMeaning = _wordMeaningsPt[word];
     if (baseMeaning == null) {
       return null;
     }
-    return _MeaningHint(baseMeaning);
+    return _MeaningHint('Significado: $baseMeaning');
   }
 }
 

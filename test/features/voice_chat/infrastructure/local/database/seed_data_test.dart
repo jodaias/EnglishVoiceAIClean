@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -76,6 +78,46 @@ void main() {
     expect(await count('lessons'), expectedLessons);
     expect(await count('exercises'), expectedExercises);
     expect(await count('lesson_progress'), expectedLessons);
+
+    await db.close();
+  });
+
+  test('backfill fills missing audioTextEn for legacy listen-and-type content',
+      () async {
+    final db = await openInMemoryTestDatabase();
+
+    final legacyContent = <String, dynamic>{
+      'promptEn': 'Type what you hear: I am at school.',
+      'promptPt': 'Digite o que voce ouviu: Eu estou na escola.',
+      'audioTextPt': 'Eu estou na escola.',
+      'acceptedAnswers': <String>['I am at school.'],
+    };
+
+    await db.insert(
+      'exercises',
+      <String, Object?>{
+        'id': 'legacy_audio_en_1',
+        'lesson_id': 'lesson_greetings_1',
+        'type': 'listenAndType',
+        'difficulty': 'beginner',
+        'content_json': jsonEncode(legacyContent),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+
+    await ensureLearningContentBackfill(db);
+
+    final row = (await db.query(
+      'exercises',
+      columns: <String>['content_json'],
+      where: 'id = ?',
+      whereArgs: <Object>['legacy_audio_en_1'],
+    ))
+        .single;
+
+    final content = jsonDecode((row['content_json'] ?? '{}').toString())
+        as Map<String, dynamic>;
+    expect(content['audioTextEn'], 'I am at school.');
 
     await db.close();
   });

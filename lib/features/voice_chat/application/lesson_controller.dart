@@ -204,8 +204,8 @@ class LessonController {
       return;
     }
 
-    final prompt = _promptForLanguage(exercise);
-    if (prompt.isEmpty) {
+    final audioPrompt = _audioPromptForExercise(exercise);
+    if (audioPrompt.text.isEmpty) {
       return;
     }
 
@@ -213,8 +213,8 @@ class LessonController {
     isSpeakingNotifier.value = true;
     try {
       await audioService.speak(
-        prompt,
-        locale: languageNotifier.value.ttsLocale,
+        audioPrompt.text,
+        locale: audioPrompt.locale,
       );
     } catch (_) {
       errorNotifier.value = 'Não foi possível reproduzir o audio agora.';
@@ -400,38 +400,89 @@ class LessonController {
     progressNotifier.value = completed / totalExercises;
   }
 
-  String _promptForLanguage(LessonExercise exercise) {
-    final isPt = languageNotifier.value == ConversationLanguage.portugueseBr;
-    final key = isPt ? 'promptPt' : 'promptEn';
-    final prompt = (exercise.content[key] ?? '').toString().trim();
+  _AudioPrompt _audioPromptForExercise(LessonExercise exercise) {
     if (exercise.type == ExerciseType.listenAndType) {
-      return _listeningTranscriptFor(exercise, isPt: isPt, fallback: prompt);
+      final transcript = _listeningTranscriptFor(exercise);
+      if (transcript.text.isNotEmpty) {
+        return transcript;
+      }
     }
-    return prompt;
+
+    final promptEn = (exercise.content['promptEn'] ?? '').toString().trim();
+    if (promptEn.isNotEmpty) {
+      return _AudioPrompt(
+          text: promptEn, locale: ConversationLanguage.englishUs.ttsLocale);
+    }
+
+    final promptPt = (exercise.content['promptPt'] ?? '').toString().trim();
+    if (promptPt.isNotEmpty) {
+      return _AudioPrompt(
+          text: promptPt, locale: ConversationLanguage.portugueseBr.ttsLocale);
+    }
+
+    return const _AudioPrompt(text: '', locale: '');
   }
 
-  String _listeningTranscriptFor(
-    LessonExercise exercise, {
-    required bool isPt,
-    required String fallback,
-  }) {
-    final audioKey = isPt ? 'audioTextPt' : 'audioTextEn';
-    final explicitAudioText =
-        (exercise.content[audioKey] ?? '').toString().trim();
-    if (explicitAudioText.isNotEmpty) {
-      return explicitAudioText;
+  _AudioPrompt _listeningTranscriptFor(LessonExercise exercise) {
+    final explicitAudioTextEn =
+        (exercise.content['audioTextEn'] ?? '').toString().trim();
+    if (explicitAudioTextEn.isNotEmpty) {
+      return _AudioPrompt(
+        text: explicitAudioTextEn,
+        locale: ConversationLanguage.englishUs.ttsLocale,
+      );
     }
 
-    // Legacy fallback for previously persisted content without explicit audioText keys.
-    final colon = fallback.indexOf(':');
-    if (colon >= 0 && colon + 1 < fallback.length) {
-      final candidate = fallback.substring(colon + 1).trim();
+    final promptEn = (exercise.content['promptEn'] ?? '').toString().trim();
+    final fromPromptEn = _extractTranscript(promptEn);
+    if (fromPromptEn.isNotEmpty) {
+      return _AudioPrompt(
+        text: fromPromptEn,
+        locale: ConversationLanguage.englishUs.ttsLocale,
+      );
+    }
+
+    final explicitAudioTextPt =
+        (exercise.content['audioTextPt'] ?? '').toString().trim();
+    if (explicitAudioTextPt.isNotEmpty) {
+      return _AudioPrompt(
+        text: explicitAudioTextPt,
+        locale: ConversationLanguage.portugueseBr.ttsLocale,
+      );
+    }
+
+    final promptPt = (exercise.content['promptPt'] ?? '').toString().trim();
+    final fromPromptPt = _extractTranscript(promptPt);
+    if (fromPromptPt.isNotEmpty) {
+      return _AudioPrompt(
+        text: fromPromptPt,
+        locale: ConversationLanguage.portugueseBr.ttsLocale,
+      );
+    }
+
+    return const _AudioPrompt(text: '', locale: '');
+  }
+
+  String _extractTranscript(String text) {
+    if (text.isEmpty) {
+      return '';
+    }
+
+    final colon = text.indexOf(':');
+    if (colon >= 0 && colon + 1 < text.length) {
+      final candidate = text.substring(colon + 1).trim();
       if (candidate.isNotEmpty) {
         return candidate;
       }
     }
 
-    return fallback;
+    return text;
   }
 }
 
+class _AudioPrompt {
+  final String text;
+  final String locale;
+
+  const _AudioPrompt({required this.text, required this.locale});
+}

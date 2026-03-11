@@ -233,6 +233,24 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
   - Improvement: contextual interpretations now include a short practical example (`Ex.: ...`) for faster learner understanding.
   - Improvement: tooltip now shows a compact `Contexto` badge whenever meaning is inferred by sentence context.
 
+### Hotfix update (2026-03-11 - pt-BR instructions only)
+
+- Learning UI language alignment refined for Portuguese mode:
+  - In `pt-BR` mode, exercise content is now rendered from English fields (`promptEn`, `optionsEn`, `audioTextEn`) whenever available.
+  - Portuguese remains only for interface/instructional chrome (buttons, helper labels, guidance text).
+  - Added fallback to Portuguese content only for legacy records missing English fields.
+  - Added widget regression test validating `pt-BR UI + EN exercise content` behavior.
+
+### Hotfix update (2026-03-11 - english audio + db backfill)
+
+- Audio source and locale alignment for lessons:
+  - `LessonController.playCurrentPromptAudio()` now prioritizes English exercise content and `en-US` TTS locale, independent of UI language.
+  - For `listenAndType`, runtime now prefers `audioTextEn` (then transcript extracted from `promptEn`), with Portuguese fallback only for legacy rows.
+- SQLite data migration/backfill for existing installs:
+  - Added database backfill routine to populate missing `audioTextEn` in `listenAndType` exercise `content_json` using `promptEn` transcript extraction.
+  - Backfill runs in both initial seed and ensure-backfill flows, reducing Portuguese audio leakage from legacy content.
+  - Added tests for controller behavior and DB backfill integrity.
+
 - Listening pedagogy refinement delivered for audio-driven exercises:
   - `listenAndSelect` and `listenAndType` now hide transcript text by default.
   - Added explicit reveal control (`Show text` / `Mostrar texto`) and hide toggle.

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 
 import '../../../application/lesson_content_catalog.dart';
+import '../../../domain/entities/exercise_type.dart';
 
 Future<void> seedInitialLearningContent(Database db) async {
   final existing = Sqflite.firstIntValue(
@@ -70,6 +71,7 @@ Future<void> seedInitialLearningContent(Database db) async {
   });
 
   await batch.commit(noResult: true);
+  await _backfillEnglishListeningTranscripts(db);
 }
 
 Future<void> ensureLearningContentBackfill(Database db) async {
@@ -155,4 +157,64 @@ Future<void> ensureLearningContentBackfill(Database db) async {
   );
 
   await batch.commit(noResult: true);
+  await _backfillEnglishListeningTranscripts(db);
+}
+
+Future<void> _backfillEnglishListeningTranscripts(Database db) async {
+  final rows = await db.query(
+    'exercises',
+    columns: <String>['id', 'content_json'],
+    where: 'type = ?',
+    whereArgs: <Object>[ExerciseType.listenAndType.name],
+  );
+
+  for (final row in rows) {
+    final id = row['id']?.toString() ?? '';
+    final contentRaw = row['content_json']?.toString() ?? '{}';
+    if (id.isEmpty || contentRaw.isEmpty) {
+      continue;
+    }
+
+    final decoded = jsonDecode(contentRaw);
+    if (decoded is! Map) {
+      continue;
+    }
+
+    final content = Map<String, dynamic>.from(decoded as Map);
+    final audioTextEn = (content['audioTextEn'] ?? '').toString().trim();
+    if (audioTextEn.isNotEmpty) {
+      continue;
+    }
+
+    final promptEn = (content['promptEn'] ?? '').toString().trim();
+    final extractedEn = _extractTranscript(promptEn);
+    if (extractedEn.isEmpty) {
+      continue;
+    }
+
+    content['audioTextEn'] = extractedEn;
+
+    await db.update(
+      'exercises',
+      <String, Object?>{'content_json': jsonEncode(content)},
+      where: 'id = ?',
+      whereArgs: <Object>[id],
+    );
+  }
+}
+
+String _extractTranscript(String text) {
+  if (text.isEmpty) {
+    return '';
+  }
+
+  final colon = text.indexOf(':');
+  if (colon >= 0 && colon + 1 < text.length) {
+    final candidate = text.substring(colon + 1).trim();
+    if (candidate.isNotEmpty) {
+      return candidate;
+    }
+  }
+
+  return text;
 }
