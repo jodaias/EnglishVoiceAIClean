@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 import '../application/lesson_controller.dart';
 import 'app_text.dart';
@@ -85,6 +86,40 @@ class LessonSummaryPage extends StatelessWidget {
                   );
                 },
               ),
+              if (summary.isPassed && summary.scorePercent == 100) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.amber.withOpacity(0.45)),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        appText(
+                          context,
+                          en: 'Perfect lesson!',
+                          pt: 'Licao perfeita!',
+                        ),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          color: Colors.amber,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: 90,
+                        child: Lottie.asset(
+                          'assets/lottie/robot_talking.json',
+                          repeat: false,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const Spacer(),
               FilledButton(
                 onPressed: () {

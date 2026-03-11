@@ -638,12 +638,12 @@ lib/features/voice_chat/presentation/
 
 **Objetivo**: experiencia sensorial
 
-- [ ] Adicionar sons de acerto/erro/completo (assets audio)
-- [ ] Haptic feedback em selecoes
-- [ ] Animacoes de celebracao (Lottie) em licao perfeita
-- [ ] Polir transicoes e micro-interacoes
-- [ ] Dark mode support para telas novas
-- [ ] Responsividade em diferentes tamanhos de tela
+- [x] Adicionar sons de acerto/erro/completo (assets audio)
+- [x] Haptic feedback em selecoes
+- [x] Animacoes de celebracao (Lottie) em licao perfeita
+- [x] Polir transicoes e micro-interacoes
+- [x] Dark mode support para telas novas
+- [x] Responsividade em diferentes tamanhos de tela
 
 ### Sprint 10 — Geracao por IA (Fase 2)
 

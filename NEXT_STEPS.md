@@ -154,9 +154,21 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
   - `lesson_content_catalog_test.dart` now validates 10 units, beginner/intermediate split (5/5), lesson/exercise volume per unit, and per-type bilingual content structure
 - Validation update: Sprint 8 focused application tests 6/6 passing.
 
+- Sprint 9 (Audio, Haptics and Polish) implemented in code.
+- Feedback audio and haptics delivered:
+  - Added `LessonFeedbackAudioService` abstraction and `SystemLessonFeedbackAudioService` implementation
+  - Integrated sound playback for correct answer, wrong answer, and lesson completion in `LessonPage`
+  - Added haptic feedback on option selection, answer result, and lesson completion
+- UX polish delivered:
+  - Feedback flow now combines animated overlay + tactile/audio response for micro-interaction reinforcement
+  - Lesson summary now shows a Lottie celebration block for perfect lessons (100% score)
+- Compatibility notes:
+  - Sound implementation currently uses system sound fallback and is ready to swap to dedicated MP3 asset playback in the same service interface.
+- Validation update: focused presentation tests 12/12 passing.
+
 ### Next execution target
 
-- Sprint 9: sons de acerto/erro/conclusao, haptic feedback e polish de micro-interacoes.
+- Sprint 10: iniciar geracao por IA (ExerciseGeneratorService), prompts por tipo e cache local.
 
 ## Video Call Mode (new — 2026-03-07)
 

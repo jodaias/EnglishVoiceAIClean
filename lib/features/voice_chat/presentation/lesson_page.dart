@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../application/exercise_validator.dart';
 import '../application/hearts_manager.dart';
+import '../application/lesson_feedback_audio_service.dart';
 import '../application/lesson_content_catalog.dart';
 import '../application/lesson_controller.dart';
 import '../application/pronunciation_comparer.dart';
@@ -12,6 +16,7 @@ import '../domain/entities/exercise_type.dart';
 import '../domain/entities/lesson.dart';
 import '../domain/entities/lesson_exercise.dart';
 import '../infrastructure/local/local_learning_progress_repository.dart';
+import '../infrastructure/audio/system_lesson_feedback_audio_service.dart';
 import '../infrastructure/speech/speech_service.dart';
 import '../infrastructure/speech/stt_pronunciation_capture_service.dart';
 import '../infrastructure/tts/learning_audio_tts_service.dart';
@@ -29,12 +34,14 @@ class LessonPage extends StatefulWidget {
   final String? unitId;
   final Lesson? lesson;
   final LessonController? controller;
+  final LessonFeedbackAudioService? feedbackAudioService;
 
   const LessonPage({
     super.key,
     this.unitId,
     this.lesson,
     this.controller,
+    this.feedbackAudioService,
   });
 
   @override
@@ -44,6 +51,8 @@ class LessonPage extends StatefulWidget {
 class _LessonPageState extends State<LessonPage> {
   late final LessonController _controller;
   late final bool _ownsController;
+  late final LessonFeedbackAudioService _feedbackAudioService;
+  late final bool _ownsFeedbackAudioService;
   final ValueNotifier<int> _pronunciationAccuracyNotifier =
       ValueNotifier<int>(0);
 
@@ -53,7 +62,10 @@ class _LessonPageState extends State<LessonPage> {
   void initState() {
     super.initState();
     _ownsController = widget.controller == null;
+    _ownsFeedbackAudioService = widget.feedbackAudioService == null;
     _controller = widget.controller ?? _buildDefaultController();
+    _feedbackAudioService =
+        widget.feedbackAudioService ?? SystemLessonFeedbackAudioService();
     _controller.isCompletedNotifier.addListener(_onControllerCompleted);
   }
 
@@ -71,6 +83,9 @@ class _LessonPageState extends State<LessonPage> {
   void dispose() {
     _controller.isCompletedNotifier.removeListener(_onControllerCompleted);
     _pronunciationAccuracyNotifier.dispose();
+    if (_ownsFeedbackAudioService) {
+      unawaited(_feedbackAudioService.dispose());
+    }
     if (_ownsController) {
       _controller.dispose();
     }
@@ -196,7 +211,7 @@ class _LessonPageState extends State<LessonPage> {
                                 pronunciationAccuracyPercent:
                                     _pronunciationAccuracyNotifier.value,
                                 enabled: feedback == null,
-                                onAnswerChanged: _controller.selectAnswer,
+                                onAnswerChanged: _onAnswerChanged,
                                 onPlayAudio: _controller.playCurrentPromptAudio,
                                 onStartSpeechCapture: () {
                                   _captureSpokenAnswer(exercise);
@@ -236,6 +251,9 @@ class _LessonPageState extends State<LessonPage> {
           onPressed: () async {
             if (!submitted) {
               final didSubmit = _controller.submitCurrentAnswer();
+              if (didSubmit) {
+                await _playFeedbackForLastAnswer();
+              }
               if (!didSubmit && context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -253,6 +271,7 @@ class _LessonPageState extends State<LessonPage> {
             }
 
             _pronunciationAccuracyNotifier.value = 0;
+            _safeHaptic(HapticFeedback.selectionClick);
             await _controller.continueAfterFeedback();
           },
           child: Text(
@@ -397,10 +416,38 @@ class _LessonPageState extends State<LessonPage> {
     }
 
     _completionHandled = true;
+    unawaited(_feedbackAudioService.playComplete());
+    _safeHaptic(HapticFeedback.mediumImpact);
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (_) => LessonSummaryPage(summary: summary),
       ),
     );
+  }
+
+  void _onAnswerChanged(Object answer) {
+    _controller.selectAnswer(answer);
+    _safeHaptic(HapticFeedback.selectionClick);
+  }
+
+  Future<void> _playFeedbackForLastAnswer() async {
+    final feedback = _controller.feedbackNotifier.value;
+    if (feedback == null) {
+      return;
+    }
+
+    if (feedback.isCorrect) {
+      await _feedbackAudioService.playCorrect();
+      _safeHaptic(HapticFeedback.lightImpact);
+    } else {
+      await _feedbackAudioService.playWrong();
+      _safeHaptic(HapticFeedback.heavyImpact);
+    }
+  }
+
+  void _safeHaptic(Future<void> Function() trigger) {
+    try {
+      unawaited(trigger());
+    } catch (_) {}
   }
 }
