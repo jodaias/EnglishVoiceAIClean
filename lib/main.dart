@@ -13,7 +13,6 @@ import 'package:english_voice_ai_clean/features/voice_chat/presentation/lesson_p
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/lesson_summary_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/learning_path_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/practice_overview_page.dart';
-import 'package:english_voice_ai_clean/features/voice_chat/presentation/reading_listening_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/session_history_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/session_settings_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/video_call_page.dart';
@@ -74,8 +73,6 @@ class _VoiceEnglishAIAppState extends State<VoiceEnglishAIApp> {
               DashboardRoutes.dashboard: (_) => const InitialDashboardPage(),
               DashboardRoutes.practice: (_) => const PracticeOverviewPage(),
               DashboardRoutes.learningPath: (_) => const LearningPathPage(),
-              DashboardRoutes.readingListening: (_) =>
-                  const ReadingListeningPage(),
               DashboardRoutes.lesson: (_) => const LessonPage(),
               DashboardRoutes.lessonSummary: (_) => const LessonSummaryPage(
                     summary: LessonSessionSummary(

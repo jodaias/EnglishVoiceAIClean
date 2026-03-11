@@ -144,8 +144,8 @@ class PracticeHubSheet extends StatelessWidget {
     return _PanelCard(
       title: appText(
         context,
-        en: 'Reading + Listening Lab',
-        pt: 'Laboratorio de Leitura + Audicao',
+        en: 'Learning Path',
+        pt: 'Trilha de Aprendizado',
       ),
       icon: Icons.headphones,
       child: Column(
@@ -154,8 +154,8 @@ class PracticeHubSheet extends StatelessWidget {
           Text(
             appText(
               context,
-              en: 'Train comprehension with short guided audios and instant answer checks.',
-              pt: 'Treine compreensao com audios curtos guiados e verificacao imediata de resposta.',
+              en: 'Follow units and lessons with progressive unlock, mixed exercise types, and XP tracking.',
+              pt: 'Siga unidades e licoes com desbloqueio progressivo, exercicios variados e acompanhamento de XP.',
             ),
             style: const TextStyle(color: Colors.white70),
           ),
@@ -166,8 +166,8 @@ class PracticeHubSheet extends StatelessWidget {
             label: Text(
               appText(
                 context,
-                en: 'Start reading + listening',
-                pt: 'Iniciar leitura + audicao',
+                en: 'Open learning path',
+                pt: 'Abrir trilha de aprendizado',
               ),
             ),
           ),

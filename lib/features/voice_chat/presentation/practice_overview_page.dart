@@ -132,7 +132,7 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
                   isOpeningDailyReview: isOpeningReview,
                   onOpenReadingListening: () {
                     Navigator.of(context)
-                        .pushNamed(DashboardRoutes.readingListening);
+                        .pushNamed(DashboardRoutes.learningPath);
                   },
                   onOpenSurpriseLesson: _openSurpriseLesson,
                   onOpenDailyReview: _openDailyReviewLesson,

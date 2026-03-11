@@ -215,7 +215,7 @@ class _VoiceChatPageState extends State<VoiceChatPage> {
                       Navigator.of(sheetContext).pop();
                       Navigator.of(
                         context,
-                      ).pushNamed(DashboardRoutes.readingListening);
+                      ).pushNamed(DashboardRoutes.learningPath);
                     },
                   ),
                 ),
