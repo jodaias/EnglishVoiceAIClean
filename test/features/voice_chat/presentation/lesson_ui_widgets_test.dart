@@ -126,7 +126,7 @@ void main() {
     await tester.tap(find.text('Hello'));
     await tester.pump();
 
-    expect(find.text('Significado: olá'), findsOneWidget);
+    expect(find.text(' olá'), findsOneWidget);
 
     // Allow tooltip overlay auto-dismiss timer to finish before test teardown.
     await tester.pump(const Duration(milliseconds: 2500));

@@ -1017,11 +1017,11 @@ class _WordMeaningText extends StatelessWidget {
 
     if (word == 'work') {
       if (previous == 'at' || previous == 'to' || previous == 'for') {
-        return const _MeaningHint('Significado: trabalho', isContextual: true);
+        return const _MeaningHint(' trabalho', isContextual: true);
       }
       if (_subjectPronouns.contains(previous) || next == 'at') {
         return const _MeaningHint(
-          'Significado: trabalhar\nEx.: I work in a cafe = Eu trabalho em uma cafeteria.',
+          ' trabalhar\nEx.: I work in a cafe = Eu trabalho em uma cafeteria.',
           isContextual: true,
         );
       }
@@ -1034,7 +1034,7 @@ class _WordMeaningText extends StatelessWidget {
     if (word == 'watch') {
       if (_objectWords.contains(next) || previous == 'to') {
         return const _MeaningHint(
-          'Significado: assistir\nEx.: Watch this video = Assista a este video.',
+          ' assistir\nEx.: Watch this video = Assista a este video.',
           isContextual: true,
         );
       }
@@ -1047,12 +1047,12 @@ class _WordMeaningText extends StatelessWidget {
     if (word == 'call') {
       if (_pronouns.contains(next) || next == 'you' || previous == 'can') {
         return const _MeaningHint(
-          'Significado: ligar/chamar\nEx.: Call me later = Me liga mais tarde.',
+          ' ligar/chamar\nEx.: Call me later = Me liga mais tarde.',
           isContextual: true,
         );
       }
       return const _MeaningHint(
-        'Significado: ligacao/chamada',
+        ' ligacao/chamada',
         isContextual: true,
       );
     }
@@ -1062,7 +1062,7 @@ class _WordMeaningText extends StatelessWidget {
           previous == 'can' ||
           previous == 'please') {
         return const _MeaningHint(
-          'Significado: pedir\nEx.: I want to order coffee = Quero pedir cafe.',
+          ' pedir\nEx.: I want to order coffee = Quero pedir cafe.',
           isContextual: true,
         );
       }
@@ -1075,7 +1075,7 @@ class _WordMeaningText extends StatelessWidget {
     if (word == 'like') {
       if (_pronouns.contains(previous) && next != null) {
         return const _MeaningHint(
-          'Significado: gostar\nEx.: I like this class = Eu gosto desta aula.',
+          ' gostar\nEx.: I like this class = Eu gosto desta aula.',
           isContextual: true,
         );
       }
@@ -1087,15 +1087,15 @@ class _WordMeaningText extends StatelessWidget {
 
     if (word == 'table') {
       if (previous == 'times') {
-        return const _MeaningHint('Significado: tabela', isContextual: true);
+        return const _MeaningHint(' tabela', isContextual: true);
       }
-      return const _MeaningHint('Significado: mesa');
+      return const _MeaningHint(' mesa');
     }
 
     if (word == 'match') {
       if (next == 'pairs') {
         return const _MeaningHint(
-          'Significado: associar\nEx.: Match pairs = Associe os pares.',
+          ' associar\nEx.: Match pairs = Associe os pares.',
           isContextual: true,
         );
       }
@@ -1107,7 +1107,7 @@ class _WordMeaningText extends StatelessWidget {
 
     if (word == 'class') {
       if (next == 'today' || previous == 'in' || previous == 'after') {
-        return const _MeaningHint('Significado: aula', isContextual: true);
+        return const _MeaningHint(' aula', isContextual: true);
       }
       return const _MeaningHint(
         'Significados: turma ou classe',
@@ -1119,7 +1119,7 @@ class _WordMeaningText extends StatelessWidget {
     if (baseMeaning == null) {
       return null;
     }
-    return _MeaningHint('Significado: $baseMeaning');
+    return _MeaningHint(' $baseMeaning');
   }
 }
 
