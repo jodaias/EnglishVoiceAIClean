@@ -604,13 +604,13 @@ lib/features/voice_chat/presentation/
 
 **Objetivo**: tela principal de licao
 
-- [ ] `LessonPage` com fluxo completo
+- [x] `LessonPage` com fluxo completo
   - progress bar, vidas, area de exercicio, botao CHECK/CONTINUE
-- [ ] Renderizar exercicio correto baseado em `ExerciseType`
-- [ ] Animacoes de transicao entre exercicios
-- [ ] Feedback visual pos-resposta (overlay)
-- [ ] `LessonSummaryPage` com animacao de XP e score
-- [ ] Testes de widget para lesson page
+- [x] Renderizar exercicio correto baseado em `ExerciseType`
+- [x] Animacoes de transicao entre exercicios
+- [x] Feedback visual pos-resposta (overlay)
+- [x] `LessonSummaryPage` com animacao de XP e score
+- [x] Testes de widget para lesson page
 
 ### Sprint 7 — UI: Learning Path Page
 

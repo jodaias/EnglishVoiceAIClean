@@ -1,5 +1,6 @@
 import 'package:english_voice_ai_clean/features/splash/splash_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/application/app_settings_controller.dart';
+import 'package:english_voice_ai_clean/features/voice_chat/application/lesson_controller.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/app_locale.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/infrastructure/local/local_user_preferences_repository.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/infrastructure/local/database/app_database.dart';
@@ -7,6 +8,8 @@ import 'package:english_voice_ai_clean/features/voice_chat/presentation/app_sett
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/dashboard_routes.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/initial_dashboard_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/language_mode_page.dart';
+import 'package:english_voice_ai_clean/features/voice_chat/presentation/lesson_page.dart';
+import 'package:english_voice_ai_clean/features/voice_chat/presentation/lesson_summary_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/practice_overview_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/reading_listening_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/session_history_page.dart';
@@ -69,6 +72,17 @@ class _VoiceEnglishAIAppState extends State<VoiceEnglishAIApp> {
               DashboardRoutes.practice: (_) => const PracticeOverviewPage(),
               DashboardRoutes.readingListening: (_) =>
                   const ReadingListeningPage(),
+              DashboardRoutes.lesson: (_) => const LessonPage(),
+              DashboardRoutes.lessonSummary: (_) => const LessonSummaryPage(
+                    summary: LessonSessionSummary(
+                      totalExercises: 0,
+                      correctAnswers: 0,
+                      scorePercent: 0,
+                      earnedXp: 0,
+                      remainingHearts: 5,
+                      isPassed: false,
+                    ),
+                  ),
               DashboardRoutes.sessionHistory: (_) => const SessionHistoryPage(),
               DashboardRoutes.session: (_) => const SessionSettingsPage(),
               DashboardRoutes.language: (_) => const LanguageModePage(),

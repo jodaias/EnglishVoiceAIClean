@@ -110,9 +110,25 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
   - Added match-pairs interaction test and speak-accuracy rendering test in `test/features/voice_chat/presentation/lesson_ui_widgets_test.dart`.
 - Validation update: presentation tests 17/17 passing.
 
+- Sprint 6 (Lesson Page + Summary Page) implemented in code and tests.
+- New UI flow pages added:
+  - `LessonPage` with complete CHECK/CONTINUE loop driven by `LessonController`
+  - `LessonSummaryPage` with animated XP counter and score/hearts summary
+- Lesson runtime behavior delivered:
+  - Top HUD with progress bar and hearts
+  - Per-type exercise rendering via `LessonExerciseRenderer`
+  - Animated exercise transitions (`AnimatedSwitcher`)
+  - Post-answer feedback overlay integrated in-page
+  - Exit confirmation dialog and summary navigation on completion
+- Routing updates:
+  - Added `/lesson` and `/lesson-summary` route constants and route registration in `main.dart`
+- New automated tests added:
+  - `test/features/voice_chat/presentation/lesson_page_test.dart`
+- Validation update: presentation tests 19/19 passing.
+
 ### Next execution target
 
-- Sprint 6: `LessonPage` com fluxo completo (CHECK/CONTINUE), renderizacao por `ExerciseType`, transicoes e `LessonSummaryPage`.
+- Sprint 7: `LearningPathPage` com bolhas conectadas, `LessonNodeWidget`, header com XP/streak/vidas e testes de widget.
 
 ## Video Call Mode (new — 2026-03-07)
 
