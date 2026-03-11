@@ -2,6 +2,52 @@
 
 This file is the current action plan for evolving the app as a high-quality English learning product.
 
+## Duolingo-Style Reading & Listening (new — 2026-03-11)
+
+Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN_DUOLINGO_READING_LISTENING.md).
+
+### Summary
+
+- Transform linear quiz module into gamified learning path with units, lessons, and progressive unlocking.
+- Add 8+ exercise types: listen & type, fill in the blank, word order, translate, match pairs, speak the sentence, true/false.
+- Implement XP system, hearts (lives), crowns per unit, and streak integration.
+- Duolingo-inspired UI: bubble trail, progress bar, animated feedback, celebration animations.
+- Content strategy: curated catalog (Phase 1) → AI-generated via Gemini (Phase 2) → spaced repetition (Phase 3).
+- MVP in ~5 sprints (Domain → Catalog → Controller → Widgets → Lesson Page).
+
+### Current execution status (2026-03-11)
+
+- Sprint 1 (Foundations) implemented in code and tests.
+- New domain entities added for learning path and progression:
+  - `ExerciseType`, `LessonExercise`, `Lesson`, `LearningUnit`
+  - `LessonProgress`, `UnitProgress`, `UserProgress`, `XpReward`
+- New persistence layer added:
+  - `LearningProgressRepository` (application contract)
+  - `LocalLearningProgressRepository` (Hive + JSON)
+- New automated tests added:
+  - `test/features/voice_chat/domain/entities/learning_path_entities_test.dart`
+  - `test/features/voice_chat/infrastructure/local/local_learning_progress_repository_test.dart`
+- Validation: focused test run completed with 9/9 tests passing.
+
+- Sprint 2 (Catalog + Validation) implemented in code and tests.
+- New application services added:
+  - `ExerciseValidator` with rules for all `ExerciseType` variants
+  - `XpCalculator` for per-exercise and perfect-lesson XP rules
+  - `HeartsManager` with cooldown refill and relaxed mode support
+- New content catalog added:
+  - `LessonContentCatalog` with Unit 1 (`Greetings`) and Unit 2 (`At a Cafe`)
+  - 3 lessons per unit, 18 exercises per unit (36 total), with full exercise-type coverage
+- New automated tests added:
+  - `test/features/voice_chat/application/exercise_validator_test.dart`
+  - `test/features/voice_chat/application/xp_calculator_test.dart`
+  - `test/features/voice_chat/application/hearts_manager_test.dart`
+  - `test/features/voice_chat/application/lesson_content_catalog_test.dart`
+- Validation: Sprint 2 focused tests 15/15 and voice_chat suite 44/44 passing.
+
+### Next execution target
+
+- Sprint 3: `LessonController` com fluxo completo de licao (exibir -> responder -> feedback -> proximo -> resumo), integrando TTS/STT e salvamento de progresso.
+
 ## Video Call Mode (new — 2026-03-07)
 
 ### Done
