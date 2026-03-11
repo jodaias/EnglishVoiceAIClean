@@ -909,15 +909,16 @@ class _WordMeaningText extends StatelessWidget {
           }
 
           final wordIndex = _wordIndexFromTokenIndex(tokens, entry.key);
-          final meaning = _resolveWordMeaning(tokens, words, wordIndex);
+          final meaningHint = _resolveWordMeaningMessage(words, wordIndex);
           Offset? tapAnchor;
 
           void showMeaning() {
             _showWordMeaningTooltip(
               context,
-              meaning == null
+              meaningHint == null
                   ? 'Significado ainda não cadastrado.'
-                  : 'Significado: $meaning',
+                  : meaningHint.message,
+              isContextual: meaningHint?.isContextual ?? false,
               anchor: tapAnchor,
             );
           }
@@ -958,11 +959,7 @@ class _WordMeaningText extends StatelessWidget {
     return count;
   }
 
-  String? _resolveWordMeaning(
-    List<String> tokens,
-    List<String> words,
-    int wordIndex,
-  ) {
+  _MeaningHint? _resolveWordMeaningMessage(List<String> words, int wordIndex) {
     if (wordIndex < 0 || wordIndex >= words.length) {
       return null;
     }
@@ -973,67 +970,102 @@ class _WordMeaningText extends StatelessWidget {
 
     if (word == 'work') {
       if (previous == 'at' || previous == 'to' || previous == 'for') {
-        return 'trabalho';
+        return const _MeaningHint('trabalho', isContextual: true);
       }
       if (_subjectPronouns.contains(previous) || next == 'at') {
-        return 'trabalhar';
+        return const _MeaningHint(
+          'trabalhar\nEx.: I work in a cafe = Eu trabalho em uma cafeteria.',
+          isContextual: true,
+        );
       }
-      return 'trabalho/trabalhar';
+      return const _MeaningHint(
+        'trabalho ou trabalhar\nEx.: Work is busy today = O trabalho esta corrido hoje.',
+        isContextual: true,
+      );
     }
 
     if (word == 'watch') {
       if (_objectWords.contains(next) || previous == 'to') {
-        return 'assistir';
+        return const _MeaningHint(
+          'assistir\nEx.: Watch this video = Assista a este video.',
+          isContextual: true,
+        );
       }
-      return 'relógio/assistir';
+      return const _MeaningHint(
+        'relogio ou assistir\nEx.: My watch is new = Meu relogio e novo.',
+        isContextual: true,
+      );
     }
 
     if (word == 'call') {
       if (_pronouns.contains(next) || next == 'you' || previous == 'can') {
-        return 'ligar/chamar';
+        return const _MeaningHint(
+          'ligar/chamar\nEx.: Call me later = Me liga mais tarde.',
+          isContextual: true,
+        );
       }
-      return 'ligação/chamada';
+      return const _MeaningHint('ligacao/chamada', isContextual: true);
     }
 
     if (word == 'order') {
       if (_foodWords.contains(next) ||
           previous == 'can' ||
           previous == 'please') {
-        return 'pedir';
+        return const _MeaningHint(
+          'pedir\nEx.: I want to order coffee = Quero pedir cafe.',
+          isContextual: true,
+        );
       }
-      return 'ordem/ordenar';
+      return const _MeaningHint('ordem ou ordenar', isContextual: true);
     }
 
     if (word == 'like') {
       if (_pronouns.contains(previous) && next != null) {
-        return 'gostar';
+        return const _MeaningHint(
+          'gostar\nEx.: I like this class = Eu gosto desta aula.',
+          isContextual: true,
+        );
       }
-      return 'como/igual a';
+      return const _MeaningHint('como ou igual a', isContextual: true);
     }
 
     if (word == 'table') {
       if (previous == 'times') {
-        return 'tabela';
+        return const _MeaningHint('tabela', isContextual: true);
       }
-      return 'mesa';
+      return const _MeaningHint('mesa', isContextual: true);
     }
 
     if (word == 'match') {
       if (next == 'pairs') {
-        return 'associar';
+        return const _MeaningHint(
+          'associar\nEx.: Match pairs = Associe os pares.',
+          isContextual: true,
+        );
       }
-      return 'partida/combinação';
+      return const _MeaningHint('partida ou combinacao', isContextual: true);
     }
 
     if (word == 'class') {
       if (next == 'today' || previous == 'in' || previous == 'after') {
-        return 'aula';
+        return const _MeaningHint('aula', isContextual: true);
       }
-      return 'turma/classe';
+      return const _MeaningHint('turma ou classe', isContextual: true);
     }
 
-    return _wordMeaningsPt[word];
+    final baseMeaning = _wordMeaningsPt[word];
+    if (baseMeaning == null) {
+      return null;
+    }
+    return _MeaningHint(baseMeaning);
   }
+}
+
+class _MeaningHint {
+  final String message;
+  final bool isContextual;
+
+  const _MeaningHint(this.message, {this.isContextual = false});
 }
 
 const Set<String> _subjectPronouns = <String>{
@@ -1085,6 +1117,7 @@ OverlayEntry? _activeMeaningTooltip;
 void _showWordMeaningTooltip(
   BuildContext context,
   String message, {
+  bool isContextual = false,
   Offset? anchor,
 }) {
   _activeMeaningTooltip?.remove();
@@ -1131,10 +1164,36 @@ void _showWordMeaningTooltip(
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.white24),
               ),
-              child: Text(
-                message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isContextual)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.orangeAccent.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: Colors.orangeAccent.shade100),
+                      ),
+                      child: const Text(
+                        'Contexto',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ],
               ),
             ),
           ),

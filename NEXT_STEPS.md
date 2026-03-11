@@ -229,6 +229,9 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
   - Added lightweight disambiguation using neighboring words in the same sentence for ambiguous terms (examples: `work`, `watch`, `call`, `order`, `like`, `class`, `match`, `table`).
   - Tooltip now prioritizes contextual meaning when possible and falls back to base dictionary otherwise.
   - Result: reduced odd translations in common lesson contexts.
+  - Improvement: when context is strongly ambiguous, tooltip now shows two likely meanings (`Significados: ... ou ...`).
+  - Improvement: contextual interpretations now include a short practical example (`Ex.: ...`) for faster learner understanding.
+  - Improvement: tooltip now shows a compact `Contexto` badge whenever meaning is inferred by sentence context.
 
 - Listening pedagogy refinement delivered for audio-driven exercises:
   - `listenAndSelect` and `listenAndType` now hide transcript text by default.
