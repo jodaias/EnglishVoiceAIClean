@@ -143,6 +143,7 @@ class _OptionExerciseWidgetState extends State<_OptionExerciseWidget> {
         _WordMeaningText(
           text: prompt,
           language: widget.language,
+          enableWordTap: !(isListeningExercise && !_showAudioText),
           style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
         ),
         if (isListeningExercise && widget.onPlayAudio != null) ...[
@@ -277,6 +278,7 @@ class _TextExerciseWidgetState extends State<_TextExerciseWidget> {
         _WordMeaningText(
           text: prompt,
           language: widget.language,
+          enableWordTap: !(isListeningExercise && !_showAudioText),
           style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
         ),
         if (isListeningExercise && widget.onPlayAudio != null) ...[
@@ -815,7 +817,8 @@ String _listeningTranscriptFor(
     return explicitAudioText;
   }
 
-  final ptAudioFallback = (exercise.content['audioTextPt'] ?? '').toString().trim();
+  final ptAudioFallback =
+      (exercise.content['audioTextPt'] ?? '').toString().trim();
   if (ptAudioFallback.isNotEmpty) {
     return ptAudioFallback;
   }
@@ -915,6 +918,10 @@ class _WordMeaningText extends StatelessWidget {
       return Text(text, style: style);
     }
 
+    if (!_isLikelyEnglishText(words)) {
+      return Text(text, style: style);
+    }
+
     final effectiveStyle = style ?? const TextStyle();
     return Text.rich(
       TextSpan(
@@ -974,6 +981,29 @@ class _WordMeaningText extends StatelessWidget {
       }
     }
     return count;
+  }
+
+  bool _isLikelyEnglishText(List<String> words) {
+    if (words.isEmpty) {
+      return false;
+    }
+
+    final englishSignals =
+        words.where((word) => _englishSignalWords.contains(word)).length;
+    final portugueseSignals =
+        words.where((word) => _portugueseSignalWords.contains(word)).length;
+    final mappedWords =
+        words.where((word) => _wordMeaningsPt.containsKey(word)).length;
+
+    if (portugueseSignals >= 2 && portugueseSignals > englishSignals) {
+      return false;
+    }
+
+    if (englishSignals > 0) {
+      return true;
+    }
+
+    return mappedWords >= 2 && portugueseSignals == 0;
   }
 
   _MeaningHint? _resolveWordMeaningMessage(List<String> words, int wordIndex) {
@@ -1142,6 +1172,63 @@ const Set<String> _foodWords = <String>{
   'dinner',
   'food',
   'menu',
+};
+
+const Set<String> _englishSignalWords = <String>{
+  'i',
+  'you',
+  'we',
+  'they',
+  'he',
+  'she',
+  'it',
+  'the',
+  'a',
+  'an',
+  'to',
+  'in',
+  'on',
+  'at',
+  'is',
+  'are',
+  'my',
+  'your',
+  'hello',
+  'good',
+  'choose',
+  'listen',
+  'type',
+  'match',
+  'true',
+  'false',
+  'say',
+};
+
+const Set<String> _portugueseSignalWords = <String>{
+  'voce',
+  'voces',
+  'nao',
+  'que',
+  'com',
+  'para',
+  'uma',
+  'um',
+  'de',
+  'da',
+  'do',
+  'das',
+  'dos',
+  'em',
+  'por',
+  'como',
+  'onde',
+  'quando',
+  'qual',
+  'quais',
+  'traduzir',
+  'digite',
+  'ouca',
+  'responda',
 };
 
 OverlayEntry? _activeMeaningTooltip;

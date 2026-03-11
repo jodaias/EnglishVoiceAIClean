@@ -251,6 +251,13 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
   - Backfill runs in both initial seed and ensure-backfill flows, reducing Portuguese audio leakage from legacy content.
   - Added tests for controller behavior and DB backfill integrity.
 
+### Hotfix update (2026-03-11 - dotted underline scope)
+
+- Word-meaning affordance refined:
+  - Dotted underline + tap tooltip now apply only to likely-English exercise sentence content.
+  - Instructional prompts (for example hidden listening guidance text) no longer activate word-meaning interactions.
+  - Added widget regression assertion to ensure instruction text does not open meaning tooltip.
+
 - Listening pedagogy refinement delivered for audio-driven exercises:
   - `listenAndSelect` and `listenAndType` now hide transcript text by default.
   - Added explicit reveal control (`Show text` / `Mostrar texto`) and hide toggle.

@@ -240,6 +240,12 @@ void main() {
     expect(find.text('I am at the station.'), findsNothing);
     expect(find.text('Show text'), findsOneWidget);
 
+    await tester.tap(
+      find.text('Listen to the audio and answer without reading the text.'),
+    );
+    await tester.pump();
+    expect(find.textContaining('Significado'), findsNothing);
+
     await tester.tap(find.text('Show text'));
     await tester.pump();
 
