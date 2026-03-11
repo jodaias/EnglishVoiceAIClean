@@ -1,4 +1,5 @@
 import 'package:path/path.dart' as p;
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'seed_data.dart';
@@ -18,8 +19,7 @@ class AppDatabase {
       return _database!;
     }
 
-    final dbPath = await getDatabasesPath();
-    final fullPath = p.join(dbPath, dbName);
+    final fullPath = kIsWeb ? dbName : p.join(await getDatabasesPath(), dbName);
 
     _database = await openDatabase(
       fullPath,

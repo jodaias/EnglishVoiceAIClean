@@ -4,6 +4,7 @@ import 'package:english_voice_ai_clean/features/voice_chat/application/lesson_co
 import 'package:english_voice_ai_clean/features/voice_chat/domain/entities/app_locale.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/infrastructure/local/local_user_preferences_repository.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/infrastructure/local/database/app_database.dart';
+import 'package:english_voice_ai_clean/features/voice_chat/infrastructure/local/database/database_factory_initializer.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/app_settings_scope.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/dashboard_routes.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/initial_dashboard_page.dart';
@@ -24,6 +25,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
+  await initializeDatabaseFactory();
   await AppDatabase.instance.open();
   await dotenv.load(fileName: kIsWeb ? 'env/web.env' : '.env');
   runApp(const VoiceEnglishAIApp());

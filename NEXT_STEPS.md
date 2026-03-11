@@ -17,6 +17,13 @@ Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN
 
 ### Current execution status (2026-03-11)
 
+- SQLite cross-platform bootstrap hotfix applied (web/desktop):
+  - Added `initializeDatabaseFactory()` to configure `sqflite` global factory before any `openDatabase` call.
+  - Web now initializes `databaseFactoryFfiWeb`; Windows/Linux/macOS now initialize `databaseFactoryFfi`.
+  - `main.dart` now runs this initialization before `AppDatabase.instance.open()` to avoid `Bad state: databaseFactory not initialized`.
+  - `AppDatabase.open()` now uses `dbName` directly on web (without `getDatabasesPath`) to avoid `SqfliteFfiWebException` from unsupported path resolution flow.
+  - Ran `dart run sqflite_common_ffi_web:setup` and generated required web binaries: `web/sqflite_sw.js` and `web/sqlite3.wasm`.
+
 - Sprint 0 (API + SQLite) implemented in code and tests.
 - New local database layer added:
   - `AppDatabase` with schema, indexes, versioning, and migration entrypoint
