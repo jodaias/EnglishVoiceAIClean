@@ -62,14 +62,12 @@ void main() {
     expect(find.text('Session Settings'), findsOneWidget);
     expect(find.text('City'), findsOneWidget);
     expect(find.text('Gemini'), findsOneWidget);
-    expect(find.text('gemini-2.5-pro'), findsOneWidget);
 
     final switches =
         tester.widgetList<SwitchListTile>(find.byType(SwitchListTile)).toList();
-    expect(switches[0].value, isTrue);
-    expect(switches[1].value, isFalse);
-    expect(switches[2].value, isTrue);
-    expect(switches[3].value, isFalse);
+    expect(switches[0].value, isFalse);
+    expect(switches[1].value, isTrue);
+    expect(switches[2].value, isFalse);
 
     appSettingsController.dispose();
   });

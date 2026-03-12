@@ -10,8 +10,9 @@ extension AiProviderX on AiProvider {
       case 'gemini':
         return AiProvider.gemini;
       case 'openai':
-      default:
         return AiProvider.openai;
+      default:
+        return AiProvider.gemini;
     }
   }
 

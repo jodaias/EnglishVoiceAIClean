@@ -49,7 +49,7 @@ void main() {
     expect(firstController.preferencesNotifier.value.selectedScene,
         SessionScene.studio);
     expect(firstController.preferencesNotifier.value.aiProvider,
-        AiProvider.openai);
+        AiProvider.gemini);
     expect(firstController.preferencesNotifier.value.useCustomAiModel, isFalse);
     expect(firstController.preferencesNotifier.value.openAiModel, 'gpt-4.1');
     expect(firstController.preferencesNotifier.value.geminiModel,

@@ -27,7 +27,7 @@ class SessionUiPreferences {
         showStartupTips = true,
         reviewBeforeSend = false,
         selectedScene = SessionScene.studio,
-        aiProvider = AiProvider.openai,
+        aiProvider = AiProvider.gemini,
         useCustomAiModel = false,
         geminiModel = 'gemini-2.5-flash',
         openAiModel = 'gpt-4.1';
