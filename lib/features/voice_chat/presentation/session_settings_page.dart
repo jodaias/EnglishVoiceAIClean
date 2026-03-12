@@ -48,7 +48,7 @@ class _SessionSettingsPageState extends State<SessionSettingsPage> {
           appText(
             context,
             en: 'Session Settings',
-            pt: 'Configuracoes da Sessao',
+            pt: 'Configurações da Sessão',
           ),
         ),
       ),
@@ -117,7 +117,7 @@ class _SessionSettingsPageState extends State<SessionSettingsPage> {
                         labelText: appText(
                           context,
                           en: 'Session Scene',
-                          pt: 'Cenario da Sessao',
+                          pt: 'Cenário da Sessão',
                         ),
                         border: const OutlineInputBorder(),
                         isDense: true,
@@ -212,7 +212,7 @@ class _SessionSettingsPageState extends State<SessionSettingsPage> {
                         appText(
                           context,
                           en: 'Open Voice Session',
-                          pt: 'Abrir Sessao de Voz',
+                          pt: 'Abrir Sessão de Voz',
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -267,7 +267,7 @@ class _SessionSettingsPageState extends State<SessionSettingsPage> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings_outlined),
             activeIcon: const Icon(Icons.settings),
-            label: appText(context, en: 'Session', pt: 'Sessao'),
+            label: appText(context, en: 'Settings', pt: 'Configurações'),
           ),
         ],
       ),

@@ -170,7 +170,7 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings_outlined),
             activeIcon: const Icon(Icons.settings),
-            label: appText(context, en: 'Session', pt: 'Sessao'),
+            label: appText(context, en: 'Settings', pt: 'Configurações'),
           ),
         ],
       ),

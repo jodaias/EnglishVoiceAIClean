@@ -86,7 +86,7 @@ void main() {
     await appSettingsController.setAppLocale(AppLocale.ptBr);
     await tester.pump(const Duration(milliseconds: 200));
 
-    expect(find.text('Configuracoes da Sessao'), findsOneWidget);
+    expect(find.text('Configurações da Sessão'), findsOneWidget);
 
     appSettingsController.dispose();
   });
