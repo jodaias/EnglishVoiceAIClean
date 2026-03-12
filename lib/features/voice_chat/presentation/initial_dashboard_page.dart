@@ -14,6 +14,7 @@ class InitialDashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(
             appText(context, en: 'English Voice AI', pt: 'English Voice AI')),
       ),
@@ -443,4 +444,3 @@ class _StreakBannerState extends State<_StreakBanner> {
     return labels[(day.weekday - 1) % 7];
   }
 }
-

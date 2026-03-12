@@ -9,6 +9,8 @@ import '../../domain/entities/session_ui_preferences.dart';
 
 class LocalUserPreferencesRepository {
   static const String _boxName = 'voice_chat_local_v1';
+  static const String _initialLanguageSelectionCompletedKey =
+      'voice_chat_initial_language_selection_completed_v1';
   static const String _preferredLanguageKey =
       'voice_chat_preferred_language_v1';
   static const String _appLocaleKey = 'voice_chat_app_locale_v1';
@@ -49,6 +51,20 @@ class LocalUserPreferencesRepository {
   Future<void> savePreferredLanguage(ConversationLanguage language) async {
     final box = await _openBox();
     await box.put(_preferredLanguageKey, language.name);
+    await box.put(_initialLanguageSelectionCompletedKey, true);
+  }
+
+  Future<bool> hasCompletedInitialLanguageSelection() async {
+    final box = await _openBox();
+    final raw = box.get(_initialLanguageSelectionCompletedKey);
+    if (raw is bool) {
+      return raw;
+    }
+
+    // Backward compatibility: old installs may not have the new flag,
+    // but still have locale/language preferences already saved.
+    return box.containsKey(_preferredLanguageKey) ||
+        box.containsKey(_appLocaleKey);
   }
 
   Future<AppLocale> getAppLocale() async {
@@ -67,6 +83,7 @@ class LocalUserPreferencesRepository {
   Future<void> saveAppLocale(AppLocale appLocale) async {
     final box = await _openBox();
     await box.put(_appLocaleKey, appLocale.name);
+    await box.put(_initialLanguageSelectionCompletedKey, true);
   }
 
   Future<SessionUiPreferences> getSessionUiPreferences() async {

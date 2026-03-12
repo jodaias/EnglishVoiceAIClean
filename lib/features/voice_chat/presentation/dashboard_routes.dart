@@ -1,4 +1,5 @@
 class DashboardRoutes {
+  static const String initialLanguage = '/initial-language';
   static const String dashboard = '/dashboard';
   static const String practice = '/practice';
   static const String learningPath = '/learning-path';

@@ -2,6 +2,13 @@
 
 This file is the current action plan for evolving the app as a high-quality English learning product.
 
+## Product update (2026-03-12 - first-run language onboarding)
+
+- First app launch now requires choosing UI language (`English` or `Portugues`) before opening dashboard.
+- Choice is persisted locally and the onboarding screen is skipped on subsequent launches.
+- If local app data/cache is cleared, onboarding is shown again as expected.
+- Backward compatibility preserved: existing installs with saved locale/language are treated as already onboarded.
+
 ## Duolingo-Style Reading & Listening (new — 2026-03-11)
 
 Full transformation plan documented in [PLAN_DUOLINGO_READING_LISTENING.md](PLAN_DUOLINGO_READING_LISTENING.md).

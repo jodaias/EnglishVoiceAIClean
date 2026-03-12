@@ -1,4 +1,5 @@
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/dashboard_routes.dart';
+import 'package:english_voice_ai_clean/features/voice_chat/infrastructure/local/local_user_preferences_repository.dart';
 import 'package:flutter/material.dart';
 
 class SplashPage extends StatefulWidget {
@@ -12,6 +13,8 @@ class _SplashPageState extends State<SplashPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  final LocalUserPreferencesRepository _preferencesRepository =
+      LocalUserPreferencesRepository();
 
   @override
   void initState() {
@@ -25,9 +28,20 @@ class _SplashPageState extends State<SplashPage>
     _controller.forward();
 
     Future.delayed(const Duration(seconds: 3), () {
-      if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed(DashboardRoutes.dashboard);
+      _navigateAfterSplash();
     });
+  }
+
+  Future<void> _navigateAfterSplash() async {
+    final hasCompletedSelection =
+        await _preferencesRepository.hasCompletedInitialLanguageSelection();
+    if (!mounted) return;
+
+    final targetRoute = hasCompletedSelection
+        ? DashboardRoutes.dashboard
+        : DashboardRoutes.initialLanguage;
+
+    Navigator.of(context).pushReplacementNamed(targetRoute);
   }
 
   @override

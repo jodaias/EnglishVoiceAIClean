@@ -8,6 +8,7 @@ import 'package:english_voice_ai_clean/features/voice_chat/infrastructure/local/
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/app_settings_scope.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/dashboard_routes.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/initial_dashboard_page.dart';
+import 'package:english_voice_ai_clean/features/voice_chat/presentation/initial_language_selection_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/language_mode_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/lesson_page.dart';
 import 'package:english_voice_ai_clean/features/voice_chat/presentation/lesson_summary_page.dart';
@@ -70,6 +71,8 @@ class _VoiceEnglishAIAppState extends State<VoiceEnglishAIApp> {
             locale: Locale(appLocale.languageCode, appLocale.countryCode),
             home: const SplashPage(),
             routes: {
+              DashboardRoutes.initialLanguage: (_) =>
+                  const InitialLanguageSelectionPage(),
               DashboardRoutes.dashboard: (_) => const InitialDashboardPage(),
               DashboardRoutes.practice: (_) => const PracticeOverviewPage(),
               DashboardRoutes.learningPath: (_) => const LearningPathPage(),
