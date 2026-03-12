@@ -88,7 +88,7 @@ class _VoiceEnglishAIAppState extends State<VoiceEnglishAIApp> {
                     ),
                   ),
               DashboardRoutes.sessionHistory: (_) => const SessionHistoryPage(),
-              DashboardRoutes.session: (_) => const SessionSettingsPage(),
+              DashboardRoutes.settings: (_) => const SessionSettingsPage(),
               DashboardRoutes.language: (_) => const LanguageModePage(),
               DashboardRoutes.videoCall: (_) => const VideoCallPage(),
             },

@@ -152,7 +152,8 @@ class _PracticeOverviewPageState extends State<PracticeOverviewPage> {
           }
 
           if (index == 2) {
-            Navigator.of(context).pushReplacementNamed(DashboardRoutes.session);
+            Navigator.of(context)
+                .pushReplacementNamed(DashboardRoutes.settings);
           }
         },
         items: [

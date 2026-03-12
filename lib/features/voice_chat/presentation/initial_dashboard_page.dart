@@ -168,13 +168,13 @@ class InitialDashboardPage extends StatelessWidget {
                   ),
                   _QuickMenuCard(
                     icon: Icons.tune_outlined,
-                    title: appText(context,
-                        en: 'Session Focus', pt: 'Foco da Sessao'),
+                    title:
+                        appText(context, en: 'Settings', pt: 'Configurações'),
                     subtitle: appText(context,
-                        en: 'Travel, interview, routine...',
-                        pt: 'Viagem, entrevista, rotina...'),
+                        en: 'Language, scene and AI options',
+                        pt: 'Idioma, cena e opções de IA'),
                     onTap: () => Navigator.of(context)
-                        .pushNamed(DashboardRoutes.session),
+                        .pushNamed(DashboardRoutes.settings),
                   )
                 ],
               ),
@@ -212,7 +212,7 @@ class InitialDashboardPage extends StatelessWidget {
           }
 
           if (index == 2) {
-            Navigator.of(context).pushReplacementNamed(DashboardRoutes.session);
+            Navigator.of(context).pushReplacementNamed(DashboardRoutes.settings);
           }
         },
         items: [
